@@ -4,6 +4,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DynamoDB Studio</title>
+    <script>
+      (function () {
+        try {
+          var mode = localStorage.getItem("mui-mode") || "system";
+          var scheme =
+            mode === "system"
+              ? window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light"
+              : mode;
+          if (scheme !== "light" && scheme !== "dark") return;
+          var root = document.documentElement;
+          root.setAttribute("data-color-scheme", scheme);
+          root.style.backgroundColor = scheme === "dark" ? "#202124" : "#F8F9FA";
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
