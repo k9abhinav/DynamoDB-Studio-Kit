@@ -56,3 +56,4 @@ export {
   SESSION_COOKIE,
   SESSION_IDLE_MS,
 } from "./limits.js";
+export { interpretEndpoint, type EndpointInterpretation } from "./endpoint.js";

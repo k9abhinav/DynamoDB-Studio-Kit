@@ -38,12 +38,12 @@ Listing tables (Phase 3). Everything after.
 - [x] T2.1 Shared Zod schemas for session, auth, connection, profile, error (`packages/shared`) + tests
 - [x] T2.2 Server security plugin (origin/host/CSRF/session) + tests
 - [x] T2.3 ErrorMapper (AWS + network -> codes) with table-driven tests
-- [ ] T2.4 Endpoint normalizer + loopback detection + tests
+- [x] T2.4 Endpoint normalizer + loopback detection + tests
 - [ ] T2.5 ConnectionManager + credential providers + routes + integration tests (DynamoDB Local)
 - [ ] T2.6 ProfileStore (encryption, atomic write, perms) + routes + tests
 - [ ] T2.7 Read-only guard + test route + tests
 - [ ] T2.8 Web API client + ApiError + error-copy + tests
-- [ ] T2.9 URL parsing util (shared between server/web where sensible) + tests
+- [x] T2.9 URL parsing util (shared between server/web where sensible) + tests
 - [ ] T2.10 ConnectCard UI (form with react-hook-form + zod), states, animations, tests
 - [ ] T2.11 Saved connections list + actions + tests
 - [ ] T2.12 Workspace guard, status chip, heartbeat, disconnect/switch + tests

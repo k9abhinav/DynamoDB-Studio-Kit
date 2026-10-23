@@ -23,12 +23,12 @@
 - [x] T2.1 Shared schemas
 - [x] T2.2 Security plugin
 - [x] T2.3 ErrorMapper
-- [ ] T2.4 Endpoint normalizer
+- [x] T2.4 Endpoint normalizer
 - [ ] T2.5 ConnectionManager and routes
 - [ ] T2.6 ProfileStore
 - [ ] T2.7 Read-only guard
 - [ ] T2.8 Web API client
-- [ ] T2.9 URL parsing util
+- [x] T2.9 URL parsing util
 - [ ] T2.10 Connect card
 - [ ] T2.11 Saved connections
 - [ ] T2.12 Workspace guard and heartbeat
