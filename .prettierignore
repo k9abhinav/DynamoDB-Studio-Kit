@@ -1,0 +1,10 @@
+dist
+pnpm-lock.yaml
+coverage
+playwright-report
+test-results
+.claude
+prompts
+specs
+AGENTS.md
+CLAUDE.md
