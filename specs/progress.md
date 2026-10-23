@@ -3,7 +3,7 @@
 > The agent updates this file at the end of every task and phase. It is the memory between sessions.
 > Format for evidence: `AC-3.2 ✔ apps/web/src/features/tables/SidebarTableList.test.tsx > "filters as you type"`
 
-**Current phase:** 1 (done)
+**Current phase:** 2 (in progress)
 **Last updated:** 2026-10-23
 
 ## Phase status
@@ -11,13 +11,30 @@
 |---|---|---|---|---|
 | 0 | Foundation | ✅ done | ✅ | 2026-10-23 |
 | 1 | Design system & app shell | ✅ done | ✅ | 2026-10-23 |
-| 2 | Backend & connection | ☐ not started | ☐ | |
+| 2 | Backend & connection | in progress | ☐ | |
 | 3 | Table explorer | ☐ not started | ☐ | |
 | 4 | Items browser | ☐ not started | ☐ | |
 | 5 | Item editor & CRUD | ☐ not started | ☐ | |
 | 6 | Query builder & PartiQL | ☐ not started | ☐ | |
 | 7 | Table management & import/export | ☐ not started | ☐ | |
 | 8 | Polish, hardening, packaging | ☐ not started | ☐ | |
+
+## Phase 2 tasks
+- [x] T2.1 Shared schemas
+- [ ] T2.2 Security plugin
+- [ ] T2.3 ErrorMapper
+- [ ] T2.4 Endpoint normalizer
+- [ ] T2.5 ConnectionManager and routes
+- [ ] T2.6 ProfileStore
+- [ ] T2.7 Read-only guard
+- [ ] T2.8 Web API client
+- [ ] T2.9 URL parsing util
+- [ ] T2.10 Connect card
+- [ ] T2.11 Saved connections
+- [ ] T2.12 Workspace guard and heartbeat
+- [ ] T2.13 Playwright
+- [ ] T2.14 Security checklist
+- [ ] T2.15 Progress summary
 
 ## Acceptance criteria evidence
 

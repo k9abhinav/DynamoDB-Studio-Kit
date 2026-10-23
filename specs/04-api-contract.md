@@ -51,17 +51,19 @@ imported by both sides. This file is the human-readable contract; if they differ
   - body: test body + `{ name?: string, env: "local"|"dev"|"staging"|"production", readOnly: boolean, remember: boolean }`
   - 201: `{ connectionId, summary: { name, endpoint, region, env, readOnly, authType } }`
   - A blank endpoint means real AWS. Auth type `local` is then `400 VALIDATION`, and the client defaults that form to `default-chain`.
-- `GET /connections` -> active connections for this session
-- `GET /connections/:id` -> `{ summary, latencyMs }`. `latencyMs` is the time for `ListTables` with `Limit: 1`. Never returns secrets. This heartbeat is not rate limited.
+- `GET /connections` -> `[{ connectionId, summary }]` for this session. `summary` matches the create response. Never returns secrets.
+- `GET /connections/:id` -> `{ summary, latencyMs }`. `latencyMs` is the time for `ListTables` with `Limit: 1`. Never returns secrets. This heartbeat is not rate limited. `tableCountSample` on the test response is that same `Limit: 1` count (0 or 1).
 - `DELETE /connections/:id` -> 204
 - `PATCH /connections/:id` -> toggle `readOnly`, rename, change env (no credential changes)
 
 Rate limit: 30 requests per minute per session, only on `POST /connections/test`, `POST /connections`, and `POST /profiles/:id/connect`.
 
 ### Saved profiles (never return secrets)
-- `GET /profiles` -> `[{ id, name, endpoint, region, env, readOnly, authType, lastUsedAt, hasSecret }]`
+- `GET /profiles` -> `[{ id, name, endpoint, region, env, readOnly, authType, lastUsedAt, hasSecret, profile? }]`
+  - `profile` is the AWS shared-config profile name when `authType` is `profile`. It is not a secret.
 - `POST /profiles/:id/connect` -> same as `POST /connections` result (server uses stored secret)
-- `PATCH /profiles/:id`, `DELETE /profiles/:id`
+- `PATCH /profiles/:id` body `{ name?, endpoint?, region?, env?, readOnly?, auth? }` with at least one field. Omitting `auth` keeps the stored secret. An empty `endpoint` means real AWS.
+- `DELETE /profiles/:id`
 
 ### Tables
 - `GET /connections/:id/tables?search=&cursor=&limit=100` -> `{ tables: string[], nextCursor? }` (search filters server-side by case-insensitive contains after listing pages)

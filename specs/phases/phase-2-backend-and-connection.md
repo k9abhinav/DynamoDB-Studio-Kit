@@ -35,7 +35,7 @@ Listing tables (Phase 3). Everything after.
 - **FR-2.10** Session security: requests without CSRF header or with bad Origin are rejected with proper codes (tests).
 
 ## 4. Tasks
-- [ ] T2.1 Shared Zod schemas for session, auth, connection, profile, error (`packages/shared`) + tests
+- [x] T2.1 Shared Zod schemas for session, auth, connection, profile, error (`packages/shared`) + tests
 - [ ] T2.2 Server security plugin (origin/host/CSRF/session) + tests
 - [ ] T2.3 ErrorMapper (AWS + network -> codes) with table-driven tests
 - [ ] T2.4 Endpoint normalizer + loopback detection + tests
