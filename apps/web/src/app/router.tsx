@@ -2,7 +2,7 @@ import { createBrowserRouter, Outlet, type RouteObject } from "react-router-dom"
 import { AboutDialog } from "../components/AboutDialog.js";
 import { CommandPalette } from "../components/CommandPalette.js";
 import { ShortcutHelpDialog } from "../components/ShortcutHelpDialog.js";
-import { ConnectPlaceholder } from "../features/connection/ConnectPlaceholder.js";
+import { ConnectScreen } from "../features/connection/ConnectScreen.js";
 import { NotFound } from "../features/connection/NotFound.js";
 import { Workspace } from "../features/workspace/Workspace.js";
 
@@ -19,7 +19,7 @@ function ShellLayout() {
 
 export function appRoutes(): RouteObject[] {
   const children: RouteObject[] = [
-    { path: "/", element: <ConnectPlaceholder /> },
+    { path: "/", element: <ConnectScreen /> },
     { path: "/c/:connId", element: <Workspace /> },
     { path: "/c/:connId/t/:table/:tab", element: <Workspace /> },
     { path: "*", element: <NotFound /> },

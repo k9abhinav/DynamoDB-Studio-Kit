@@ -1,16 +1,13 @@
 import Dialog from "@mui/material/Dialog";
 import TextField from "@mui/material/TextField";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { filterLabels, MOCK_TABLES } from "../lib/tables.js";
+import { filterLabels } from "../lib/tables.js";
 import { useOverlayStore } from "../stores/overlay.js";
 
 export function CommandPalette() {
   const open = useOverlayStore((state) => state.overlay === "palette");
   const close = useOverlayStore((state) => state.closeOverlay);
   const openOverlay = useOverlayStore((state) => state.openOverlay);
-  const navigate = useNavigate();
-  const { connId = "local" } = useParams();
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const field = useRef<HTMLInputElement>(null);
@@ -19,10 +16,7 @@ export function CommandPalette() {
       field.current?.focus();
     }
   }, [open]);
-  const labels = useMemo(() => {
-    const tables = MOCK_TABLES.map((table) => `Open ${table.name}`);
-    return filterLabels([...tables, "Keyboard shortcuts", "About"], query);
-  }, [query]);
+  const labels = useMemo(() => filterLabels(["Keyboard shortcuts", "About"], query), [query]);
   const current = labels[active] ?? labels[0];
 
   return (
@@ -87,9 +81,6 @@ export function CommandPalette() {
     }
     if (label === "About") {
       openOverlay("about");
-      return;
     }
-    const table = label.replace(/^Open /, "");
-    void navigate(`/c/${connId}/t/${table}/items`);
   }
 }

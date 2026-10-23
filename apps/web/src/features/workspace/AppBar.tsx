@@ -1,16 +1,31 @@
 import MoreVertOutlined from "@mui/icons-material/MoreVertOutlined";
 import SearchOutlined from "@mui/icons-material/SearchOutlined";
 import Button from "@mui/material/Button";
+import Chip from "@mui/material/Chip";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { useState } from "react";
+import { type EnvName } from "../../components/EnvChip.js";
 import { StatusChip } from "../../components/StatusChip.js";
 import { ThemeToggle } from "../../components/ThemeToggle.js";
 import { useOverlayStore } from "../../stores/overlay.js";
 import { useUiStore } from "../../stores/ui.js";
 
-export function StudioAppBar() {
+export type AppBarConnection =
+  | { state: "pending" }
+  | { state: "lost" }
+  | { state: "live"; name: string; env: EnvName; region: string; latencyMs: number };
+
+export function StudioAppBar({
+  connection = { state: "pending" },
+  onDisconnect,
+  onSwitch,
+}: {
+  connection?: AppBarConnection;
+  onDisconnect?: () => void;
+  onSwitch?: () => void;
+}) {
   const [menu, setMenu] = useState<HTMLElement | null>(null);
   const density = useUiStore((state) => state.density);
   const setDensity = useUiStore((state) => state.setDensity);
@@ -30,7 +45,20 @@ export function StudioAppBar() {
         <span className="truncate">Search tables, actions</span>
         <kbd className="ml-auto hidden font-mono text-xs text-text-secondary sm:inline">⌘K</kbd>
       </Button>
-      <StatusChip />
+      {connection.state === "live" ? (
+        <StatusChip
+          name={connection.name}
+          env={connection.env}
+          region={connection.region}
+          latencyMs={connection.latencyMs}
+        />
+      ) : (
+        <Chip
+          size="small"
+          variant="outlined"
+          label={connection.state === "lost" ? "Connection lost" : "Connecting"}
+        />
+      )}
       <ThemeToggle />
       <IconButton
         aria-label="More actions"
@@ -67,6 +95,26 @@ export function StudioAppBar() {
         >
           Compact
         </MenuItem>
+        {onSwitch === undefined ? null : (
+          <MenuItem
+            onClick={() => {
+              setMenu(null);
+              onSwitch();
+            }}
+          >
+            Switch connection
+          </MenuItem>
+        )}
+        {onDisconnect === undefined ? null : (
+          <MenuItem
+            onClick={() => {
+              setMenu(null);
+              onDisconnect();
+            }}
+          >
+            Disconnect
+          </MenuItem>
+        )}
         <MenuItem
           onClick={() => {
             setMenu(null);

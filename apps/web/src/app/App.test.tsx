@@ -7,17 +7,18 @@ import { fileURLToPath } from "node:url";
 import { renderAt } from "../test/render.js";
 
 describe("App shell", () => {
-  it("offers a connect entry into the mock workspace", async () => {
-    const user = userEvent.setup();
+  it("shows the connect card", () => {
     renderAt("/");
     expect(screen.getByRole("heading", { name: "DynamoDB Studio" })).toBeInTheDocument();
-    await user.click(screen.getByRole("link", { name: "Connect" }));
-    expect(screen.getByRole("heading", { name: "users" })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Endpoint" })).toHaveFocus();
   });
 
   it("sets --row-height from the overflow density toggle", async () => {
     const user = userEvent.setup();
     renderAt("/c/local/t/users/items");
+    expect(await screen.findByText("Local dev · us-east-1 · 12ms")).toBeInTheDocument();
+    expect(screen.getByText("No tables yet.")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "users" })).not.toBeInTheDocument();
     expect(document.documentElement.style.getPropertyValue("--row-height")).toBe("48px");
     await user.click(screen.getByRole("button", { name: "More actions" }));
     await user.click(screen.getByRole("menuitem", { name: "Compact" }));
@@ -27,13 +28,26 @@ describe("App shell", () => {
     expect(document.documentElement.style.getPropertyValue("--row-height")).toBe("48px");
   });
 
-  it("filters the sidebar and keeps an unknown tab on Items", async () => {
+  it("keeps an unknown tab on Items and returns home when the connection is gone", async () => {
     const user = userEvent.setup();
     renderAt("/c/local/t/orders/nope");
-    expect(screen.getByRole("tab", { name: "Items", selected: true })).toBeInTheDocument();
-    await user.type(screen.getByRole("searchbox", { name: "Filter tables" }), "edge");
-    expect(screen.getByRole("link", { name: "edge-cases" })).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "orders" })).not.toBeInTheDocument();
+    expect(await screen.findByRole("tab", { name: "Items", selected: true })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "More actions" }));
+    await user.click(screen.getByRole("menuitem", { name: "Switch connection" }));
+    expect(screen.getByRole("textbox", { name: "Endpoint" })).toBeInTheDocument();
+  });
+
+  it("sends a missing connection back to the connect screen", async () => {
+    renderAt("/c/missing", { api: "missing" });
+    expect(await screen.findByText("Session expired. Reconnect.")).toBeInTheDocument();
+  });
+
+  it("shows a connection lost banner and can disconnect", async () => {
+    const user = userEvent.setup();
+    renderAt("/c/local", { api: "lost" });
+    expect(await screen.findByText("Connection lost. Retry / Disconnect")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Disconnect" }));
+    expect(await screen.findByRole("textbox", { name: "Endpoint" })).toBeInTheDocument();
   });
 
   it("reads the theme bootstrap from index.html", () => {

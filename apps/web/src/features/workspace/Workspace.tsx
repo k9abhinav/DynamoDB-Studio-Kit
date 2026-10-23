@@ -1,22 +1,81 @@
-import { Navigate, useParams } from "react-router-dom";
+import InboxOutlined from "@mui/icons-material/InboxOutlined";
+import Alert from "@mui/material/Alert";
+import Button from "@mui/material/Button";
+import type { ConnectionHeartbeatBody } from "@dynamo-studio/shared";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { EmptyState } from "../../components/EmptyState.js";
+import { api, ApiError } from "../../lib/api.js";
 import { parseTableTab } from "../../lib/tables.js";
 import { ItemDrawer } from "./ItemDrawer.js";
 import { SidebarTableList } from "./SidebarTableList.js";
-import { StudioAppBar } from "./AppBar.js";
+import { StudioAppBar, type AppBarConnection } from "./AppBar.js";
 import { TableTabs } from "./TableTabs.js";
 import { TabPanel } from "./TabPanel.js";
-import InboxOutlined from "@mui/icons-material/InboxOutlined";
+import { useLiveConnection } from "./use-live-connection.js";
 
 export function Workspace() {
-  const { connId = "local", table, tab } = useParams();
+  const navigate = useNavigate();
+  const { connId = "", table, tab } = useParams();
+  const query = useLiveConnection(connId);
   if (table !== undefined && tab !== undefined && parseTableTab(tab) === undefined) {
     return <Navigate to={`/c/${connId}/t/${table}/items`} replace />;
+  }
+  if (query.isError && isSessionMissing(query.error)) {
+    return <Navigate to="/?notice=session-expired" replace />;
+  }
+
+  const lost = query.isError;
+  const connection = barConnection(query.data, lost);
+
+  async function disconnect() {
+    try {
+      await api(`/api/v1/connections/${encodeURIComponent(connId)}`, { method: "DELETE" });
+    } catch {
+      // Leave the workspace even when the session is already gone.
+    }
+    void navigate("/");
   }
 
   return (
     <div className="grid h-dvh grid-rows-[auto_minmax(0,1fr)] bg-bg text-text">
-      <StudioAppBar />
+      <div>
+        <StudioAppBar
+          connection={connection}
+          onDisconnect={() => {
+            void disconnect();
+          }}
+          onSwitch={() => {
+            void navigate("/");
+          }}
+        />
+        {lost ? (
+          <div className="border-b border-outline bg-surface px-4 py-2">
+            <Alert severity="warning" variant="outlined">
+              Connection lost. Retry / Disconnect
+              <div className="mt-2 flex gap-2">
+                <Button
+                  color="inherit"
+                  size="small"
+                  onClick={() => {
+                    void query.refetch();
+                  }}
+                >
+                  Retry
+                </Button>
+                <Button
+                  color="inherit"
+                  size="small"
+                  onClick={() => {
+                    void disconnect();
+                  }}
+                >
+                  Disconnect
+                </Button>
+              </div>
+            </Alert>
+          </div>
+        ) : null}
+      </div>
       <div className="grid min-h-0 grid-cols-[auto_minmax(0,1fr)]">
         <SidebarTableList />
         <div className="flex min-w-0">
@@ -44,4 +103,21 @@ export function Workspace() {
       </div>
     </div>
   );
+}
+
+function isSessionMissing(error: unknown): boolean {
+  return error instanceof ApiError && (error.status === 401 || error.status === 404);
+}
+
+function barConnection(data: ConnectionHeartbeatBody | undefined, lost: boolean): AppBarConnection {
+  if (data === undefined) {
+    return { state: lost ? "lost" : "pending" };
+  }
+  return {
+    state: "live",
+    name: data.summary.name,
+    env: data.summary.env,
+    region: data.summary.region,
+    latencyMs: data.latencyMs,
+  };
 }

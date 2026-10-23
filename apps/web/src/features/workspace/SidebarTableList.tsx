@@ -6,11 +6,11 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { SIDEBAR_BREAKPOINT } from "../../lib/layout.js";
-import { filterTables, MOCK_TABLES } from "../../lib/tables.js";
+import { filterTables, type MockTable } from "../../lib/tables.js";
 import { useOverlayStore } from "../../stores/overlay.js";
 import { useUiStore } from "../../stores/ui.js";
 
-export function SidebarTableList() {
+export function SidebarTableList({ tables = [] }: { tables?: readonly MockTable[] }) {
   const [query, setQuery] = useState("");
   const narrow = useMediaQuery(`(max-width: ${String(SIDEBAR_BREAKPOINT - 1)}px)`);
   const collapsed = useUiStore((state) => state.sidebarCollapsed);
@@ -18,7 +18,7 @@ export function SidebarTableList() {
   const showSnackbar = useOverlayStore((state) => state.showSnackbar);
   const { connId = "local", table: selected } = useParams();
   const rail = narrow || collapsed;
-  const tables = filterTables(MOCK_TABLES, query);
+  const visible = filterTables(tables, query);
 
   return (
     <nav
@@ -50,8 +50,13 @@ export function SidebarTableList() {
           />
         </div>
       )}
+      {rail || visible.length > 0 ? null : (
+        <p className="px-4 text-sm text-text-secondary">
+          {query.trim().length === 0 ? "No tables yet." : "No matching tables."}
+        </p>
+      )}
       <ul className="m-0 flex list-none flex-col p-0">
-        {tables.map((table) => {
+        {visible.map((table) => {
           const current = table.name === selected;
           return (
             <li key={table.name}>

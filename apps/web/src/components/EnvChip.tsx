@@ -16,6 +16,14 @@ const dots: Record<EnvName, string> = {
   production: "bg-env-production",
 };
 
+export function envDotClass(env: EnvName): string {
+  return dots[env];
+}
+
+export function envLabel(env: EnvName): string {
+  return labels[env];
+}
+
 export function EnvChip({ env }: { env: EnvName }) {
   return (
     <Chip
