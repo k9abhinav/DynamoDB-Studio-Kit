@@ -94,14 +94,30 @@ The agent is never allowed to invent requirements. Anything not in the specs goe
 
 ## 6. Stack at a glance
 
-| Layer | Choice |
-|---|---|
+| Layer    | Choice                                                                                                                                 |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | Frontend | React 19, Vite, TypeScript (strict), MUI (latest stable), Tailwind CSS v4, TanStack Query/Table/Virtual, Zustand, React Router, Monaco |
-| Backend | Node 22, Fastify, AWS SDK v3 (`client-dynamodb`, `lib-dynamodb`, `util-dynamodb`), Zod, Pino |
-| Shared | `packages/shared`: Zod schemas and TS types used by both sides |
-| Tests | Vitest, Testing Library, Playwright, axe, DynamoDB Local (Docker) |
-| Tooling | pnpm workspaces, ESLint (flat), Prettier, Husky + lint-staged, GitHub Actions |
+| Backend  | Node 22, Fastify, AWS SDK v3 (`client-dynamodb`, `lib-dynamodb`, `util-dynamodb`), Zod, Pino                                           |
+| Shared   | `packages/shared`: Zod schemas and TS types used by both sides                                                                         |
+| Tests    | Vitest, Testing Library, Playwright, axe, DynamoDB Local (Docker)                                                                      |
+| Tooling  | pnpm workspaces, ESLint (flat), Prettier, Husky + lint-staged, GitHub Actions                                                          |
 
 > Why a backend at all? Browsers can't safely hold AWS credentials, and real DynamoDB endpoints
 > aren't designed for arbitrary browser origins. A tiny local backend keeps secrets out of the browser,
 > avoids CORS pain, and enables streaming export/import. See `specs/02-architecture.md` ADR-001.
+
+## Development
+
+<!-- CI badge slot: add the GitHub Actions badge when this repository has a GitHub origin. -->
+
+Node 22 (`nvm use`) and pnpm 12.9.1. Docker is required for `pnpm dev:db`, `pnpm seed`, `pnpm test:int`, and `pnpm verify`.
+
+```
+pnpm install
+pnpm dev:db
+pnpm seed
+pnpm dev
+pnpm verify
+```
+
+`pnpm dev` starts the API on `http://127.0.0.1:8080` and the placeholder on `http://127.0.0.1:5173`. The page reads `GET /api/v1/health` through the Vite proxy. `pnpm dev:db` only starts DynamoDB Local (`-sharedDb -inMemory` on port 8000). The database is in memory, so run `pnpm seed` again after a container restart. If DynamoDB Local is not running, the integration tests exit with a message that points here.
