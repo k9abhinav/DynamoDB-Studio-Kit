@@ -39,7 +39,7 @@ Listing tables (Phase 3). Everything after.
 - [x] T2.2 Server security plugin (origin/host/CSRF/session) + tests
 - [x] T2.3 ErrorMapper (AWS + network -> codes) with table-driven tests
 - [x] T2.4 Endpoint normalizer + loopback detection + tests
-- [ ] T2.5 ConnectionManager + credential providers + routes + integration tests (DynamoDB Local)
+- [x] T2.5 ConnectionManager + credential providers + routes + integration tests (DynamoDB Local)
 - [ ] T2.6 ProfileStore (encryption, atomic write, perms) + routes + tests
 - [ ] T2.7 Read-only guard + test route + tests
 - [ ] T2.8 Web API client + ApiError + error-copy + tests

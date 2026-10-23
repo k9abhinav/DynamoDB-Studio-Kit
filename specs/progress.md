@@ -24,7 +24,7 @@
 - [x] T2.2 Security plugin
 - [x] T2.3 ErrorMapper
 - [x] T2.4 Endpoint normalizer
-- [ ] T2.5 ConnectionManager and routes
+- [x] T2.5 ConnectionManager and routes
 - [ ] T2.6 ProfileStore
 - [ ] T2.7 Read-only guard
 - [ ] T2.8 Web API client

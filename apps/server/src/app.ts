@@ -1,22 +1,56 @@
 import { sep } from "node:path";
+import rateLimit from "@fastify/rate-limit";
 import fastifyStatic from "@fastify/static";
 import Fastify, { type FastifyInstance } from "fastify";
+import { CONNECT_RATE_LIMIT_PER_MINUTE, type Auth } from "@dynamo-studio/shared";
+import type { DestinationStream } from "pino";
 import type { LogLevel } from "./config.js";
 import { registerErrors, registerNotFound } from "./plugins/errors.js";
 import { fastifyLoggerOptions } from "./plugins/logger.js";
 import { registerSecurity, type SecurityOptions } from "./plugins/security.js";
+import { connectionRoutes } from "./routes/connections.js";
 import { healthRoutes } from "./routes/health.js";
+import { HttpError } from "./http-error.js";
+import { createConnectionManager } from "./services/connection-manager.js";
+import type { DynamoCaller } from "./services/credentials.js";
 import "./types.js";
 
 export interface BuildAppOptions extends SecurityOptions {
-  logger?: boolean | { level: LogLevel };
+  logger?: boolean | { level: LogLevel; destination?: DestinationStream };
   staticRoot?: string;
   bodyLimit?: number;
+  createClient?: (input: { region: string; endpoint: string; auth: Auth }) => DynamoCaller;
 }
 
 export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyInstance> {
   const app = createServer(options);
-  await registerSecurity(app, options);
+  const connections = createConnectionManager(
+    options.createClient === undefined ? {} : { createClient: options.createClient },
+  );
+  app.decorate("connections", connections);
+  await registerSecurity(app, {
+    ...options,
+    onExpire(sessionId) {
+      connections.destroySession(sessionId);
+      options.onExpire?.(sessionId);
+    },
+  });
+  await app.register(rateLimit, {
+    global: false,
+    hook: "preHandler",
+    max: CONNECT_RATE_LIMIT_PER_MINUTE,
+    timeWindow: 60_000,
+    keyGenerator(request) {
+      return request.session?.id ?? request.ip;
+    },
+    errorResponseBuilder() {
+      return new HttpError(
+        "THROTTLED",
+        "Too many connection attempts. Wait a minute and try again.",
+        { retryable: true },
+      );
+    },
+  });
   registerErrors(app);
   if (options.staticRoot !== undefined) {
     await app.register(fastifyStatic, {
@@ -30,6 +64,7 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
     });
   }
   await app.register(healthRoutes);
+  await app.register(connectionRoutes);
   registerNotFound(app, options.staticRoot);
   return app;
 }
@@ -38,7 +73,13 @@ function createServer(options: BuildAppOptions): FastifyInstance {
   const bodyLimit = options.bodyLimit ?? 2 * 1024 * 1024;
   const logger = options.logger;
   if (logger !== undefined && typeof logger !== "boolean") {
-    return Fastify({ bodyLimit, logger: fastifyLoggerOptions(logger.level) });
+    return Fastify({
+      bodyLimit,
+      logger: {
+        ...fastifyLoggerOptions(logger.level),
+        ...(logger.destination === undefined ? {} : { stream: logger.destination }),
+      },
+    });
   }
   return Fastify({ bodyLimit, logger: logger ?? false });
 }
