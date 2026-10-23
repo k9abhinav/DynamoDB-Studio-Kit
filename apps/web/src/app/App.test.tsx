@@ -1,57 +1,47 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
-import { http, HttpResponse } from "msw";
-import { setupServer } from "msw/node";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import { App } from "./App.js";
+import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { renderAt } from "../test/render.js";
 
-const server = setupServer();
-
-beforeAll(() => {
-  server.listen({ onUnhandledFrame: "error" });
-});
-
-afterEach(() => {
-  server.resetHandlers();
-});
-
-afterAll(() => {
-  server.close();
-});
-
-function renderApp() {
-  const client = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  });
-  return render(
-    <QueryClientProvider client={client}>
-      <App />
-    </QueryClientProvider>,
-  );
-}
-
-describe("App", () => {
-  it("shows DynamoDB Studio and the server version", async () => {
-    server.use(
-      http.get("*/api/v1/health", () => HttpResponse.json({ ok: true, version: "0.0.0" })),
-    );
-    renderApp();
-    expect(screen.getByRole("heading", { name: "DynamoDB Studio" })).toBeInTheDocument();
-    expect(await screen.findByText("Server 0.0.0 is ok.")).toBeInTheDocument();
-  });
-
-  it("shows a retry when the server cannot be reached", async () => {
-    server.use(
-      http.get("*/api/v1/health", () => HttpResponse.json({ ok: false }, { status: 500 })),
-    );
+describe("App shell", () => {
+  it("offers a connect entry into the mock workspace", async () => {
     const user = userEvent.setup();
-    renderApp();
-    expect(await screen.findByRole("alert")).toHaveTextContent("Couldn't reach the server");
-    server.use(
-      http.get("*/api/v1/health", () => HttpResponse.json({ ok: true, version: "0.0.0" })),
+    renderAt("/");
+    expect(screen.getByRole("heading", { name: "DynamoDB Studio" })).toBeInTheDocument();
+    await user.click(screen.getByRole("link", { name: "Connect" }));
+    expect(screen.getByRole("heading", { name: "users" })).toBeInTheDocument();
+  });
+
+  it("sets --row-height from the overflow density toggle", async () => {
+    const user = userEvent.setup();
+    renderAt("/c/local/t/users/items");
+    expect(document.documentElement.style.getPropertyValue("--row-height")).toBe("48px");
+    await user.click(screen.getByRole("button", { name: "More actions" }));
+    await user.click(screen.getByRole("menuitem", { name: "Compact" }));
+    expect(document.documentElement.style.getPropertyValue("--row-height")).toBe("32px");
+    await user.click(screen.getByRole("button", { name: "More actions" }));
+    await user.click(screen.getByRole("menuitem", { name: "Comfortable" }));
+    expect(document.documentElement.style.getPropertyValue("--row-height")).toBe("48px");
+  });
+
+  it("filters the sidebar and keeps an unknown tab on Items", async () => {
+    const user = userEvent.setup();
+    renderAt("/c/local/t/orders/nope");
+    expect(screen.getByRole("tab", { name: "Items", selected: true })).toBeInTheDocument();
+    await user.type(screen.getByRole("searchbox", { name: "Filter tables" }), "edge");
+    expect(screen.getByRole("link", { name: "edge-cases" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "orders" })).not.toBeInTheDocument();
+  });
+
+  it("reads the theme bootstrap from index.html", () => {
+    const html = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "../../index.html"),
+      "utf8",
     );
-    await user.click(screen.getByRole("button", { name: "Retry" }));
-    expect(await screen.findByText("Server 0.0.0 is ok.")).toBeInTheDocument();
+    expect(html).toContain('localStorage.getItem("mui-mode")');
+    expect(html).toContain('setAttribute("data-color-scheme"');
   });
 });
