@@ -5,6 +5,8 @@ import type { LogLevel } from "../config.js";
 const redactPaths = [
   "secretAccessKey",
   "*.secretAccessKey",
+  "req.body",
+  "req.body.*",
   "sessionToken",
   "*.sessionToken",
   "Authorization",
@@ -12,13 +14,26 @@ const redactPaths = [
   "req.headers.authorization",
 ];
 
+export function serializeRequest(request: {
+  method: string;
+  url: string;
+  headers?: Record<string, unknown>;
+}): {
+  method: string;
+  url: string;
+} {
+  return { method: request.method, url: request.url };
+}
+
 export function fastifyLoggerOptions(level: LogLevel): {
   level: LogLevel;
   redact: { paths: string[]; censor: string };
+  serializers: { req: typeof serializeRequest };
 } {
   return {
     level,
     redact: { paths: redactPaths, censor: "[Redacted]" },
+    serializers: { req: serializeRequest },
   };
 }
 

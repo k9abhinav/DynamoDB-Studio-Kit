@@ -21,7 +21,7 @@
 
 ## Phase 2 tasks
 - [x] T2.1 Shared schemas
-- [ ] T2.2 Security plugin
+- [x] T2.2 Security plugin
 - [ ] T2.3 ErrorMapper
 - [ ] T2.4 Endpoint normalizer
 - [ ] T2.5 ConnectionManager and routes
