@@ -26,7 +26,7 @@
 - [x] T2.4 Endpoint normalizer
 - [x] T2.5 ConnectionManager and routes
 - [x] T2.6 ProfileStore
-- [ ] T2.7 Read-only guard
+- [x] T2.7 Read-only guard
 - [ ] T2.8 Web API client
 - [x] T2.9 URL parsing util
 - [ ] T2.10 Connect card

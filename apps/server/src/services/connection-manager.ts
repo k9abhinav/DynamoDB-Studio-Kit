@@ -29,6 +29,7 @@ export interface ConnectionManager {
   heartbeat(sessionId: string, connectionId: string): Promise<ConnectionHeartbeat>;
   patch(sessionId: string, connectionId: string, body: PatchConnectionBody): ActiveConnection;
   remove(sessionId: string, connectionId: string): void;
+  assertWritable(sessionId: string, connectionId: string): void;
   destroySession(sessionId: string): void;
 }
 
@@ -183,6 +184,12 @@ export function createConnectionManager(options?: {
       const connection = requireConnection(sessionId, connectionId);
       connection.client.destroy();
       sessions.get(sessionId)?.delete(connectionId);
+    },
+    assertWritable(sessionId, connectionId) {
+      const connection = requireConnection(sessionId, connectionId);
+      if (connection.summary.readOnly) {
+        throw new HttpError("READ_ONLY", "This connection is read-only.");
+      }
     },
     destroySession(sessionId) {
       const connections = sessions.get(sessionId);

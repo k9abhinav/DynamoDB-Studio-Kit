@@ -4,6 +4,7 @@ import { join, sep } from "node:path";
 import rateLimit from "@fastify/rate-limit";
 import fastifyStatic from "@fastify/static";
 import Fastify, { type FastifyInstance } from "fastify";
+import { z } from "zod";
 import { CONNECT_RATE_LIMIT_PER_MINUTE, type Auth } from "@dynamo-studio/shared";
 import type { DestinationStream } from "pino";
 import type { LogLevel } from "./config.js";
@@ -23,6 +24,7 @@ export interface BuildAppOptions extends SecurityOptions {
   logger?: boolean | { level: LogLevel; destination?: DestinationStream };
   staticRoot?: string;
   bodyLimit?: number;
+  enableProbe?: boolean;
   studioHome?: string;
   createClient?: (input: { region: string; endpoint: string; auth: Auth }) => DynamoCaller;
 }
@@ -80,6 +82,16 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   await app.register(healthRoutes);
   await app.register(connectionRoutes);
   await app.register(profileRoutes);
+  if (options.enableProbe ?? process.env.NODE_ENV === "test") {
+    app.post("/api/v1/connections/:id/mutations/probe", async (request, reply) => {
+      const params = z.strictObject({ id: z.string().min(1) }).parse(request.params);
+      if (request.session === null) {
+        throw new HttpError("UNAUTHENTICATED", "Session expired. Reconnect.");
+      }
+      app.connections.assertWritable(request.session.id, params.id);
+      return reply.code(204).send();
+    });
+  }
   registerNotFound(app, options.staticRoot);
   return app;
 }

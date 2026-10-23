@@ -41,7 +41,7 @@ Listing tables (Phase 3). Everything after.
 - [x] T2.4 Endpoint normalizer + loopback detection + tests
 - [x] T2.5 ConnectionManager + credential providers + routes + integration tests (DynamoDB Local)
 - [x] T2.6 ProfileStore (encryption, atomic write, perms) + routes + tests
-- [ ] T2.7 Read-only guard + test route + tests
+- [x] T2.7 Read-only guard + test route + tests
 - [ ] T2.8 Web API client + ApiError + error-copy + tests
 - [x] T2.9 URL parsing util (shared between server/web where sensible) + tests
 - [ ] T2.10 ConnectCard UI (form with react-hook-form + zod), states, animations, tests
