@@ -42,14 +42,14 @@ Listing tables (Phase 3). Everything after.
 - [x] T2.5 ConnectionManager + credential providers + routes + integration tests (DynamoDB Local)
 - [x] T2.6 ProfileStore (encryption, atomic write, perms) + routes + tests
 - [x] T2.7 Read-only guard + test route + tests
-- [ ] T2.8 Web API client + ApiError + error-copy + tests
+- [x] T2.8 Web API client + ApiError + error-copy + tests
 - [x] T2.9 URL parsing util (shared between server/web where sensible) + tests
-- [ ] T2.10 ConnectCard UI (form with react-hook-form + zod), states, animations, tests
-- [ ] T2.11 Saved connections list + actions + tests
-- [ ] T2.12 Workspace guard, status chip, heartbeat, disconnect/switch + tests
-- [ ] T2.13 Playwright: J1 against DynamoDB Local (light+dark screenshots), failure path, keyboard-only
-- [ ] T2.14 Security review checklist (`05` section 8) executed and recorded
-- [ ] T2.15 Progress + phase summary
+- [x] T2.10 ConnectCard UI (form with react-hook-form + zod), states, animations, tests
+- [x] T2.11 Saved connections list + actions + tests
+- [x] T2.12 Workspace guard, status chip, heartbeat, disconnect/switch + tests
+- [x] T2.13 Playwright: J1 against DynamoDB Local (light+dark screenshots), failure path, keyboard-only
+- [x] T2.14 Security review checklist (`05` section 8) executed and recorded
+- [x] T2.15 Progress + phase summary
 
 ## 5. Acceptance criteria
 - **AC-2.1** Starting from `/`, typing `localhost:8000` and pressing Enter reaches the workspace in under 3 interactions (E2E).
@@ -59,7 +59,7 @@ Listing tables (Phase 3). Everything after.
 - **AC-2.5** `GET/POST` responses never contain `secretAccessKey`/`sessionToken` (automated deep scan test).
 - **AC-2.6** Profile file permissions are `0600` and ciphertext differs for the same secret across writes (unique IV) (test).
 - **AC-2.7** CSRF/Origin/Host rejections tested; DNS rebinding Host check tested.
-- **AC-2.8** Heartbeat updates latency chip; killing DynamoDB Local shows the "Connection lost" banner within 35s (E2E with docker stop).
+- **AC-2.8** Heartbeat updates latency chip; closing a local TCP proxy in front of DynamoDB Local shows the "Connection lost" banner within 35s (E2E, no docker stop).
 - **AC-2.9** axe: 0 serious/critical on the connect screen in both themes; full keyboard path works.
 - **AC-2.10** Security checklist all ticked or explicitly waived with reason.
 

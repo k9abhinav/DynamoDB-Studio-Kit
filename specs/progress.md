@@ -3,7 +3,7 @@
 > The agent updates this file at the end of every task and phase. It is the memory between sessions.
 > Format for evidence: `AC-3.2 ✔ apps/web/src/features/tables/SidebarTableList.test.tsx > "filters as you type"`
 
-**Current phase:** 2 (in progress)
+**Current phase:** 2 (done)
 **Last updated:** 2026-10-23
 
 ## Phase status
@@ -11,7 +11,7 @@
 |---|---|---|---|---|
 | 0 | Foundation | ✅ done | ✅ | 2026-10-23 |
 | 1 | Design system & app shell | ✅ done | ✅ | 2026-10-23 |
-| 2 | Backend & connection | in progress | ☐ | |
+| 2 | Backend & connection | ✅ done | ✅ | 2026-10-23 |
 | 3 | Table explorer | ☐ not started | ☐ | |
 | 4 | Items browser | ☐ not started | ☐ | |
 | 5 | Item editor & CRUD | ☐ not started | ☐ | |
@@ -27,19 +27,19 @@
 - [x] T2.5 ConnectionManager and routes
 - [x] T2.6 ProfileStore
 - [x] T2.7 Read-only guard
-- [ ] T2.8 Web API client
+- [x] T2.8 Web API client
 - [x] T2.9 URL parsing util
-- [ ] T2.10 Connect card
-- [ ] T2.11 Saved connections
-- [ ] T2.12 Workspace guard and heartbeat
-- [ ] T2.13 Playwright
-- [ ] T2.14 Security checklist
-- [ ] T2.15 Progress summary
+- [x] T2.10 Connect card
+- [x] T2.11 Saved connections
+- [x] T2.12 Workspace guard and heartbeat
+- [x] T2.13 Playwright
+- [x] T2.14 Security checklist
+- [x] T2.15 Progress summary
 
 ## Acceptance criteria evidence
 
 - AC-0.1 ✔ `pnpm verify` on 2026-10-23 with DynamoDB Local up: lint, typecheck, 14 unit tests, 2 integration tests, production build. Web JavaScript gzip 100585 bytes (budget 256000).
-- AC-0.2 ✔ Phase 0 screenshots remain at `docs/screenshots/phase-0/placeholder-light.png` and `docs/screenshots/phase-0/placeholder-dark.png`. Phase 1 replaced that smoke test with `e2e/smoke.spec.ts` > "connect placeholder shows DynamoDB Studio", which still fails on serious or critical axe violations and does not overwrite the phase-0 images.
+- AC-0.2 ✔ Phase 0 screenshots remain at `docs/screenshots/phase-0/placeholder-light.png` and `docs/screenshots/phase-0/placeholder-dark.png`. The smoke test is now `e2e/smoke.spec.ts` > "connect screen shows DynamoDB Studio". It still fails on serious or critical axe violations and does not overwrite the phase-0 images.
 - AC-0.3 ✔ `scripts/seed.int.test.ts` > "creates users(1000), orders(10000), sessions, and edge-cases". `pnpm seed` completed in 1502ms.
 - AC-0.4 ✔ `apps/server/src/routes/health.ts` and `apps/web/src/app/fetch-health.ts` import `@dynamo-studio/shared`. `apps/web/src/app/fetch-health.test.ts` parses a health payload. The connect screen does not render the health sentence.
 - AC-0.5 ✔ `.husky/commit-msg` rejects `bad message` (exit 1) and accepts `chore: test` (exit 0).
@@ -53,6 +53,28 @@
 - AC-1.6 ✔ The same shell and gallery tests fail on serious or critical axe violations in light and dark.
 - AC-1.7 ✔ Recorded miss. `pnpm build` on 2026-10-23: `Web JavaScript gzip: 201611 bytes` (150 KB is 153600). AC-1.7 in the phase file records 201611 bytes. The 250 KB script budget still passes.
 - AC-1.8 ✔ `apps/web/src/lib/motion.test.ts` > motion helper returns opacity-only transitions when reduced motion is set.
+- AC-2.1 ✔ `e2e/connect.spec.ts` > "reaches the workspace from a pasted URL with Enter". The endpoint is focused; typing `localhost:8000` and pressing Enter opens the workspace.
+- AC-2.2 ✔ `e2e/connect.spec.ts` > "retries a wrong URL without reloading". Copy: `Couldn't reach http://127.0.0.1:9. Is DynamoDB running and the URL correct?`
+- AC-2.3 ✔ `apps/server/src/routes/connections.int.test.ts` covers local, keys, profile, and default-chain auth against DynamoDB Local.
+- AC-2.4 ✔ `apps/server/src/routes/read-only.test.ts` > read-only probe is 403, then 204 after PATCH. `enableProbe: false` is 404.
+- AC-2.5 ✔ Profile list and connection responses are scanned for `secretAccessKey` and `sessionToken`. `apps/server/src/routes/connections.test.ts` captures logs during a keyed connect and asserts `secretAccessKey`, `sessionToken`, and `Authorization` are absent.
+- AC-2.6 ✔ `apps/server/src/store/profile-store.test.ts` checks mode `0600`, directory `0700`, and a unique IV.
+- AC-2.7 ✔ `apps/server/src/plugins/security.test.ts` covers CSRF, Origin, Host rebinding, and idle expiry.
+- AC-2.8 ✔ `e2e/connect.spec.ts` > "shows connection lost when the endpoint proxy closes". The chip shows latency, then the banner appears within 35s. Docker stays up.
+- AC-2.9 ✔ `e2e/connect.spec.ts` connect-screen axe tests in light and dark, plus "can complete the connect form from the keyboard". Screenshots: `docs/screenshots/phase-2/connect-*.png` and `workspace-*.png`.
+- AC-2.10 ✔ Security checklist below. PartiQL, import, and expression-interpolation rows are waived until those routes exist.
+
+## Security checklist (05 section 8, Phase 2)
+
+- [x] Secrets never in responses, logs, URLs, localStorage, or error messages. Log redaction test and response scans above. The browser keeps credentials in the request body only; profiles on disk are ciphertext.
+- [x] Cookie `ds_session` is httpOnly and SameSite=Strict. Mutations require `x-ds-csrf`. `apps/server/src/plugins/security.test.ts`.
+- [x] Origin and Host checks reject a foreign origin and a rebinding Host. The server binds `127.0.0.1` unless configured otherwise.
+- [x] Read-only is enforced by `assertWritable` on the server. The test probe returns `403 READ_ONLY`. PartiQL and import/clear routes do not exist yet, so those rows are waived until the routes ship. New mutating routes must use the same guard.
+- [x] Request bodies use Zod strict objects. The JSON body limit is 2MB (`413` → `LIMIT_EXCEEDED`). The 30/minute limit applies to `POST /connections/test`, `POST /connections`, and `POST /profiles/:id/connect`. Heartbeat is not limited.
+- [x] Waived: no expression or PartiQL builder in this phase, so user text is not interpolated into expressions.
+- [x] SSRF: the endpoint is user-chosen on a local server. Only `http:` and `https:` are accepted. `hostBindingWarning` logs when the bind host is not loopback.
+- [x] Profile file and key file are mode `0600`, directory `0700`. The key stays on disk. Threat model: one local user. Encryption stops a casual copy of `profiles.json` from revealing secrets; someone who can read both the key and the file can decrypt.
+- [x] `pnpm audit` result is recorded in the Phase 2 summary. The lockfile is committed.
 
 ## Pinned versions (registry check 2026-10-23, before install)
 
@@ -76,6 +98,8 @@ Phase 1 installed, from `pnpm list` on 2026-10-23:
 - tailwindcss 4.3.3, @tailwindcss/vite 4.3.3
 - zustand 5.0.16, react-router-dom 7.18.4
 - @fontsource/roboto 5.3.0, @fontsource/roboto-mono 5.3.0
+
+Phase 2 added on the web app: react-hook-form 7.90.0, @hookform/resolvers 6.0.0, zod 4.6.7 (already used by shared). Server dependencies from earlier in the phase: @fastify/cookie 11.1.3, @fastify/static 10.1.7, @fastify/rate-limit 11.2.1, @aws-sdk/credential-providers 3.1155.0.
 
 Monaco stays out until Phase 5.
 
@@ -122,7 +146,14 @@ Shipped a pnpm workspace (`apps/web`, `apps/server`, `packages/shared`) where `p
 
 The shell is MUI 9 plus Tailwind 4, with light, dark, and system themes. An inline script sets `data-color-scheme` from `mui-mode` before React, and a throttled Playwright reload never observed a light scheme when dark was stored. The workspace is mock data: app bar, filterable sidebar that collapses to a 72px rail, URL tabs, and a focus-trapped drawer that resizes from 420 to 720. Comfortable and Compact live in the overflow menu and set `--row-height` to 48px or 32px. `/` is a wordmark, theme toggle, and Connect button. `/__design` exists only in dev; the production build rejects the gallery string and measured 201611 bytes of JavaScript gzip, which is over the 150 KB attempt and under the 250 KB Phase 8 budget. Q-006, Q-007, Q-008, and Q-010 stay open on the defaults used here. Q-009 is resolved by the recorded bundle size. Next command, when you want it, is `/phase 2`.
 
+### Phase 2 — Backend and connection (2026-10-23)
+
+Pasting `localhost:8000` and pressing Enter opens a real workspace. Credentials stay in server memory. Remembered profiles are AES-256-GCM on disk (`0600`, unique IV). The session cookie is httpOnly and SameSite=Strict, mutations need `x-ds-csrf`, and a bad Origin or Host is rejected. Read-only is enforced on the server; the test probe exists only when `NODE_ENV=test` or `buildApp({ enableProbe: true })`. Idle sessions expire after 8 hours, a session holds at most 10 connections, and `client.destroy()` runs on delete, disconnect, and expiry. The app bar chip shows name, region, and latency. Heartbeat is every 30 seconds and pauses while the tab is hidden. Closing a TCP proxy in front of DynamoDB Local shows "Connection lost. Retry / Disconnect" within 35 seconds. The live sidebar has no mock tables. `pnpm verify` is green (116 unit tests, 3 integration tests). `pnpm audit` reports no known vulnerabilities. Q-007 is resolved. Q-011 through Q-019 stay open on the defaults used here. Do not start Phase 3 until asked.
+
+Before the connect UI was added, the production chunk was 201648 bytes gzip. Proportional contributors: react-dom about 32% (~65 KB), MUI about 30% (~60 KB), the react-router development build about 14% (~29 KB), MUI System about 5%, TanStack Query about 4%, Popper about 3%. App code was tiny. After `react-hook-form`, `@hookform/resolvers`, and direct `zod` on the web app, `pnpm verify` measured 255080 bytes gzip (`index-2vbAiA2f.js`, budget 256000). About 920 bytes of headroom remain. The react-router development build was left in place because the budget still passed.
+
 ## Metrics log
 
 - 2026-10-23 — Phase 0 web JavaScript gzip: 100585 bytes. Budget 256000.
 - 2026-10-23 — Phase 1 web JavaScript gzip: 201611 bytes (one chunk, `apps/web/dist/assets/index-*.js`). Attempted budget 153600. Phase 8 budget 256000. CSS gzip 21.19 KB is not in the JS number. Machine: local Darwin, Node 26.4.0. No 10k-row fps or API overhead yet.
+- 2026-10-23 — Phase 2, before connect UI: 201648 bytes gzip. After connect UI: 255080 bytes gzip (`apps/web/dist/assets/index-2vbAiA2f.js`). Budget 256000. CSS gzip 21.32 KB. `pnpm audit`: no known vulnerabilities.
