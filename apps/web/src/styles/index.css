@@ -1,0 +1,63 @@
+@layer theme, base, mui, components, utilities;
+
+@import "tailwindcss";
+
+@theme inline {
+  --color-primary: var(--ds-primary);
+  --color-primary-container: var(--ds-primary-container);
+  --color-on-primary: var(--ds-on-primary);
+  --color-bg: var(--ds-bg);
+  --color-surface: var(--ds-surface);
+  --color-surface-variant: var(--ds-surface-variant);
+  --color-outline: var(--ds-outline);
+  --color-text: var(--ds-text-primary);
+  --color-text-secondary: var(--ds-text-secondary);
+  --color-text-disabled: var(--ds-text-disabled);
+  --color-error: var(--ds-error);
+  --color-error-container: var(--ds-error-container);
+  --color-success: var(--ds-success);
+  --color-success-container: var(--ds-success-container);
+  --color-warning: var(--ds-warning);
+  --color-warning-container: var(--ds-warning-container);
+  --color-warning-text: var(--ds-warning-text);
+  --color-env-local: var(--ds-env-local);
+  --color-env-dev: var(--ds-env-dev);
+  --color-env-staging: var(--ds-env-staging);
+  --color-env-production: var(--ds-env-production);
+  --font-sans: "Roboto", system-ui, sans-serif;
+  --font-mono: "Roboto Mono", ui-monospace, monospace;
+}
+
+@import "./tokens.css";
+
+@layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--ds-bg);
+    color: var(--ds-text-primary);
+    font-family: var(--font-sans);
+  }
+}
+
+@layer components {
+  .connect-backdrop {
+    background:
+      radial-gradient(ellipse at top, var(--ds-primary-container), transparent 55%), var(--ds-bg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-property: opacity;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+  }
+}

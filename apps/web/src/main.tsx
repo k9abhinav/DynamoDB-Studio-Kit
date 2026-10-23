@@ -1,11 +1,11 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import "@fontsource/roboto/400.css";
+import "@fontsource/roboto/500.css";
+import "@fontsource/roboto/700.css";
+import "@fontsource/roboto-mono/400.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./app/App.js";
-
-const queryClient = new QueryClient({
-  defaultOptions: { queries: { retry: false } },
-});
+import "./styles/index.css";
 
 const root = document.getElementById("root");
 if (root === null) {
@@ -14,8 +14,6 @@ if (root === null) {
 
 createRoot(root).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
+    <App />
   </StrictMode>,
 );

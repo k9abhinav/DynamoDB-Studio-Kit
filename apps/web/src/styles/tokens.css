@@ -1,0 +1,46 @@
+:root {
+  color-scheme: light;
+  --ds-primary: #1967d2;
+  --ds-primary-container: #e8f0fe;
+  --ds-on-primary: #ffffff;
+  --ds-bg: #f8f9fa;
+  --ds-surface: #ffffff;
+  --ds-surface-variant: #f1f3f4;
+  --ds-outline: #dadce0;
+  --ds-text-primary: #202124;
+  --ds-text-secondary: #5f6368;
+  --ds-text-disabled: #727272;
+  --ds-error: #d93025;
+  --ds-error-container: #fce8e6;
+  --ds-success: #1e8e3e;
+  --ds-success-container: #e6f4ea;
+  --ds-warning: #f9ab00;
+  --ds-warning-container: #fef7e0;
+  --ds-warning-text: #8a5a00;
+  --ds-env-local: #5f6368;
+  --ds-env-dev: #1a73e8;
+  --ds-env-staging: #f9ab00;
+  --ds-env-production: #d93025;
+  --row-height: 48px;
+}
+
+[data-color-scheme="dark"] {
+  color-scheme: dark;
+  --ds-primary: #8ab4f8;
+  --ds-primary-container: #1f3a5f;
+  --ds-on-primary: #062e6f;
+  --ds-bg: #202124;
+  --ds-surface: #292a2d;
+  --ds-surface-variant: #35363a;
+  --ds-outline: #3c4043;
+  --ds-text-primary: #e8eaed;
+  --ds-text-secondary: #9aa0a6;
+  --ds-text-disabled: #9aa0a6;
+  --ds-error: #f28b82;
+  --ds-error-container: #5c2b29;
+  --ds-success: #81c995;
+  --ds-success-container: #16352a;
+  --ds-warning: #fdd663;
+  --ds-warning-container: #3e2e00;
+  --ds-warning-text: #f6c343;
+}

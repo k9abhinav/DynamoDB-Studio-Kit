@@ -1,11 +1,12 @@
 import { fileURLToPath } from "node:url";
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 const sharedSource = fileURLToPath(new URL("../../packages/shared/src/index.ts", import.meta.url));
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
       "@dynamo-studio/shared": sharedSource,
