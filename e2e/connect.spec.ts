@@ -28,6 +28,7 @@ test("retries a wrong URL without reloading", async ({ page }) => {
 
 test("can complete the connect form from the keyboard", async ({ page }) => {
   await page.goto("/");
+  await expect(page.getByRole("textbox", { name: "Endpoint" })).toBeFocused();
   await page.keyboard.type("localhost:8000");
   await expect(page.getByRole("radio", { name: "Local" })).toBeChecked();
   await page.keyboard.press("Tab");

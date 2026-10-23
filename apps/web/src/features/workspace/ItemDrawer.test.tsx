@@ -6,7 +6,7 @@ import { renderAt } from "../../test/render.js";
 describe("ItemDrawer", () => {
   it("resizes with the keyboard and returns focus when closed", async () => {
     const user = userEvent.setup();
-    renderAt("/c/local/t/users/items");
+    await renderAt("/c/local/t/users/items");
     const open = screen.getByRole("button", { name: "Open details" });
     await user.click(open);
     const handle = screen.getByRole("separator", { name: "Resize item details" });

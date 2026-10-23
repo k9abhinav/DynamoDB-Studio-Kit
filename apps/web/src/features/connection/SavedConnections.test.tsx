@@ -86,7 +86,7 @@ describe("SavedConnections", () => {
       );
     });
 
-    renderAt("/", { api: "custom" });
+    await renderAt("/", { api: "custom" });
     expect(await screen.findByRole("heading", { name: "Recent" })).toBeInTheDocument();
     expect(screen.getByText("localhost:8000")).toBeInTheDocument();
     expect(screen.getByText(/minute/)).toBeInTheDocument();
@@ -176,7 +176,7 @@ describe("SavedConnections", () => {
         ),
       );
     });
-    renderAt("/", { api: "custom" });
+    await renderAt("/", { api: "custom" });
     await user.click(await screen.findByRole("button", { name: "Actions for Local dev" }));
     await user.click(screen.getByRole("menuitem", { name: "Connect" }));
     expect(await screen.findByRole("heading", { name: "Select a table" })).toBeInTheDocument();

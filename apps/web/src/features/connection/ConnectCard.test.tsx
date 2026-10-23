@@ -39,7 +39,7 @@ describe("ConnectCard", () => {
         404,
       );
     });
-    renderAt("/", { api: "custom" });
+    await renderAt("/", { api: "custom" });
     const endpoint = screen.getByRole("textbox", { name: "Endpoint" });
     await user.type(endpoint, "localhost:8000");
     await waitFor(() => {
@@ -94,7 +94,7 @@ describe("ConnectCard", () => {
         404,
       );
     });
-    renderAt("/", { api: "custom" });
+    await renderAt("/", { api: "custom" });
     const endpoint = screen.getByRole("textbox", { name: "Endpoint" });
     await user.type(endpoint, "aws dynamodb list-tables");
     expect(
@@ -127,7 +127,7 @@ describe("ConnectCard", () => {
       }
       return json({ csrfToken: "csrf-1", version: "0.0.0" });
     });
-    renderAt("/", { api: "custom" });
+    await renderAt("/", { api: "custom" });
     await user.type(
       screen.getByRole("textbox", { name: "Endpoint" }),
       "dynamodb.us-west-2.amazonaws.com",

@@ -1,15 +1,40 @@
+import { lazy, Suspense } from "react";
 import { createBrowserRouter, Outlet, type RouteObject } from "react-router-dom";
 import { AboutDialog } from "../components/AboutDialog.js";
 import { CommandPalette } from "../components/CommandPalette.js";
 import { ShortcutHelpDialog } from "../components/ShortcutHelpDialog.js";
-import { ConnectScreen } from "../features/connection/ConnectScreen.js";
 import { NotFound } from "../features/connection/NotFound.js";
-import { Workspace } from "../features/workspace/Workspace.js";
+
+const ConnectScreen = lazy(() =>
+  import("../features/connection/ConnectScreen.js").then((module) => ({
+    default: module.ConnectScreen,
+  })),
+);
+
+const Workspace = lazy(() =>
+  import("../features/workspace/Workspace.js").then((module) => ({
+    default: module.Workspace,
+  })),
+);
+
+function RouteFallback() {
+  return (
+    <div
+      className="flex min-h-dvh items-center justify-center text-text-secondary"
+      role="status"
+      aria-label="Loading"
+    >
+      Loading
+    </div>
+  );
+}
 
 function ShellLayout() {
   return (
     <>
-      <Outlet />
+      <Suspense fallback={<RouteFallback />}>
+        <Outlet />
+      </Suspense>
       <CommandPalette />
       <ShortcutHelpDialog />
       <AboutDialog />
@@ -25,12 +50,14 @@ export function appRoutes(): RouteObject[] {
     { path: "*", element: <NotFound /> },
   ];
   if (import.meta.env.DEV) {
+    const DesignGallery = lazy(() =>
+      import("../features/design/DesignGallery.js").then((module) => ({
+        default: module.DesignGallery,
+      })),
+    );
     children.push({
       path: "/__design",
-      lazy: () =>
-        import("../features/design/DesignGallery.js").then((module) => ({
-          Component: module.DesignGallery,
-        })),
+      element: <DesignGallery />,
     });
   }
   return [{ element: <ShellLayout />, children }];
