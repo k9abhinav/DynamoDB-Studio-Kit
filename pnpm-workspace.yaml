@@ -1,0 +1,12 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# This release was published the day it was pinned. pnpm's release-age gate would
+# otherwise refuse it. The version was confirmed on the registry before install.
+allowBuilds:
+  esbuild: true
+  msw: true
+
+minimumReleaseAgeExclude:
+  - "@aws-sdk/client-dynamodb@3.1156.0"

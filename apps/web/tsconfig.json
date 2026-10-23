@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "dist",
+    "rootDir": ".",
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "jsx": "react-jsx",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["vite/client"],
+    "paths": {
+      "@dynamo-studio/shared": ["../../packages/shared/src/index.ts"]
+    }
+  },
+  "references": [{ "path": "../../packages/shared" }],
+  "include": ["src", "vite.config.ts"]
+}

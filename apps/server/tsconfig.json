@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "noEmit": false,
+    "types": ["node"],
+    "paths": {
+      "@dynamo-studio/shared": ["../../packages/shared/src/index.ts"]
+    }
+  },
+  "references": [{ "path": "../../packages/shared" }],
+  "include": ["src"]
+}
