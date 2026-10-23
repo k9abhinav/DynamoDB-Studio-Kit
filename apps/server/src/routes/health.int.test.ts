@@ -1,0 +1,12 @@
+import { describe, expect, it } from "vitest";
+import { buildApp } from "../app.js";
+
+describe("health integration", () => {
+  it("answers GET /api/v1/health", async () => {
+    const app = await buildApp();
+    const response = await app.inject({ method: "GET", url: "/api/v1/health" });
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ ok: true, version: "0.0.0" });
+    await app.close();
+  });
+});
