@@ -7,7 +7,7 @@ The spec edits in section 8 are already applied. Phase 0 has not started. The ne
 
 DynamoDB Studio is a local, single-user client for backend developers, QA, and analysts who need to inspect and fix DynamoDB Local or AWS tables without the AWS console. The hero path is: paste an endpoint, press Connect, see tables, open an item.
 
-"Beautiful, simple, minimal, Google-like" means quiet chrome and loud data: Roboto, Google Blue (`#1A73E8`) as the only accent, white or near-black surfaces, 1px borders, pill primary buttons, sentence case, and motion only as feedback. Material UI owns interactive components and accessibility. Tailwind owns layout and spacing. One primary action per screen. Light, dark, and system themes are both designed. Destructive actions are confirmed; production and large deletes require typing a confirmation; read-only is enforced on the server.
+"Beautiful, simple, minimal, Google-like" means quiet chrome and loud data: Roboto, Google Blue as the only accent (`#1967D2` for text and buttons so it stays AA on `bg` and `primary-container`; the Dev dot stays `#1A73E8`), white or near-black surfaces, 1px borders, pill primary buttons, sentence case, and motion only as feedback. Material UI owns interactive components and accessibility. Tailwind owns layout and spacing. One primary action per screen. Light, dark, and system themes are both designed. Destructive actions are confirmed; production and large deletes require typing a confirmation; read-only is enforced on the server.
 
 ## 2. Architecture confirmation
 

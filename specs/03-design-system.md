@@ -18,7 +18,7 @@ calm, white, precise, friendly. Material Design 3 *spirit*, implemented with MUI
 ### 2.1 Color (light)
 | Token | Hex | Use |
 |---|---|---|
-| `primary` | `#1A73E8` | primary buttons, links, focus ring, selected |
+| `primary` | `#1967D2` | primary buttons, links, focus ring, selected. `#1A73E8` is 4.27:1 on `bg` and 3.93:1 on `primary-container`, so Phase 1 uses Google Blue 700 |
 | `primary-container` | `#E8F0FE` | selected rows, chips, hover tint |
 | `on-primary` | `#FFFFFF` | |
 | `bg` | `#F8F9FA` | app background |
@@ -27,14 +27,14 @@ calm, white, precise, friendly. Material Design 3 *spirit*, implemented with MUI
 | `outline` | `#DADCE0` | borders, dividers |
 | `text-primary` | `#202124` | |
 | `text-secondary` | `#5F6368` | |
-| `text-disabled` | `#9AA0A6` | |
+| `text-disabled` | `#727272` | AA on `bg` and `surface`. `#9AA0A6` is 2.5:1, so Phase 1 replaced it |
 | `error` | `#D93025` | errors, destructive |
 | `error-container` | `#FCE8E6` | |
 | `success` | `#1E8E3E` | |
 | `success-container` | `#E6F4EA` | |
 | `warning` | `#F9AB00` | fill and the Staging dot. Text on this fill uses `#202124` |
 | `warning-container` | `#FEF7E0` | |
-| `warning-text` | Phase 1 (AA) | body text on `bg` and `surface`. Do not use `#F9AB00` as body text |
+| `warning-text` | `#8A5A00` | body text on `bg` and `surface`. Do not use `#F9AB00` as body text |
 
 ### 2.2 Color (dark)
 | Token | Hex |
@@ -49,17 +49,17 @@ calm, white, precise, friendly. Material Design 3 *spirit*, implemented with MUI
 | `text-primary` | `#E8EAED` |
 | `text-secondary` | `#9AA0A6` |
 | `error` | `#F28B82` |
-| `error-container` | Phase 1 (AA) |
+| `error-container` | `#5C2B29` |
 | `success` | `#81C995` |
-| `success-container` | Phase 1 (AA) |
+| `success-container` | `#16352A` |
 | `warning` | `#FDD663` |
-| `warning-container` | Phase 1 (AA) |
-| `warning-text` | Phase 1 (AA) |
-| `text-disabled` | Phase 1 (AA) |
+| `warning-container` | `#3E2E00` |
+| `warning-text` | `#F6C343` |
+| `text-disabled` | `#9AA0A6` |
 
-`#F9AB00` and `#FDD663` are fills and dots. Body text on `bg` or `surface` uses `warning-text`. Phase 1 chooses every "Phase 1 (AA)" hex with the contrast test, then writes the hex back into this table.
+`#F9AB00` and `#FDD663` are fills and dots. Body text on `bg` or `surface` uses `warning-text`. Phase 1 chose the container, `warning-text`, and dark `text-disabled` hex values with the contrast test. Light `text-disabled` moved from `#9AA0A6` to `#727272` because `#9AA0A6` is 2.5:1 on white.
 
-Verify contrast for every text/background pair >= 4.5:1 (body) and >= 3:1 (large text, UI boundaries). Pairs that must pass: `text-primary` and `text-secondary` on `bg`, `surface`, and `surface-variant`; `on-primary` on `primary`; `warning-text` on `bg` and `surface`; text placed on `error-container`, `success-container`, and `warning-container`.
+Verify contrast for every text/background pair >= 4.5:1 (body) and >= 3:1 (large text, UI boundaries). Pairs that must pass: `text-primary` and `text-secondary` on `bg`, `surface`, and `surface-variant`; `primary` on `bg`, `surface`, `surface-variant`, and `primary-container`; `on-primary` on `primary`; `warning-text` on `bg` and `surface`; `text-disabled` on `bg` and `surface`; text placed on `error-container`, `success-container`, and `warning-container`.
 
 ### 2.3 Environment tag colors (dots/chips only)
 Local `#5F6368` (gray) · Dev `#1A73E8` (blue) · Staging `#F9AB00` (amber) · **Production `#D93025` (red)**.

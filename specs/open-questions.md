@@ -12,6 +12,11 @@ Format: `- [Q-001] [BLOCKING?] question. Default chosen: ... (phase, date)`
 - [Q-003] `exactOptionalPropertyTypes` is "where practical". Default chosen: on in `tsconfig.base.json`. Turn it off in one package only if Zod inference cannot be fixed, and log that. (Phase 0, 2026-10-23)
 - [Q-004] The approved dependency list is larger than Phase 0. Default chosen: install only what this phase imports. MUI, Tailwind, Monaco, Zustand, and React Router wait until Phase 1. `pnpm dev` is a small Node process spawner, so `concurrently` is not added. (Phase 0, 2026-10-23)
 - [Q-005] Hooks should typecheck staged files, but project references cannot typecheck one file alone. Default chosen: lint-staged runs ESLint and Prettier on staged files; the pre-commit hook then runs workspace `pnpm typecheck`. (Phase 0, 2026-10-23)
+- [Q-006] `/__design` must be axe-tested, and the phase also says it is not in the production build. Default chosen: register the route only when `import.meta.env.DEV` is true. Playwright hits it through `pnpm dev`. The production bundle omits the gallery module. (Phase 1, 2026-10-23)
+- [Q-007] `/` is a connect placeholder, while section 4.1 is the full connect card and real API calls are Phase 2. Default chosen: `/` shows the wordmark, theme toggle, and one Connect button that opens the mock workspace at `/c/local/t/users/items`. The full connect form waits for Phase 2. (Phase 1, 2026-10-23)
+- [Q-008] Theme mode is both a Zustand field and the `mui-mode` key the bootstrap script reads. Default chosen: mode is stored only under `mui-mode` (`light`, `dark`, or `system`). Density, sidebar collapsed, and drawer width use a separate `dynamo-studio-ui` key. Auto-collapse below 1100px forces the rail and does not overwrite the saved preference. (Phase 1, 2026-10-23)
+- [Q-010] About needs a docs link, and this repo has no docs site or GitHub origin. Default chosen: the dialog shows "DynamoDB Studio" and version `0.0.0`, with no external URL. The commit hash waits for Phase 8. (Phase 1, 2026-10-23)
 
 ## Resolved
-(none yet)
+
+- [Q-009] AC-1.7 capped initial JS at 150 KB gzip. Resolved: the production bundle is 201611 bytes gzip with MUI 9, path imports, and one outlined icon style. AC-1.7 records that size. The Phase 8 budget stays 250 KB. (Phase 1, 2026-10-23)
