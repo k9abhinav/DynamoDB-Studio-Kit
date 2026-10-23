@@ -1,10 +1,11 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
 import { isSerious } from "./axe.js";
+import { openWorkspace } from "./session.js";
 
 test("keyboard can use the palette, sidebar, drawer, and shortcuts", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/c/local/t/users/items");
+  await openWorkspace(page, "/t/users/items");
   const search = page.getByRole("button", { name: /Search tables/ });
   await search.focus();
   await page.keyboard.press("Control+k");
@@ -15,7 +16,7 @@ test("keyboard can use the palette, sidebar, drawer, and shortcuts", async ({ pa
 
   await page.getByRole("searchbox", { name: "Filter tables" }).focus();
   await page.keyboard.press("Tab");
-  await expect(page.getByRole("link", { name: "users" })).toBeFocused();
+  await expect(page.getByRole("button", { name: "New table" })).toBeFocused();
 
   const open = page.getByRole("button", { name: "Open details" });
   await open.focus();
@@ -94,7 +95,7 @@ async function shootShell(page: Page, scheme: "light" | "dark") {
   }, scheme);
   await page.emulateMedia({ colorScheme: scheme });
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/c/local/t/users/items");
+  await openWorkspace(page, "/t/users/items");
   await expect(page.getByRole("heading", { name: "users" })).toBeVisible();
   await page.screenshot({ path: `docs/screenshots/phase-1/shell-${scheme}.png` });
   await expectNoSeriousAxe(page);
