@@ -37,7 +37,7 @@ Listing tables (Phase 3). Everything after.
 ## 4. Tasks
 - [x] T2.1 Shared Zod schemas for session, auth, connection, profile, error (`packages/shared`) + tests
 - [x] T2.2 Server security plugin (origin/host/CSRF/session) + tests
-- [ ] T2.3 ErrorMapper (AWS + network -> codes) with table-driven tests
+- [x] T2.3 ErrorMapper (AWS + network -> codes) with table-driven tests
 - [ ] T2.4 Endpoint normalizer + loopback detection + tests
 - [ ] T2.5 ConnectionManager + credential providers + routes + integration tests (DynamoDB Local)
 - [ ] T2.6 ProfileStore (encryption, atomic write, perms) + routes + tests
