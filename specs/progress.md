@@ -25,7 +25,7 @@
 - [x] T2.3 ErrorMapper
 - [x] T2.4 Endpoint normalizer
 - [x] T2.5 ConnectionManager and routes
-- [ ] T2.6 ProfileStore
+- [x] T2.6 ProfileStore
 - [ ] T2.7 Read-only guard
 - [ ] T2.8 Web API client
 - [x] T2.9 URL parsing util

@@ -1,3 +1,5 @@
+import { homedir } from "node:os";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildApp } from "./app.js";
 import { hostBindingWarning, loadConfig } from "./config.js";
@@ -11,6 +13,7 @@ const allowedOrigins = config.allowedOrigins
 const app = await buildApp({
   logger: { level: config.logLevel },
   allowedHosts: [config.host],
+  studioHome: config.dynamoStudioHome ?? join(homedir(), ".dynamo-studio"),
   ...(allowedOrigins === undefined ? {} : { allowedOrigins }),
   ...(process.env.NODE_ENV === "production"
     ? { staticRoot: fileURLToPath(new URL("../../web/dist", import.meta.url)) }

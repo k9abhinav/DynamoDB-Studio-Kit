@@ -39,9 +39,23 @@ export const connectionRoutes: FastifyPluginCallback = (app, _options, done) => 
 
   app.post("/api/v1/connections", connectLimit, async (request, reply) => {
     const body = CreateConnectionBody.parse(request.body);
-    const created = CreateConnectionResponse.parse(
-      await app.connections.create(sessionId(request), body),
-    );
+    const id = sessionId(request);
+    const created = CreateConnectionResponse.parse(await app.connections.create(id, body));
+    if (body.remember) {
+      try {
+        await app.profiles.remember({
+          name: created.summary.name,
+          endpoint: created.summary.endpoint,
+          region: created.summary.region,
+          env: created.summary.env,
+          readOnly: created.summary.readOnly,
+          auth: body.auth,
+        });
+      } catch (error) {
+        app.connections.remove(id, created.connectionId);
+        throw error;
+      }
+    }
     return reply.code(201).send(created);
   });
 

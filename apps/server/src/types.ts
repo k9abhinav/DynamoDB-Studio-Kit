@@ -1,5 +1,6 @@
 import type { Session } from "./session-store.js";
 import type { ConnectionManager } from "./services/connection-manager.js";
+import type { ProfileStore } from "./store/profile-store.js";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -8,6 +9,7 @@ declare module "fastify" {
 
   interface FastifyInstance {
     connections: ConnectionManager;
+    profiles: ProfileStore;
   }
 }
 
