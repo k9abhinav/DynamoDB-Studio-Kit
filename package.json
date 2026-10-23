@@ -16,7 +16,7 @@
     "test": "vitest run --config vitest.config.ts",
     "test:int": "vitest run --config vitest.integration.config.ts",
     "test:e2e": "playwright test",
-    "build": "pnpm --filter @dynamo-studio/shared build && pnpm --filter @dynamo-studio/server build && pnpm --filter @dynamo-studio/web build && tsx scripts/check-design-bundle.ts && tsx scripts/check-bundle-size.ts",
+    "build": "pnpm --filter @dynamo-studio/shared build && pnpm --filter @dynamo-studio/server build && pnpm --filter @dynamo-studio/web build && tsx scripts/check-design-bundle.ts && tsx scripts/check-bundle.ts && tsx scripts/check-bundle-size.ts",
     "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm test:int && pnpm build",
     "prepare": "husky"
   },
