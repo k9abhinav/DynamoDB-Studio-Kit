@@ -132,6 +132,9 @@ Monaco stays out until Phase 5.
   - Light `text-disabled` is `#727272`. Dark containers are `#5C2B29`, `#16352A`, and `#3E2E00`. Dark `warning-text` is `#F6C343`.
   - Density is Comfortable (48px) or Compact (32px) in the overflow menu and sets `--row-height`.
   - `/__design` is registered only when `import.meta.env.DEV` is true. `scripts/check-design-bundle.ts` fails the production build if `/__design`, `Design gallery`, or `DesignGallery` appears in `apps/web/dist`.
+- 2026-10-23 — Bundle hygiene before Phase 3. This is not a phase.
+  - `react-router@7.18.4` publishes an export map that points every condition at `dist/development` and has no `production` condition. `vite build` already sets `NODE_ENV=production` and Vite's resolve conditions to `production`, which cannot select a condition the package does not offer. Production builds alias `react-router` and `react-router/dom` to `dist/production`.
+  - Connect, workspace, and dev-only `/__design` are separate chunks. `scripts/check-bundle.ts` (230 KB) and `scripts/check-bundle-size.ts` (250 KB) both measure the entry script linked from `index.html`. Lazy chunks are not part of that number.
 
 ## Constitution changes
 (none)
@@ -157,3 +160,4 @@ Before the connect UI was added, the production chunk was 201648 bytes gzip. Pro
 - 2026-10-23 — Phase 0 web JavaScript gzip: 100585 bytes. Budget 256000.
 - 2026-10-23 — Phase 1 web JavaScript gzip: 201611 bytes (one chunk, `apps/web/dist/assets/index-*.js`). Attempted budget 153600. Phase 8 budget 256000. CSS gzip 21.19 KB is not in the JS number. Machine: local Darwin, Node 26.4.0. No 10k-row fps or API overhead yet.
 - 2026-10-23 — Phase 2, before connect UI: 201648 bytes gzip. After connect UI: 255080 bytes gzip (`apps/web/dist/assets/index-2vbAiA2f.js`). Budget 256000. CSS gzip 21.32 KB. `pnpm audit`: no known vulnerabilities.
+- 2026-10-23 — Bundle hygiene, before Phase 3. Initial JS gzip: 179897 bytes (`apps/web/dist/assets/index-CmvQX7hT.js`). Early budget 235520. Phase 8 budget 256000. Lazy chunks, not in the initial number: ConnectScreen 24575 bytes (`ConnectScreen-Bsad9utP.js`), Workspace 11540 bytes (`Workspace-DW0JNnCI.js`), shared EnvChip chunk 44317 bytes (`EnvChip-Cmx54p1T.js`). CSS gzip 21228 bytes. `/__design` is absent from the production dist. Production resolves react-router to `dist/production`.
