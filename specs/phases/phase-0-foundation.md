@@ -28,15 +28,15 @@ Any UI beyond a placeholder; any DynamoDB API route except health.
 - **FR-0.5** Git hooks block a non-conventional commit message and unlinted staged code.
 
 ## 4. Tasks
-- [ ] T0.1 Workspace skeleton, tsconfig base, package manifests, scripts. Before install, confirm every pinned version against the npm registry and record the exact versions in `specs/progress.md`.
-- [ ] T0.2 Lint, format, hooks
-- [ ] T0.3 `packages/shared` + `HealthResponse` schema + tests
-- [ ] T0.4 Server: Fastify app factory (`buildApp`), config loader (Zod-validated env), logger with redaction, `/api/v1/health`, tests
-- [ ] T0.5 Web: Vite + React 19 + providers stub, proxy, health fetch via TanStack Query, test with MSW
-- [ ] T0.6 docker-compose + seed script + integration test harness (global setup waits for DynamoDB Local)
-- [ ] T0.7 Playwright smoke test (page loads, shows "DynamoDB Studio")
-- [ ] T0.8 CI workflow; badge in README
-- [ ] T0.9 Update `specs/progress.md` and write the Phase 0 summary
+- [x] T0.1 Workspace skeleton, tsconfig base, package manifests, scripts. Before install, confirm every pinned version against the npm registry and record the exact versions in `specs/progress.md`.
+- [x] T0.2 Lint, format, hooks
+- [x] T0.3 `packages/shared` + `HealthResponse` schema + tests
+- [x] T0.4 Server: Fastify app factory (`buildApp`), config loader (Zod-validated env), logger with redaction, `/api/v1/health`, tests
+- [x] T0.5 Web: Vite + React 19 + providers stub, proxy, health fetch via TanStack Query, test with MSW
+- [x] T0.6 docker-compose + seed script + integration test harness (global setup waits for DynamoDB Local)
+- [x] T0.7 Playwright smoke test (page loads, shows "DynamoDB Studio")
+- [x] T0.8 CI workflow; badge in README
+- [x] T0.9 Update `specs/progress.md` and write the Phase 0 summary
 
 ## 5. Acceptance criteria
 - **AC-0.1** Fresh clone: `pnpm install && pnpm verify` passes.
