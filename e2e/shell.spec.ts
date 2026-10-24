@@ -18,7 +18,12 @@ test("keyboard can use the palette, sidebar, drawer, and shortcuts", async ({ pa
   await page.keyboard.press("Tab");
   await expect(page.getByRole("listbox", { name: "Table names" })).toBeFocused();
 
-  const open = page.getByRole("button", { name: "Open details" });
+  const open = page
+    .getByRole("grid", { name: "Items" })
+    .getByRole("row")
+    .nth(1)
+    .getByRole("gridcell")
+    .nth(1);
   await open.focus();
   await page.keyboard.press("Enter");
   await expect(page.getByRole("dialog", { name: "Item details" })).toBeVisible();
@@ -100,7 +105,13 @@ async function shootShell(page: Page, scheme: "light" | "dark") {
   await page.screenshot({ path: `docs/screenshots/phase-1/shell-${scheme}.png` });
   await expectNoSeriousAxe(page);
 
-  await page.getByRole("button", { name: "Open details" }).click();
+  await page
+    .getByRole("grid", { name: "Items" })
+    .getByRole("row")
+    .nth(1)
+    .getByRole("gridcell")
+    .nth(1)
+    .click();
   await expect(page.getByRole("dialog", { name: "Item details" })).toBeVisible();
   await page.screenshot({ path: `docs/screenshots/phase-1/shell-drawer-${scheme}.png` });
 
