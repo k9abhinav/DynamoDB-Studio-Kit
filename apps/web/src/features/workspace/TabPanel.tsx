@@ -2,6 +2,7 @@ import InboxOutlined from "@mui/icons-material/InboxOutlined";
 import Button from "@mui/material/Button";
 import { useParams } from "react-router-dom";
 import { EmptyState } from "../../components/EmptyState.js";
+import { IndexList } from "../tables/IndexList.js";
 import { TableOverview } from "../tables/TableOverview.js";
 import { TablePanel } from "../tables/TablePanel.js";
 import { parseTableTab } from "../../lib/tables.js";
@@ -36,15 +37,29 @@ export function TabPanel() {
     return <TablePanel>{(description) => <TableOverview description={description} />}</TablePanel>;
   }
 
-  const copy =
-    tab === "partiql"
-      ? "PartiQL arrives in a later version."
-      : "Indexes arrive when the table is loaded.";
+  if (tab === "indexes") {
+    return (
+      <TablePanel>
+        {(description) => (
+          <div className="grid gap-4 p-4 md:grid-cols-2">
+            <section className="rounded-xl border border-outline bg-surface p-4">
+              <h2 className="mb-3 text-sm font-medium">Global secondary indexes</h2>
+              <IndexList indexes={description.gsis} empty="No global secondary indexes." />
+            </section>
+            <section className="rounded-xl border border-outline bg-surface p-4">
+              <h2 className="mb-3 text-sm font-medium">Local secondary indexes</h2>
+              <IndexList indexes={description.lsis} empty="No local secondary indexes." />
+            </section>
+          </div>
+        )}
+      </TablePanel>
+    );
+  }
 
   return (
     <EmptyState
       icon={<InboxOutlined className="text-[48px]" />}
-      title={copy}
+      title="PartiQL arrives in a later version."
       help="This is a mock workspace."
     />
   );

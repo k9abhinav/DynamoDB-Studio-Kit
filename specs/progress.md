@@ -43,7 +43,7 @@
 - [x] T3.4 Sidebar
 - [x] T3.5 Tabs
 - [x] T3.6 Overview
-- [ ] T3.7 Indexes tab
+- [x] T3.7 Indexes tab
 - [ ] T3.8 Status polling
 - [ ] T3.9 Playwright
 - [ ] T3.10 Progress summary
