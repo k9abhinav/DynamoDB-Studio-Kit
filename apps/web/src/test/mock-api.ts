@@ -27,6 +27,14 @@ export function mockStudioApi(mode: MockApiMode = "idle"): void {
     if (url.includes("/api/v1/connections/") && method === "DELETE") {
       return Promise.resolve(new Response(null, { status: 204 }));
     }
+    if (method === "GET" && /\/tables\/[^/?]+/.test(url)) {
+      return Promise.resolve(
+        json(errorBody("NOT_FOUND", "That table doesn't exist (anymore)."), 404),
+      );
+    }
+    if (method === "GET" && url.includes("/tables")) {
+      return Promise.resolve(json({ tables: [] }));
+    }
     if (url.includes("/api/v1/connections/") && method === "GET") {
       if (mode === "missing" || mode === "idle") {
         return Promise.resolve(

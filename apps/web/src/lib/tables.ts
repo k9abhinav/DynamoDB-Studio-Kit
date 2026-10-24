@@ -34,6 +34,29 @@ export function filterTables(tables: readonly MockTable[], query: string): MockT
   return tables.filter((table) => table.name.toLowerCase().includes(needle));
 }
 
+export function tableOptionId(name: string): string {
+  return `table-option-${encodeURIComponent(name)}`;
+}
+
+export function splitTableMatch(
+  name: string,
+  query: string,
+): { before: string; match: string; after: string } {
+  const needle = query.trim();
+  if (needle.length === 0) {
+    return { before: name, match: "", after: "" };
+  }
+  const index = name.toLowerCase().indexOf(needle.toLowerCase());
+  if (index < 0) {
+    return { before: name, match: "", after: "" };
+  }
+  return {
+    before: name.slice(0, index),
+    match: name.slice(index, index + needle.length),
+    after: name.slice(index + needle.length),
+  };
+}
+
 export function filterLabels(labels: readonly string[], query: string): string[] {
   const needle = query.trim().toLowerCase();
   if (needle.length === 0) {

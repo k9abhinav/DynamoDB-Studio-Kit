@@ -39,8 +39,8 @@
 ## Phase 3 tasks
 - [x] T3.1 Shared schemas
 - [x] T3.2 Server list and describe
-- [ ] T3.3 Web query hooks
-- [ ] T3.4 Sidebar
+- [x] T3.3 Web query hooks
+- [x] T3.4 Sidebar
 - [ ] T3.5 Tabs
 - [ ] T3.6 Overview
 - [ ] T3.7 Indexes tab
