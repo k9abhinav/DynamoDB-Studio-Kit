@@ -46,7 +46,9 @@ describe("ConnectCard", () => {
       expect(screen.getByRole("radio", { name: "Local" })).toBeChecked();
     });
     await user.keyboard("{Enter}");
-    expect(await screen.findByRole("heading", { name: "Select a table" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "Pick a table to get started" }),
+    ).toBeInTheDocument();
     expect(bodies[0]).toMatchObject({
       endpoint: "http://localhost:8000",
       auth: { type: "local" },
@@ -116,7 +118,9 @@ describe("ConnectCard", () => {
     await user.click(screen.getByRole("button", { name: "Test" }));
     expect(await screen.findByText("Connected in 12 ms")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Connect" }));
-    expect(await screen.findByRole("heading", { name: "Select a table" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "Pick a table to get started" }),
+    ).toBeInTheDocument();
   });
 
   it("infers a region and reveals more options", async () => {

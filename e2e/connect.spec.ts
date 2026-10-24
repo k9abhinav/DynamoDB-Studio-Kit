@@ -9,7 +9,7 @@ test("reaches the workspace from a pasted URL with Enter", async ({ page }) => {
   await expect(page.getByRole("textbox", { name: "Endpoint" })).toBeFocused();
   await page.keyboard.type("localhost:8000");
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("heading", { name: "Select a table" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Pick a table to get started" })).toBeVisible();
   await expect(page.getByText(/\d+ms/)).toBeVisible();
 });
 
@@ -23,7 +23,7 @@ test("retries a wrong URL without reloading", async ({ page }) => {
   ).toBeVisible();
   await endpoint.fill("localhost:8000");
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("heading", { name: "Select a table" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Pick a table to get started" })).toBeVisible();
 });
 
 test("can complete the connect form from the keyboard", async ({ page }) => {
@@ -40,7 +40,7 @@ test("can complete the connect form from the keyboard", async ({ page }) => {
   await page.keyboard.press("Tab");
   await expect(page.getByRole("button", { name: "Connect" })).toBeFocused();
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("heading", { name: "Select a table" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Pick a table to get started" })).toBeVisible();
 });
 
 for (const scheme of ["light", "dark"] as const) {
@@ -82,6 +82,6 @@ async function shootConnect(page: Page, scheme: "light" | "dark") {
 
   await page.getByRole("textbox", { name: "Endpoint" }).fill("localhost:8000");
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("heading", { name: "Select a table" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Pick a table to get started" })).toBeVisible();
   await page.screenshot({ path: `docs/screenshots/phase-2/workspace-${scheme}.png` });
 }

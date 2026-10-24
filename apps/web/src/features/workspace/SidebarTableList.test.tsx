@@ -4,6 +4,7 @@ import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import { AppProviders } from "../../app/providers.js";
 import { MOCK_TABLES, tableOptionId } from "../../lib/tables.js";
+import { useUiStore } from "../../stores/ui.js";
 import { SidebarTableList } from "./SidebarTableList.js";
 
 function renderSidebar(path = "/c/local/t/orders/items", tables = MOCK_TABLES) {
@@ -35,6 +36,14 @@ describe("SidebarTableList", () => {
     expect(screen.queryByRole("option", { name: "users" })).not.toBeInTheDocument();
     await user.keyboard("{Enter}");
     expect(router.state.location.pathname).toBe("/c/local/t/orders/items");
+  });
+
+  it("reopens a table on the section you left", async () => {
+    const user = userEvent.setup();
+    useUiStore.getState().rememberTab("orders", "overview");
+    const router = renderSidebar("/c/local/t/users/items");
+    await user.click(screen.getByRole("option", { name: "orders" }));
+    expect(router.state.location.pathname).toBe("/c/local/t/orders/overview");
   });
 
   it("moves the active option with the arrow keys and clears on escape", async () => {

@@ -179,7 +179,9 @@ describe("SavedConnections", () => {
     await renderAt("/", { api: "custom" });
     await user.click(await screen.findByRole("button", { name: "Actions for Local dev" }));
     await user.click(screen.getByRole("menuitem", { name: "Connect" }));
-    expect(await screen.findByRole("heading", { name: "Select a table" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "Pick a table to get started" }),
+    ).toBeInTheDocument();
   });
 });
 

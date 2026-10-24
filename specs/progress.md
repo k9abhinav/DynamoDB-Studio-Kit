@@ -41,7 +41,7 @@
 - [x] T3.2 Server list and describe
 - [x] T3.3 Web query hooks
 - [x] T3.4 Sidebar
-- [ ] T3.5 Tabs
+- [x] T3.5 Tabs
 - [ ] T3.6 Overview
 - [ ] T3.7 Indexes tab
 - [ ] T3.8 Status polling

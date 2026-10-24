@@ -3,12 +3,16 @@ import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import type { ConnectionHeartbeatBody } from "@dynamo-studio/shared";
 import { useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { EmptyState } from "../../components/EmptyState.js";
 import { api, ApiError } from "../../lib/api.js";
 import { stopTableLoads } from "../tables/use-tables.js";
 import { parseTableTab } from "../../lib/tables.js";
+import { useOverlayStore } from "../../stores/overlay.js";
+import { MAX_OPEN_TABLES, useUiStore } from "../../stores/ui.js";
 import { ItemDrawer } from "./ItemDrawer.js";
+import { OpenTableTabs } from "./OpenTableTabs.js";
 import { SidebarTableList } from "./SidebarTableList.js";
 import { StudioAppBar, type AppBarConnection } from "./AppBar.js";
 import { TableTabs } from "./TableTabs.js";
@@ -19,7 +23,28 @@ export function Workspace() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { connId = "", table, tab } = useParams();
+  const openTables = useUiStore((state) => state.openTables);
   const query = useLiveConnection(connId);
+  const blocked =
+    table !== undefined && !openTables.includes(table) && openTables.length >= MAX_OPEN_TABLES;
+
+  useEffect(() => {
+    if (table === undefined) {
+      return;
+    }
+    if (useUiStore.getState().openTable(table)) {
+      return;
+    }
+    useOverlayStore.getState().showSnackbar("Close a table to open another.");
+    const fallback = useUiStore.getState().openTables.at(-1);
+    if (fallback === undefined) {
+      void navigate(`/c/${connId}`, { replace: true });
+      return;
+    }
+    const nextTab = useUiStore.getState().lastTab[fallback] ?? "items";
+    void navigate(`/c/${connId}/t/${encodeURIComponent(fallback)}/${nextTab}`, { replace: true });
+  }, [connId, navigate, table]);
+
   if (table !== undefined && tab !== undefined && parseTableTab(tab) === undefined) {
     return <Navigate to={`/c/${connId}/t/${table}/items`} replace />;
   }
@@ -87,10 +112,11 @@ export function Workspace() {
         <SidebarTableList />
         <div className="flex min-w-0">
           <main className="flex min-w-0 flex-1 flex-col">
-            {table === undefined ? (
+            <OpenTableTabs />
+            {table === undefined || blocked ? (
               <EmptyState
                 icon={<InboxOutlined className="text-[48px]" />}
-                title="Select a table"
+                title="Pick a table to get started"
                 help="Choose a table from the sidebar."
               />
             ) : (

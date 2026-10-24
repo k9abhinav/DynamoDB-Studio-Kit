@@ -83,7 +83,8 @@ export function SidebarTableList({ tables }: { tables?: readonly MockTable[] }) 
   }, [signature]);
 
   function openTable(name: string) {
-    void navigate(`/c/${connId}/t/${encodeURIComponent(name)}/items`);
+    const tab = useUiStore.getState().lastTab[name] ?? "items";
+    void navigate(`/c/${connId}/t/${encodeURIComponent(name)}/${tab}`);
   }
 
   function move(delta: number) {
