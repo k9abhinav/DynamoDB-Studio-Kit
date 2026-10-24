@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { EmptyState } from "../../components/EmptyState.js";
 import { api, ApiError } from "../../lib/api.js";
+import { stopScans } from "../items/use-scan-items.js";
 import { stopTableLoads } from "../tables/use-tables.js";
 import { parseTableTab } from "../../lib/tables.js";
 import { useOverlayStore } from "../../stores/overlay.js";
@@ -57,6 +58,7 @@ export function Workspace() {
 
   async function disconnect() {
     await stopTableLoads(queryClient, connId);
+    await stopScans(queryClient, connId);
     try {
       await api(`/api/v1/connections/${encodeURIComponent(connId)}`, { method: "DELETE" });
     } catch {
@@ -67,6 +69,7 @@ export function Workspace() {
 
   function switchConnection() {
     void stopTableLoads(queryClient, connId);
+    void stopScans(queryClient, connId);
     void navigate("/");
   }
 

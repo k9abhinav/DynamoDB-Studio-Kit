@@ -51,8 +51,8 @@
 ## Phase 4 tasks
 - [x] T4.1 Expression builder
 - [x] T4.2 Cursor codec
-- [ ] T4.3 Scan service, route, and integration
-- [ ] T4.4 Web scan query
+- [x] T4.3 Scan service, route, and integration
+- [x] T4.4 Web scan query
 - [ ] T4.5 Data grid
 - [ ] T4.6 Cells and type badges
 - [ ] T4.7 Column chooser
