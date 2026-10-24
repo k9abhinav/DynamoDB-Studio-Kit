@@ -48,3 +48,9 @@ Table names with dots/dashes; hundreds of tabs open (cap at 20 with friendly mes
 
 ## 7. Definition of done
 Standard phase DoD.
+
+## 8. Approved additions (2026-10-24)
+- Bundle hygiene is already done (production `react-router`, lazy routes, `scripts/check-bundle.ts` on `pnpm verify`). Initial JS gzip before this phase is 179897 bytes. Record it again at the end of the phase.
+- A test round-trips `my.table-v2` through the URL, the sidebar, and Overview.
+- One Playwright test generates about 300 tables and checks virtualized scrolling, search, and keyboard navigation.
+- A test asserts background table-list loading stops on disconnect, connection switch, and unmount.
