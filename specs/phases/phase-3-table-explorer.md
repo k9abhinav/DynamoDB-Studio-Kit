@@ -29,7 +29,7 @@ Items grid (Phase 4), create/delete table (Phase 7).
 - [x] T3.5 Tabs: open/close/focus, URL sync, per-table last tab memory + tests
 - [x] T3.6 Overview cards + TypeBadge + CopyButton + tests
 - [x] T3.7 Indexes tab (read-only) + tests
-- [ ] T3.8 Status polling for transitional states + tests
+- [x] T3.8 Status polling for transitional states + tests
 - [ ] T3.9 Playwright: open 3 tables, search, keyboard-only, light/dark screenshots, axe
 - [ ] T3.10 Progress + phase summary
 
