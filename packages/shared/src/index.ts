@@ -57,3 +57,21 @@ export {
   SESSION_IDLE_MS,
 } from "./limits.js";
 export { interpretEndpoint, type EndpointInterpretation } from "./endpoint.js";
+export {
+  TABLE_LIST_MAX_NAMES,
+  TABLE_LIST_PAGE_MAX,
+  TABLE_NAME_PATTERN,
+  IndexStatus,
+  TableBilling,
+  TableDescription,
+  TableIndex,
+  TableListQuery,
+  TableListResponse,
+  TableStatus,
+  TableTtl,
+  TableWaitResponse,
+  type TableDescription as TableDescriptionBody,
+  type TableListQuery as TableListQueryInput,
+  type TableListResponse as TableListResponseBody,
+  type TableWaitResponse as TableWaitResponseBody,
+} from "./api/table.js";

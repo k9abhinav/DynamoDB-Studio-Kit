@@ -3,8 +3,8 @@
 > The agent updates this file at the end of every task and phase. It is the memory between sessions.
 > Format for evidence: `AC-3.2 ✔ apps/web/src/features/tables/SidebarTableList.test.tsx > "filters as you type"`
 
-**Current phase:** 2 (done)
-**Last updated:** 2026-10-23
+**Current phase:** 3 (in progress)
+**Last updated:** 2026-10-24
 
 ## Phase status
 | Phase | Name | Status | Verify green | Date |
@@ -12,7 +12,7 @@
 | 0 | Foundation | ✅ done | ✅ | 2026-10-23 |
 | 1 | Design system & app shell | ✅ done | ✅ | 2026-10-23 |
 | 2 | Backend & connection | ✅ done | ✅ | 2026-10-23 |
-| 3 | Table explorer | ☐ not started | ☐ | |
+| 3 | Table explorer | in progress | ☐ | |
 | 4 | Items browser | ☐ not started | ☐ | |
 | 5 | Item editor & CRUD | ☐ not started | ☐ | |
 | 6 | Query builder & PartiQL | ☐ not started | ☐ | |
@@ -35,6 +35,18 @@
 - [x] T2.13 Playwright
 - [x] T2.14 Security checklist
 - [x] T2.15 Progress summary
+
+## Phase 3 tasks
+- [x] T3.1 Shared schemas
+- [ ] T3.2 Server list and describe
+- [ ] T3.3 Web query hooks
+- [ ] T3.4 Sidebar
+- [ ] T3.5 Tabs
+- [ ] T3.6 Overview
+- [ ] T3.7 Indexes tab
+- [ ] T3.8 Status polling
+- [ ] T3.9 Playwright
+- [ ] T3.10 Progress summary
 
 ## Acceptance criteria evidence
 

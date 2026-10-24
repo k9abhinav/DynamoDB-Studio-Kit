@@ -22,7 +22,7 @@ Items grid (Phase 4), create/delete table (Phase 7).
 - **FR-3.8** All requests cancel on navigation/unmount.
 
 ## 4. Tasks
-- [ ] T3.1 Shared schemas `TableDescription`, list responses + tests
+- [x] T3.1 Shared schemas `TableDescription`, list responses + tests
 - [ ] T3.2 Server `DynamoService.listTables/describeTable` + normalization (unit tests with SDK mocks) + routes + integration tests
 - [ ] T3.3 Web query hooks (`useTables`, `useTable`), query keys, polling policy + tests
 - [ ] T3.4 Sidebar: search, keyboard nav, virtualization, highlight, refresh + tests
