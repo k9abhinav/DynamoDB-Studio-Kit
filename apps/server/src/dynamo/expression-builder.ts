@@ -232,6 +232,44 @@ export function buildFilterExpression(
   return finish(predicates.join(glue), state);
 }
 
+export function buildScanExpressions(input: {
+  filters: readonly Filter[];
+  joiner: "and" | "or";
+  projection?: readonly string[];
+}): {
+  filterExpression?: string;
+  projectionExpression?: string;
+  names: Record<string, string>;
+  values: Record<string, AttributeValue>;
+} {
+  if (input.filters.length > FILTER_LIMIT) {
+    fail("Use at most 20 filters.");
+  }
+  if (input.projection !== undefined && input.projection.length === 0) {
+    fail("Choose at least one attribute.");
+  }
+  if (input.projection !== undefined && input.projection.length > PROJECTION_LIMIT) {
+    fail("Choose at most 1024 attributes.");
+  }
+  const state = createState();
+  const filterExpression =
+    input.filters.length === 0
+      ? undefined
+      : input.filters
+          .map((filter) => `(${compile(filter, state)})`)
+          .join(input.joiner === "and" ? " AND " : " OR ");
+  const projectionExpression =
+    input.projection === undefined
+      ? undefined
+      : input.projection.map((path) => renderPath(path, state)).join(", ");
+  return {
+    names: state.names,
+    values: state.values,
+    ...(filterExpression === undefined ? {} : { filterExpression }),
+    ...(projectionExpression === undefined ? {} : { projectionExpression }),
+  };
+}
+
 export function buildProjectionExpression(paths: readonly string[]): BuiltExpression {
   if (paths.length === 0) {
     fail("Choose at least one attribute.");

@@ -1,3 +1,4 @@
+import { GetItemCommand } from "@aws-sdk/client-dynamodb";
 import { afterAll, describe, expect, it } from "vitest";
 import { countItems, createLocalClient, seed } from "./seed-data.js";
 
@@ -17,6 +18,15 @@ describe("seed data", () => {
     expect(await countItems(client, "orders")).toBe(10_000);
     expect(await countItems(client, "sessions")).toBeGreaterThan(0);
     const edge = await countItems(client, "edge-cases");
-    expect(edge).toBe(7);
+    expect(edge).toBe(10);
+    const digits = "12345678901234567890123456789012345678";
+    const number = await client.send(
+      new GetItemCommand({ TableName: "edge-cases", Key: { id: { S: "number-38" } } }),
+    );
+    expect(number.Item?.digits).toEqual({ N: digits });
+    const address = await client.send(
+      new GetItemCommand({ TableName: "edge-cases", Key: { id: { S: "address-pune" } } }),
+    );
+    expect(address.Item?.address).toEqual({ M: { city: { S: "Pune" } } });
   });
 });
