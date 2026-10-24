@@ -3,7 +3,7 @@
 > The agent updates this file at the end of every task and phase. It is the memory between sessions.
 > Format for evidence: `AC-3.2 ✔ apps/web/src/features/tables/SidebarTableList.test.tsx > "filters as you type"`
 
-**Current phase:** 4 (in progress)
+**Current phase:** 4 (done)
 **Last updated:** 2026-10-24
 
 ## Phase status
@@ -13,7 +13,7 @@
 | 1 | Design system & app shell | ✅ done | ✅ | 2026-10-23 |
 | 2 | Backend & connection | ✅ done | ✅ | 2026-10-23 |
 | 3 | Table explorer | ✅ done | ✅ | 2026-10-24 |
-| 4 | Items browser | 🔄 in progress | ☐ | |
+| 4 | Items browser | ✅ done | ✅ | 2026-10-24 |
 | 5 | Item editor & CRUD | ☐ not started | ☐ | |
 | 6 | Query builder & PartiQL | ☐ not started | ☐ | |
 | 7 | Table management & import/export | ☐ not started | ☐ | |
@@ -53,16 +53,16 @@
 - [x] T4.2 Cursor codec
 - [x] T4.3 Scan service, route, and integration
 - [x] T4.4 Web scan query
-- [ ] T4.5 Data grid
-- [ ] T4.6 Cells and type badges
-- [ ] T4.7 Column chooser
-- [ ] T4.8 Filters
-- [ ] T4.9 Pagination and states
-- [ ] T4.10 Selection
-- [ ] T4.11 Keyboard and ARIA
-- [ ] T4.12 Scroll performance
-- [ ] T4.13 Playwright
-- [ ] T4.14 Progress summary
+- [x] T4.5 Data grid
+- [x] T4.6 Cells and type badges
+- [x] T4.7 Column chooser
+- [x] T4.8 Filters
+- [x] T4.9 Pagination and states
+- [x] T4.10 Selection
+- [x] T4.11 Keyboard and ARIA
+- [x] T4.12 Scroll performance
+- [x] T4.13 Playwright
+- [x] T4.14 Progress summary
 
 T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 100% (99/99) on 2026-10-24 with `@vitest/coverage-v8` for `expression-builder.ts`. A 38-digit number and `1E+2` stay decimal strings in the value map.
 
@@ -101,6 +101,16 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - AC-3.6 ✔ `e2e/tables.spec.ts` > "deep-links overview, sessions TTL, a dotted name, and a missing table". `/c/:id/t/orders/overview` renders after navigation. `missing-table` shows "That table doesn't exist (anymore)." and "Back to tables". `my.table-v2` is also covered by `TableOverview.test.tsx` > "round-trips a dotted table name through the URL, sidebar, and overview".
 - AC-3.7 ✔ The seed keyboard test searches, opens, switches to Overview and Indexes, and closes back to "Pick a table to get started". `e2e/tables.spec.ts` axe tests in light and dark fail on serious or critical violations. Screenshots: `docs/screenshots/phase-3/sidebar-*.png` and `overview-*.png`.
 - AC-3.8 ✔ The count reads "About 10,000 items, …" and the hint button says "Approximate. DynamoDB updates this count periodically." The overview test asserts the word "exact" is absent. The same hint is hovered in the seed Playwright test.
+- AC-4.1 ✔ `e2e/items.spec.ts` > "scrolls 10000 loaded order rows at 4x cpu". 60.2 fps on 2026-10-24. Machine Apple M5, Darwin. Browser Chromium (Playwright). CPU throttle 4x. Method: `requestAnimationFrame` for 2 seconds, adding 96px to the items grid `scrollTop`, after 10,000 `orders` rows were loaded. The page was the Vite dev server at `http://127.0.0.1:5173`. The same assertion passed again in the full Playwright run.
+- AC-4.2 ✔ `apps/web/src/features/items/cell-text.test.ts` > "distinguishes missing, null, and empty string" and "renders every other DynamoDB type". `e2e/items.spec.ts` > "browses orders, filters status, and opens an item from the keyboard" expects exact cells "Empty string", "Null", and "Missing" on `edge-cases`.
+- AC-4.3 ✔ `apps/server/src/routes/scan.int.test.ts` > "filters orders and edge-cases, pages, and projects" filters `status = SHIPPED` and rejects other statuses. The same Playwright test shows the filter tip and no PENDING cells. `apps/server/src/dynamo/scan.test.ts` > "keeps a 38-digit filter value as a string and aliases reserved words".
+- AC-4.4 ✔ The same integration test scans `address.city = "Pune"`. `scripts/seed.int.test.ts` > "creates users(1000), orders(10000), sessions, and edge-cases" asserts that item.
+- AC-4.5 ✔ `apps/web/src/features/items/use-scan-items.test.tsx` > "aborts the previous scan when the page size changes". `apps/server/src/routes/scan.int.test.ts` > "stops DynamoDB calls when the scan request is aborted". `apps/server/src/dynamo/scan.test.ts` > "does not call DynamoDB again after the caller aborts".
+- AC-4.6 ✔ `apps/web/src/features/items/columns.test.ts` > "keys storage by a hash and ignores secrets". `apps/web/src/features/items/ItemsPanel.test.tsx` > "keeps hidden columns for one table". Widths resize in `DataGrid.test.tsx` > "resizes from the keyboard, selects a range, and opens on enter".
+- AC-4.7 ✔ That DataGrid test shift-selects three rows and then selects all five loaded rows. `ItemsPanel.test.tsx` > "keeps the selected count after another page loads" stays at "1 selected" when the next page arrives, and row 2 stays unchecked.
+- AC-4.8 ✔ `e2e/items.spec.ts` finds `12345678901234567890123456789012345678` on `edge-cases`. `DataGrid.test.tsx` > "virtualizes a thousand rows and keeps a 38-digit number exact". `filter-ops.test.ts` > "keeps a 38-digit number as a decimal string". `ItemsPanel.test.tsx` > "caps 500 columns and sends a 38-digit number as a string" asserts the POST body.
+- AC-4.9 ✔ The items Playwright test focuses a body cell, presses Enter, sees `"S": "SHIPPED"` in Item details, and Escape closes it. `e2e/items.spec.ts` > "items screenshots and axe in light" and "items screenshots and axe in dark" have 0 serious or critical violations, then zoom the page to 200% at 1280×800 and still show Add filter and the grid. Screenshots: `docs/screenshots/phase-4/items-light.png` and `items-dark.png`. Names are noted in `docs/a11y-notes.md`.
+- AC-4.10 ✔ `apps/server/src/dynamo/expression-builder.test.ts` > "keeps user text out of expression strings". Branch coverage of `expression-builder.ts` was 100% (99/99) on 2026-10-24. The property test strips operator words before it looks for attribute names, so a path named `type` is not treated as a leak inside `attribute_type`.
 
 ## Security checklist (05 section 8, Phase 2)
 
@@ -159,6 +169,8 @@ Monaco stays out until Phase 5.
   - Seed `edge-cases` includes `address.city = "Pune"` and a 38-digit number.
   - `pnpm verify` expects DynamoDB Local to be running.
   - The Items screen scans the base table. Scan `index` stays on the API for tests.
+- 2026-10-24 — Phase 4 UI. TanStack Table on the web is 9.3.1 (`useTable`, `tableFeatures`, `sortFn`). `@tanstack/react-virtual` is ^3.14.22. Both were already named in the stack. The grid lives in the lazy Workspace chunk.
+- A filter attribute named `type` is a substring of `attribute_type`. The expression property test removes operator words before it searches for attribute names. The builder still emits only `#n` and `:v` placeholders.
   - Import error reports live 1 hour and are deleted on shutdown.
   - Palette and snackbars use MUI. The product path does not add `lib-dynamodb`, `cmdk`, or `notistack`.
   - License is MIT. Phase 8 versioning is `CHANGELOG.md` plus a semver script.
@@ -197,6 +209,10 @@ Before the connect UI was added, the production chunk was 201648 bytes gzip. Pro
 
 After connect, the sidebar loads table names a page at a time, filters what is already loaded, and asks the server only while another page remains. Lists over 200 names are virtualized. Enter opens the first match, arrows move the highlight, and Escape clears the filter. Open tables remember their last section, stop at 20, and middle-click closes one. Overview shows keys, capacity, TTL, streams, and indexes, and the item count is labeled approximate. Creating, updating, and deleting tables poll every 3 seconds; archived and inaccessible tables do not. A missing table explains itself and offers a way back. `pnpm verify` is green (154 unit tests, 4 integration tests). `pnpm exec playwright test --workers=1` passed 18 tests. Initial JS gzip is 180217 bytes, up from 179897 at the start of the phase. Q-020 through Q-024 stay on the defaults used here. Do not start Phase 4 until asked.
 
+### Phase 4 — Items browser (2026-10-24)
+
+The Items tab scans the open table into a virtualized grid. Cells show a type letter and keep numbers as decimal strings, including a 38-digit value. Missing, null, and empty string stay distinct. Filters are type-aware, one joiner covers the list, and a number filter is still a string in the POST body. The first 200 columns show until "Show more columns". Visibility and widths persist under `ds-columns:` plus a hash of endpoint, region, and table. Delete and Copy stay disabled. Opening a cell shows typed JSON in the existing drawer. Query mode is the placeholder "Query builder arrives in the next step". `pnpm verify` is green (215 unit tests, 6 integration tests). `pnpm exec playwright test --workers=1` passed 22 tests. Initial JS gzip is 180241 bytes, up from 180217. Scrolling 10,000 loaded orders rows measured 60.2 fps at 4x CPU on an Apple M5 in Chromium. Q-025 through Q-029 stay on the defaults used here. Do not start Phase 5 until asked.
+
 ## Metrics log
 
 - 2026-10-23 — Phase 0 web JavaScript gzip: 100585 bytes. Budget 256000.
@@ -204,3 +220,4 @@ After connect, the sidebar loads table names a page at a time, filters what is a
 - 2026-10-23 — Phase 2, before connect UI: 201648 bytes gzip. After connect UI: 255080 bytes gzip (`apps/web/dist/assets/index-2vbAiA2f.js`). Budget 256000. CSS gzip 21.32 KB. `pnpm audit`: no known vulnerabilities.
 - 2026-10-23 — Bundle hygiene, before Phase 3. Initial JS gzip: 179897 bytes (`apps/web/dist/assets/index-CmvQX7hT.js`). Early budget 235520. Phase 8 budget 256000. Lazy chunks, not in the initial number: ConnectScreen 24575 bytes (`ConnectScreen-Bsad9utP.js`), Workspace 11540 bytes (`Workspace-DW0JNnCI.js`), shared EnvChip chunk 44317 bytes (`EnvChip-Cmx54p1T.js`). CSS gzip 21228 bytes. `/__design` is absent from the production dist. Production resolves react-router to `dist/production`.
 - 2026-10-24 — Phase 3. Initial JS gzip: 180217 bytes (`apps/web/dist/assets/index-Bmi6LIIc.js`). Early budget 235520. Phase 8 budget 256000. Start of phase was 179897. Lazy chunks, not in the initial number: ConnectScreen 24572 bytes (`ConnectScreen-CNHxz0bb.js`), Workspace 27131 bytes (`Workspace-DgMtF1qO.js`), shared EnvChip chunk 45053 bytes (`EnvChip-S0IorpDR.js`). CSS gzip 21491 bytes. `/__design` is absent. Machine: local Darwin, Node from the verify run. `pnpm verify`: 154 unit tests, 4 integration tests.
+- 2026-10-24 — Phase 4. Initial JS gzip: 180241 bytes (`apps/web/dist/assets/index-BfifoS_0.js`), up from 180217. Early budget 235520. Phase 8 budget 256000. The grid stays in the Workspace chunk: 48688 bytes gzip (`Workspace-Dq5PvBe8.js`; Phase 3 was 27131). ConnectScreen 23313 bytes gzip (`ConnectScreen-BIoJ6yZu.js`). EnvChip 49078 bytes gzip (`EnvChip-DcB0uiD0.js`). CSS gzip 21907 bytes (`index-CZUeD1da.css`). `/__design` is absent. Scroll: 60.2 fps, Apple M5, Chromium, CPU throttle 4x, `requestAnimationFrame` scrolling the items grid by 96px for 2 seconds on the Vite dev server after 10,000 orders were loaded. `pnpm verify`: 215 unit tests, 6 integration tests. `pnpm exec playwright test --workers=1`: 22 passed.

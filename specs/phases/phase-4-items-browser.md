@@ -33,16 +33,16 @@ Editing/deleting (Phase 5), query builder (Phase 6), export (Phase 7).
 - [x] T4.2 Cursor codec + tests
 - [x] T4.3 `DynamoService.scan` with consumed capacity, `fillPage` loop + budget + abort + tests; route + integration tests (filters, pagination boundaries, GSI scan, projection)
 - [x] T4.4 Web `useScanItems` infinite query + query keys + cancel + tests (MSW)
-- [ ] T4.5 `DataGrid` core (virtual rows, sticky header, pinned columns, resize) + perf test harness
-- [ ] T4.6 `CellRenderer` + `TypeBadge` + tooltip previews + tests for every type including edge-cases table
-- [ ] T4.7 ColumnChooser + persistence + tests
-- [ ] T4.8 Filters UI (popover, chips, validation, type-aware inputs) + tests
-- [ ] T4.9 Pagination UX, summary bar, cost hint, empty/error states + tests
-- [ ] T4.10 Selection model + action bar skeleton + tests
-- [ ] T4.11 Keyboard + ARIA grid + live region + tests
-- [ ] T4.12 Perf measurement: 10,000 rows scroll, record in metrics log; fix regressions
-- [ ] T4.13 Playwright: browse `orders`, filter by `status`, hide columns, light/dark screenshots, axe, keyboard-only
-- [ ] T4.14 Progress + phase summary
+- [x] T4.5 `DataGrid` core (virtual rows, sticky header, pinned columns, resize) + perf test harness
+- [x] T4.6 `CellRenderer` + `TypeBadge` + tooltip previews + tests for every type including edge-cases table
+- [x] T4.7 ColumnChooser + persistence + tests
+- [x] T4.8 Filters UI (popover, chips, validation, type-aware inputs) + tests
+- [x] T4.9 Pagination UX, summary bar, cost hint, empty/error states + tests
+- [x] T4.10 Selection model + action bar skeleton + tests
+- [x] T4.11 Keyboard + ARIA grid + live region + tests
+- [x] T4.12 Perf measurement: 10,000 rows scroll, record in metrics log; fix regressions
+- [x] T4.13 Playwright: browse `orders`, filter by `status`, hide columns, light/dark screenshots, axe, keyboard-only
+- [x] T4.14 Progress + phase summary
 
 ## 5. Acceptance criteria
 - **AC-4.1** `orders` (10,000 items) loads in pages; scrolling to the end loads all 10,000 without UI jank (>= 55 fps measured, recorded).
