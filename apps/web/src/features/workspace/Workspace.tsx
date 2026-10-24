@@ -2,9 +2,11 @@ import InboxOutlined from "@mui/icons-material/InboxOutlined";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
 import type { ConnectionHeartbeatBody } from "@dynamo-studio/shared";
+import { useQueryClient } from "@tanstack/react-query";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { EmptyState } from "../../components/EmptyState.js";
 import { api, ApiError } from "../../lib/api.js";
+import { stopTableLoads } from "../tables/use-tables.js";
 import { parseTableTab } from "../../lib/tables.js";
 import { ItemDrawer } from "./ItemDrawer.js";
 import { SidebarTableList } from "./SidebarTableList.js";
@@ -15,6 +17,7 @@ import { useLiveConnection } from "./use-live-connection.js";
 
 export function Workspace() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { connId = "", table, tab } = useParams();
   const query = useLiveConnection(connId);
   if (table !== undefined && tab !== undefined && parseTableTab(tab) === undefined) {
@@ -28,11 +31,17 @@ export function Workspace() {
   const connection = barConnection(query.data, lost);
 
   async function disconnect() {
+    await stopTableLoads(queryClient, connId);
     try {
       await api(`/api/v1/connections/${encodeURIComponent(connId)}`, { method: "DELETE" });
     } catch {
       // Leave the workspace even when the session is already gone.
     }
+    void navigate("/");
+  }
+
+  function switchConnection() {
+    void stopTableLoads(queryClient, connId);
     void navigate("/");
   }
 
@@ -44,9 +53,7 @@ export function Workspace() {
           onDisconnect={() => {
             void disconnect();
           }}
-          onSwitch={() => {
-            void navigate("/");
-          }}
+          onSwitch={switchConnection}
         />
         {lost ? (
           <div className="border-b border-outline bg-surface px-4 py-2">
