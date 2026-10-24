@@ -75,3 +75,33 @@ export {
   type TableListResponse as TableListResponseBody,
   type TableWaitResponse as TableWaitResponseBody,
 } from "./api/table.js";
+export {
+  ATTRIBUTE_TYPE_NAMES,
+  AttributeValue,
+  BoundedAttributeValue,
+  Item,
+  isDynamoNumber,
+  nestingDepth,
+  type AttributeTypeName,
+  type AttributeValue as AttributeValueBody,
+  type Item as ItemBody,
+} from "./api/attribute.js";
+export {
+  FILTER_LIMIT,
+  IN_VALUE_LIMIT,
+  Filter,
+  FilterOp,
+  type Filter as FilterBody,
+  type FilterOp as FilterOpName,
+} from "./api/filter.js";
+export {
+  PROJECTION_LIMIT,
+  SCAN_PAGE_DEFAULT,
+  SCAN_PAGE_MAX,
+  ConsumedCapacity,
+  ScanRequest,
+  ScanResponse,
+  type ConsumedCapacity as ConsumedCapacityBody,
+  type ScanRequest as ScanRequestBody,
+  type ScanResponse as ScanResponseBody,
+} from "./api/scan.js";

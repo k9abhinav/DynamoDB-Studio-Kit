@@ -3,7 +3,7 @@
 > The agent updates this file at the end of every task and phase. It is the memory between sessions.
 > Format for evidence: `AC-3.2 ✔ apps/web/src/features/tables/SidebarTableList.test.tsx > "filters as you type"`
 
-**Current phase:** 3 (done)
+**Current phase:** 4 (in progress)
 **Last updated:** 2026-10-24
 
 ## Phase status
@@ -13,7 +13,7 @@
 | 1 | Design system & app shell | ✅ done | ✅ | 2026-10-23 |
 | 2 | Backend & connection | ✅ done | ✅ | 2026-10-23 |
 | 3 | Table explorer | ✅ done | ✅ | 2026-10-24 |
-| 4 | Items browser | ☐ not started | ☐ | |
+| 4 | Items browser | 🔄 in progress | ☐ | |
 | 5 | Item editor & CRUD | ☐ not started | ☐ | |
 | 6 | Query builder & PartiQL | ☐ not started | ☐ | |
 | 7 | Table management & import/export | ☐ not started | ☐ | |
@@ -47,6 +47,24 @@
 - [x] T3.8 Status polling
 - [x] T3.9 Playwright
 - [x] T3.10 Progress summary
+
+## Phase 4 tasks
+- [x] T4.1 Expression builder
+- [ ] T4.2 Cursor codec
+- [ ] T4.3 Scan service, route, and integration
+- [ ] T4.4 Web scan query
+- [ ] T4.5 Data grid
+- [ ] T4.6 Cells and type badges
+- [ ] T4.7 Column chooser
+- [ ] T4.8 Filters
+- [ ] T4.9 Pagination and states
+- [ ] T4.10 Selection
+- [ ] T4.11 Keyboard and ARIA
+- [ ] T4.12 Scroll performance
+- [ ] T4.13 Playwright
+- [ ] T4.14 Progress summary
+
+T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 100% (99/99) on 2026-10-24 with `@vitest/coverage-v8` for `expression-builder.ts`. A 38-digit number and `1E+2` stay decimal strings in the value map.
 
 ## Acceptance criteria evidence
 

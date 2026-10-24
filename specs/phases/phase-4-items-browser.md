@@ -29,7 +29,7 @@ Editing/deleting (Phase 5), query builder (Phase 6), export (Phase 7).
 - **FR-4.15** Empty and error states: "This table is empty." (with Create item CTA placeholder until Phase 5), "No items match these filters." (with Clear filters), error state with retry.
 
 ## 4. Tasks
-- [ ] T4.1 `ExpressionBuilder` (filters, projection, nested paths, reserved words, `in`, `between`, `type_is`) with table-driven unit tests (**write first**)
+- [x] T4.1 `ExpressionBuilder` (filters, projection, nested paths, reserved words, `in`, `between`, `type_is`) with table-driven unit tests (**write first**)
 - [ ] T4.2 Cursor codec + tests
 - [ ] T4.3 `DynamoService.scan` with consumed capacity, `fillPage` loop + budget + abort + tests; route + integration tests (filters, pagination boundaries, GSI scan, projection)
 - [ ] T4.4 Web `useScanItems` infinite query + query keys + cancel + tests (MSW)
@@ -61,3 +61,10 @@ Items with 500+ attributes (column cap: show first 200 columns with a "Show more
 
 ## 7. Definition of done
 Standard phase DoD plus performance numbers recorded.
+
+## 8. Approved additions (2026-10-24)
+- Confirm the seed has `edge-cases` with a 38-digit number and an item whose `address.city` is `"Pune"`. Add them if they are missing. An integration test asserts both exist.
+- A server integration test aborts mid-scan and asserts DynamoDB calls stop (the `fillPage` loop ends).
+- A test keeps number filter values as decimal strings end to end, using a 38-digit value.
+- Displayed columns cap at 200 with a "Show more columns" notice. A test uses a 500-attribute item.
+- Report initial JS gzip before and after this phase. Before, from the Phase 3 build, is 180217 bytes (`index-Bmi6LIIc.js`). Record fps with machine, browser, throttle, and method in the metrics log.
