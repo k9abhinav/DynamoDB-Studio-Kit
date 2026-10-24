@@ -2,6 +2,8 @@ import InboxOutlined from "@mui/icons-material/InboxOutlined";
 import Button from "@mui/material/Button";
 import { useParams } from "react-router-dom";
 import { EmptyState } from "../../components/EmptyState.js";
+import { TableOverview } from "../tables/TableOverview.js";
+import { TablePanel } from "../tables/TablePanel.js";
 import { parseTableTab } from "../../lib/tables.js";
 import { useUiStore } from "../../stores/ui.js";
 
@@ -30,12 +32,14 @@ export function TabPanel() {
     );
   }
 
+  if (tab === "overview") {
+    return <TablePanel>{(description) => <TableOverview description={description} />}</TablePanel>;
+  }
+
   const copy =
     tab === "partiql"
       ? "PartiQL arrives in a later version."
-      : tab === "overview"
-        ? "Overview arrives when the table is loaded."
-        : "Indexes arrive when the table is loaded.";
+      : "Indexes arrive when the table is loaded.";
 
   return (
     <EmptyState

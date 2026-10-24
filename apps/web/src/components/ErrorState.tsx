@@ -6,10 +6,12 @@ export function ErrorState({
   message,
   details,
   onRetry,
+  onBack,
 }: {
   message: string;
   details: string;
   onRetry: () => void;
+  onBack?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -19,6 +21,11 @@ export function ErrorState({
         <Button color="inherit" size="small" onClick={onRetry}>
           Retry
         </Button>
+        {onBack === undefined ? null : (
+          <Button color="inherit" size="small" onClick={onBack}>
+            Back to tables
+          </Button>
+        )}
         <Button
           color="inherit"
           size="small"
