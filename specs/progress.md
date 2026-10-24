@@ -3,7 +3,7 @@
 > The agent updates this file at the end of every task and phase. It is the memory between sessions.
 > Format for evidence: `AC-3.2 ✔ apps/web/src/features/tables/SidebarTableList.test.tsx > "filters as you type"`
 
-**Current phase:** 3 (in progress)
+**Current phase:** 3 (done)
 **Last updated:** 2026-10-24
 
 ## Phase status
@@ -12,7 +12,7 @@
 | 0 | Foundation | ✅ done | ✅ | 2026-10-23 |
 | 1 | Design system & app shell | ✅ done | ✅ | 2026-10-23 |
 | 2 | Backend & connection | ✅ done | ✅ | 2026-10-23 |
-| 3 | Table explorer | in progress | ☐ | |
+| 3 | Table explorer | ✅ done | ✅ | 2026-10-24 |
 | 4 | Items browser | ☐ not started | ☐ | |
 | 5 | Item editor & CRUD | ☐ not started | ☐ | |
 | 6 | Query builder & PartiQL | ☐ not started | ☐ | |
@@ -46,7 +46,7 @@
 - [x] T3.7 Indexes tab
 - [x] T3.8 Status polling
 - [x] T3.9 Playwright
-- [ ] T3.10 Progress summary
+- [x] T3.10 Progress summary
 
 ## Acceptance criteria evidence
 
@@ -75,6 +75,14 @@
 - AC-2.8 ✔ `e2e/connect.spec.ts` > "shows connection lost when the endpoint proxy closes". The chip shows latency, then the banner appears within 35s. Docker stays up.
 - AC-2.9 ✔ `e2e/connect.spec.ts` connect-screen axe tests in light and dark, plus "can complete the connect form from the keyboard". Screenshots: `docs/screenshots/phase-2/connect-*.png` and `workspace-*.png`.
 - AC-2.10 ✔ Security checklist below. PartiQL, import, and expression-interpolation rows are waived until those routes exist.
+- AC-3.1 ✔ `e2e/tables.spec.ts` > "searches seed tables and opens orders from the keyboard". Typing `ord` leaves `orders`; Enter opens it.
+- AC-3.2 ✔ `apps/web/src/features/workspace/SidebarTableList.test.tsx` > "keeps a thousand names virtualized until the search narrows them". `apps/server/src/dynamo/list-tables.test.ts` walks a mocked list. `apps/server/src/routes/tables.int.test.ts` creates 101 `p3t-*` tables and follows the cursor. `e2e/tables.spec.ts` > "scrolls, searches, and keyboard-navigates a few hundred tables" uses 300 `p3e-*` tables.
+- AC-3.3 ✔ `e2e/tables.spec.ts` overview of `orders` shows `userId`, `createdAt`, and `status-createdAt-index`. `apps/server/src/routes/tables.int.test.ts` asserts the same keys and GSI. `apps/web/src/features/tables/TableOverview.test.tsx` > "shows orders keys, the GSI, and an approximate count".
+- AC-3.4 ✔ `e2e/tables.spec.ts` deep link shows `Enabled on expiresAt` for `sessions`. The overview component test covers the same TTL line.
+- AC-3.5 ✔ `apps/web/src/features/tables/use-table.poll.test.tsx` > "polls every 3 seconds while creating and stops once the table is active" and "does not poll an archived table". Fake timers. The UI does not call `POST .../wait`.
+- AC-3.6 ✔ `e2e/tables.spec.ts` > "deep-links overview, sessions TTL, a dotted name, and a missing table". `/c/:id/t/orders/overview` renders after navigation. `missing-table` shows "That table doesn't exist (anymore)." and "Back to tables". `my.table-v2` is also covered by `TableOverview.test.tsx` > "round-trips a dotted table name through the URL, sidebar, and overview".
+- AC-3.7 ✔ The seed keyboard test searches, opens, switches to Overview and Indexes, and closes back to "Pick a table to get started". `e2e/tables.spec.ts` axe tests in light and dark fail on serious or critical violations. Screenshots: `docs/screenshots/phase-3/sidebar-*.png` and `overview-*.png`.
+- AC-3.8 ✔ The count reads "About 10,000 items, …" and the hint button says "Approximate. DynamoDB updates this count periodically." The overview test asserts the word "exact" is absent. The same hint is hovered in the seed Playwright test.
 
 ## Security checklist (05 section 8, Phase 2)
 
@@ -167,9 +175,14 @@ Pasting `localhost:8000` and pressing Enter opens a real workspace. Credentials 
 
 Before the connect UI was added, the production chunk was 201648 bytes gzip. Proportional contributors: react-dom about 32% (~65 KB), MUI about 30% (~60 KB), the react-router development build about 14% (~29 KB), MUI System about 5%, TanStack Query about 4%, Popper about 3%. App code was tiny. After `react-hook-form`, `@hookform/resolvers`, and direct `zod` on the web app, `pnpm verify` measured 255080 bytes gzip (`index-2vbAiA2f.js`, budget 256000). About 920 bytes of headroom remain. The react-router development build was left in place because the budget still passed.
 
+### Phase 3 — Table explorer (2026-10-24)
+
+After connect, the sidebar loads table names a page at a time, filters what is already loaded, and asks the server only while another page remains. Lists over 200 names are virtualized. Enter opens the first match, arrows move the highlight, and Escape clears the filter. Open tables remember their last section, stop at 20, and middle-click closes one. Overview shows keys, capacity, TTL, streams, and indexes, and the item count is labeled approximate. Creating, updating, and deleting tables poll every 3 seconds; archived and inaccessible tables do not. A missing table explains itself and offers a way back. `pnpm verify` is green (154 unit tests, 4 integration tests). `pnpm exec playwright test --workers=1` passed 18 tests. Initial JS gzip is 180217 bytes, up from 179897 at the start of the phase. Q-020 through Q-024 stay on the defaults used here. Do not start Phase 4 until asked.
+
 ## Metrics log
 
 - 2026-10-23 — Phase 0 web JavaScript gzip: 100585 bytes. Budget 256000.
 - 2026-10-23 — Phase 1 web JavaScript gzip: 201611 bytes (one chunk, `apps/web/dist/assets/index-*.js`). Attempted budget 153600. Phase 8 budget 256000. CSS gzip 21.19 KB is not in the JS number. Machine: local Darwin, Node 26.4.0. No 10k-row fps or API overhead yet.
 - 2026-10-23 — Phase 2, before connect UI: 201648 bytes gzip. After connect UI: 255080 bytes gzip (`apps/web/dist/assets/index-2vbAiA2f.js`). Budget 256000. CSS gzip 21.32 KB. `pnpm audit`: no known vulnerabilities.
 - 2026-10-23 — Bundle hygiene, before Phase 3. Initial JS gzip: 179897 bytes (`apps/web/dist/assets/index-CmvQX7hT.js`). Early budget 235520. Phase 8 budget 256000. Lazy chunks, not in the initial number: ConnectScreen 24575 bytes (`ConnectScreen-Bsad9utP.js`), Workspace 11540 bytes (`Workspace-DW0JNnCI.js`), shared EnvChip chunk 44317 bytes (`EnvChip-Cmx54p1T.js`). CSS gzip 21228 bytes. `/__design` is absent from the production dist. Production resolves react-router to `dist/production`.
+- 2026-10-24 — Phase 3. Initial JS gzip: 180217 bytes (`apps/web/dist/assets/index-Bmi6LIIc.js`). Early budget 235520. Phase 8 budget 256000. Start of phase was 179897. Lazy chunks, not in the initial number: ConnectScreen 24572 bytes (`ConnectScreen-CNHxz0bb.js`), Workspace 27131 bytes (`Workspace-DgMtF1qO.js`), shared EnvChip chunk 45053 bytes (`EnvChip-S0IorpDR.js`). CSS gzip 21491 bytes. `/__design` is absent. Machine: local Darwin, Node from the verify run. `pnpm verify`: 154 unit tests, 4 integration tests.

@@ -31,7 +31,7 @@ Items grid (Phase 4), create/delete table (Phase 7).
 - [x] T3.7 Indexes tab (read-only) + tests
 - [x] T3.8 Status polling for transitional states + tests
 - [x] T3.9 Playwright: open 3 tables, search, keyboard-only, light/dark screenshots, axe
-- [ ] T3.10 Progress + phase summary
+- [x] T3.10 Progress + phase summary
 
 ## 5. Acceptance criteria
 - **AC-3.1** With the seed DB, all four seed tables appear; typing `ord` leaves only `orders`; `Enter` opens it.
