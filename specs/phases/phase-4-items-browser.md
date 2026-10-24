@@ -30,7 +30,7 @@ Editing/deleting (Phase 5), query builder (Phase 6), export (Phase 7).
 
 ## 4. Tasks
 - [x] T4.1 `ExpressionBuilder` (filters, projection, nested paths, reserved words, `in`, `between`, `type_is`) with table-driven unit tests (**write first**)
-- [ ] T4.2 Cursor codec + tests
+- [x] T4.2 Cursor codec + tests
 - [ ] T4.3 `DynamoService.scan` with consumed capacity, `fillPage` loop + budget + abort + tests; route + integration tests (filters, pagination boundaries, GSI scan, projection)
 - [ ] T4.4 Web `useScanItems` infinite query + query keys + cancel + tests (MSW)
 - [ ] T4.5 `DataGrid` core (virtual rows, sticky header, pinned columns, resize) + perf test harness
