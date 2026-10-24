@@ -23,7 +23,7 @@ Items grid (Phase 4), create/delete table (Phase 7).
 
 ## 4. Tasks
 - [x] T3.1 Shared schemas `TableDescription`, list responses + tests
-- [ ] T3.2 Server `DynamoService.listTables/describeTable` + normalization (unit tests with SDK mocks) + routes + integration tests
+- [x] T3.2 Server `DynamoService.listTables/describeTable` + normalization (unit tests with SDK mocks) + routes + integration tests
 - [ ] T3.3 Web query hooks (`useTables`, `useTable`), query keys, polling policy + tests
 - [ ] T3.4 Sidebar: search, keyboard nav, virtualization, highlight, refresh + tests
 - [ ] T3.5 Tabs: open/close/focus, URL sync, per-table last tab memory + tests

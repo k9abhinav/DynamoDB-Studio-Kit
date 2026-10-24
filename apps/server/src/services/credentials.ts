@@ -1,13 +1,13 @@
-import { DynamoDBClient, type ListTablesCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { fromIni, fromNodeProviderChain } from "@aws-sdk/credential-providers";
 import type { Auth } from "@dynamo-studio/shared";
 
 export interface DynamoCaller {
   destroy(): void;
   send(
-    command: ListTablesCommand,
+    command: { readonly input?: object },
     options?: { abortSignal?: AbortSignal },
-  ): Promise<{ TableNames?: string[] | undefined }>;
+  ): Promise<unknown>;
 }
 
 export function createDynamoClient(input: {
@@ -26,7 +26,7 @@ export function createDynamoClient(input: {
       client.destroy();
     },
     send(command, options) {
-      return client.send(command, options);
+      return client.send(command as Parameters<DynamoDBClient["send"]>[0], options);
     },
   };
 }

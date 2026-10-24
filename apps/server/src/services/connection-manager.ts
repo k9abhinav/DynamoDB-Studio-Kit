@@ -30,6 +30,7 @@ export interface ConnectionManager {
   patch(sessionId: string, connectionId: string, body: PatchConnectionBody): ActiveConnection;
   remove(sessionId: string, connectionId: string): void;
   assertWritable(sessionId: string, connectionId: string): void;
+  open(sessionId: string, connectionId: string): { client: DynamoCaller; endpoint: string };
   destroySession(sessionId: string): void;
 }
 
@@ -62,7 +63,7 @@ async function probe(
     });
     return {
       latencyMs: Math.max(0, Date.now() - started),
-      tableCountSample: Math.min(result.TableNames?.length ?? 0, 1),
+      tableCountSample: Math.min(tableNameCount(result), 1),
     };
   } catch (error) {
     const mapped = mapDynamoError(error, endpoint.length === 0 ? undefined : endpoint);
@@ -71,6 +72,14 @@ async function probe(
       ...(mapped.details === undefined ? {} : { details: mapped.details }),
     });
   }
+}
+
+function tableNameCount(value: unknown): number {
+  if (typeof value !== "object" || value === null || !("TableNames" in value)) {
+    return 0;
+  }
+  const names = value.TableNames;
+  return Array.isArray(names) ? names.length : 0;
 }
 
 function summaryFor(input: {
@@ -190,6 +199,10 @@ export function createConnectionManager(options?: {
       if (connection.summary.readOnly) {
         throw new HttpError("READ_ONLY", "This connection is read-only.");
       }
+    },
+    open(sessionId, connectionId) {
+      const connection = requireConnection(sessionId, connectionId);
+      return { client: connection.client, endpoint: connection.summary.endpoint };
     },
     destroySession(sessionId) {
       const connections = sessions.get(sessionId);
