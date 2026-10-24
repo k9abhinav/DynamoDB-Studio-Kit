@@ -9,7 +9,10 @@ describe("open table tabs", () => {
     const user = userEvent.setup();
     useUiStore.getState().openTable("users");
     await renderAt("/c/local/t/orders/items");
-    expect(await screen.findByRole("tab", { name: "orders", selected: true })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "orders" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
     await user.click(screen.getByRole("button", { name: "Close orders" }));
     expect(await screen.findByRole("heading", { name: "users" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Close users" }));
@@ -21,7 +24,7 @@ describe("open table tabs", () => {
   it("closes a tab on middle click", async () => {
     await renderAt("/c/local/t/sessions/items");
     fireEvent(
-      await screen.findByRole("tab", { name: "sessions" }),
+      await screen.findByRole("button", { name: "sessions" }),
       new MouseEvent("auxclick", { bubbles: true, button: 1 }),
     );
     expect(

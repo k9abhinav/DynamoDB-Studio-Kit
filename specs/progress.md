@@ -45,7 +45,7 @@
 - [x] T3.6 Overview
 - [x] T3.7 Indexes tab
 - [x] T3.8 Status polling
-- [ ] T3.9 Playwright
+- [x] T3.9 Playwright
 - [ ] T3.10 Progress summary
 
 ## Acceptance criteria evidence

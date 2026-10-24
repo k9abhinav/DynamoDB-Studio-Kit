@@ -108,7 +108,7 @@ export function Workspace() {
           </div>
         ) : null}
       </div>
-      <div className="grid min-h-0 grid-cols-[auto_minmax(0,1fr)]">
+      <div className="grid h-full min-h-0 grid-cols-[auto_minmax(0,1fr)] overflow-hidden">
         <SidebarTableList />
         <div className="flex min-w-0">
           <main className="flex min-w-0 flex-1 flex-col">

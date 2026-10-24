@@ -49,19 +49,14 @@ export function OpenTableTabs() {
   }
 
   return (
-    <div
-      role="tablist"
-      aria-label="Open tables"
-      className="flex gap-1 overflow-auto border-b border-outline px-2"
-    >
+    <nav aria-label="Open tables" className="flex gap-1 overflow-auto border-b border-outline px-2">
       {openTables.map((name) => {
         const current = name === table;
         return (
           <div key={name} className="flex items-center">
             <button
               type="button"
-              role="tab"
-              aria-selected={current}
+              aria-current={current ? "page" : undefined}
               className={`h-10 px-3 text-sm ${current ? "text-primary" : "text-text-secondary"}`}
               onClick={() => {
                 focusTable(name);
@@ -88,6 +83,6 @@ export function OpenTableTabs() {
           </div>
         );
       })}
-    </div>
+    </nav>
   );
 }

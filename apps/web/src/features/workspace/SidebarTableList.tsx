@@ -130,7 +130,7 @@ export function SidebarTableList({ tables }: { tables?: readonly MockTable[] }) 
   return (
     <nav
       aria-label="Tables"
-      className={`flex h-full flex-col border-r border-outline bg-surface ${rail ? "w-[72px]" : "w-[280px]"}`}
+      className={`flex h-full min-h-0 flex-col overflow-hidden border-r border-outline bg-surface ${rail ? "w-[72px]" : "w-[280px]"}`}
     >
       <div className="flex items-center justify-between px-2 py-2">
         {rail ? null : (
@@ -194,7 +194,7 @@ export function SidebarTableList({ tables }: { tables?: readonly MockTable[] }) 
       {live.error === null || fixture ? null : (
         <p className="px-4 text-sm text-text-secondary">Could not load tables.</p>
       )}
-      <div ref={parentRef} className="min-h-0 flex-1 overflow-auto">
+      <div ref={parentRef} className="h-0 min-h-0 flex-1 overflow-auto">
         <div
           role="listbox"
           aria-label="Table names"

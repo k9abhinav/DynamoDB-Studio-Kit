@@ -16,7 +16,7 @@ test("keyboard can use the palette, sidebar, drawer, and shortcuts", async ({ pa
 
   await page.getByRole("searchbox", { name: "Filter tables" }).focus();
   await page.keyboard.press("Tab");
-  await expect(page.getByRole("button", { name: "New table" })).toBeFocused();
+  await expect(page.getByRole("listbox", { name: "Table names" })).toBeFocused();
 
   const open = page.getByRole("button", { name: "Open details" });
   await open.focus();
@@ -106,7 +106,10 @@ async function shootShell(page: Page, scheme: "light" | "dark") {
 
   await page.getByRole("button", { name: "Close item details" }).click();
   await page.getByRole("button", { name: "Collapse sidebar" }).click();
-  await expect(page.getByRole("navigation", { name: "Tables" })).toHaveCSS("width", "72px");
+  await expect(page.getByRole("navigation", { name: "Tables", exact: true })).toHaveCSS(
+    "width",
+    "72px",
+  );
   await page.screenshot({ path: `docs/screenshots/phase-1/shell-rail-${scheme}.png` });
 
   await page.setViewportSize({ width: 1024, height: 768 });
