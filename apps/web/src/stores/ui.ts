@@ -12,12 +12,14 @@ interface UiState {
   sidebarCollapsed: boolean;
   drawerWidth: number;
   drawerOpen: boolean;
+  itemPreview: string | null;
   openTables: string[];
   lastTab: Record<string, TableTab>;
   setDensity: (density: Density) => void;
   toggleSidebar: () => void;
   setDrawerWidth: (width: number) => void;
   setDrawerOpen: (open: boolean) => void;
+  setItemPreview: (preview: string | null) => void;
   openTable: (name: string) => boolean;
   closeTable: (name: string) => string | undefined;
   rememberTab: (name: string, tab: TableTab) => void;
@@ -28,6 +30,7 @@ export const uiDefaults = {
   sidebarCollapsed: false,
   drawerWidth: DRAWER_MIN,
   drawerOpen: false,
+  itemPreview: null as string | null,
   openTables: [] as string[],
   lastTab: {} as Record<string, TableTab>,
 };
@@ -47,6 +50,9 @@ export const useUiStore = create<UiState>()(
       },
       setDrawerOpen: (drawerOpen) => {
         set({ drawerOpen });
+      },
+      setItemPreview: (itemPreview) => {
+        set({ itemPreview });
       },
       openTable: (name) => {
         const { openTables } = get();

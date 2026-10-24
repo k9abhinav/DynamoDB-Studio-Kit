@@ -10,11 +10,16 @@ export interface ScanQueryInput {
   consistentRead: boolean;
 }
 
-export function useScanItems(connectionId: string, table: string, query: ScanQueryInput) {
+export function useScanItems(
+  connectionId: string,
+  table: string,
+  query: ScanQueryInput,
+  enabled = true,
+) {
   return useInfiniteQuery({
     queryKey: scanKeys.table(connectionId, table, query),
     initialPageParam: undefined as string | undefined,
-    enabled: connectionId.length > 0 && table.length > 0,
+    enabled: enabled && connectionId.length > 0 && table.length > 0,
     queryFn: ({ pageParam, signal }) =>
       api(
         `/api/v1/connections/${encodeURIComponent(connectionId)}/tables/${encodeURIComponent(table)}/scan`,

@@ -10,6 +10,7 @@ export function ItemDrawer() {
   const width = useUiStore((state) => state.drawerWidth);
   const setWidth = useUiStore((state) => state.setDrawerWidth);
   const setOpen = useUiStore((state) => state.setDrawerOpen);
+  const preview = useUiStore((state) => state.itemPreview);
   const overlay = useMediaQuery(`(max-width: ${String(DRAWER_BREAKPOINT - 1)}px)`);
   if (!open) {
     return null;
@@ -76,7 +77,15 @@ export function ItemDrawer() {
             target.addEventListener("pointerup", stop);
           }}
         />
-        <p className="px-4 py-6 text-sm text-text-secondary">Select an item to see its details.</p>
+        {preview === null ? (
+          <p className="px-4 py-6 text-sm text-text-secondary">
+            Select an item to see its details.
+          </p>
+        ) : (
+          <pre className="min-h-0 flex-1 overflow-auto px-4 py-4 font-mono text-[13px] leading-5">
+            {preview}
+          </pre>
+        )}
       </div>
     </Unstable_TrapFocus>
   );

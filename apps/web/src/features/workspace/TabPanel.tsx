@@ -1,36 +1,18 @@
 import InboxOutlined from "@mui/icons-material/InboxOutlined";
-import Button from "@mui/material/Button";
 import { useParams } from "react-router-dom";
 import { EmptyState } from "../../components/EmptyState.js";
+import { ItemsPanel } from "../items/ItemsPanel.js";
 import { IndexList } from "../tables/IndexList.js";
 import { TableOverview } from "../tables/TableOverview.js";
 import { TablePanel } from "../tables/TablePanel.js";
 import { parseTableTab } from "../../lib/tables.js";
-import { useUiStore } from "../../stores/ui.js";
 
 export function TabPanel() {
-  const { tab: rawTab } = useParams();
+  const { connId = "", table = "", tab: rawTab } = useParams();
   const tab = parseTableTab(rawTab) ?? "items";
-  const setDrawerOpen = useUiStore((state) => state.setDrawerOpen);
 
   if (tab === "items") {
-    return (
-      <EmptyState
-        icon={<InboxOutlined className="text-[48px]" />}
-        title="This table is empty"
-        help="Add your first item when editing arrives."
-        action={
-          <Button
-            variant="contained"
-            onClick={() => {
-              setDrawerOpen(true);
-            }}
-          >
-            Open details
-          </Button>
-        }
-      />
-    );
+    return <ItemsPanel connectionId={connId} table={table} />;
   }
 
   if (tab === "overview") {

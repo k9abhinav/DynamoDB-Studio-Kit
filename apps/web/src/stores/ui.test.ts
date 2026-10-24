@@ -22,6 +22,7 @@ describe("ui store", () => {
       drawerWidth: 500,
     });
     expect(saved.state).not.toHaveProperty("drawerOpen");
+    expect(saved.state).not.toHaveProperty("itemPreview");
     expect(saved.state).not.toHaveProperty("openTables");
     expect(rowHeight("compact")).toBe("32px");
   });

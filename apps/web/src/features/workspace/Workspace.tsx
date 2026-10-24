@@ -128,7 +128,13 @@ export function Workspace() {
                   <h1 className="py-3 text-base font-medium">{table}</h1>
                   <TableTabs />
                 </div>
-                <div className="min-h-0 flex-1 overflow-auto">
+                <div
+                  className={`min-h-0 flex-1 ${
+                    tab === undefined || parseTableTab(tab) === "items"
+                      ? "flex flex-col overflow-hidden"
+                      : "overflow-auto"
+                  }`}
+                >
                   <TabPanel />
                 </div>
               </>

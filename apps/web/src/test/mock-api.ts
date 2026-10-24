@@ -27,6 +27,17 @@ export function mockStudioApi(mode: MockApiMode = "idle"): void {
     if (url.includes("/api/v1/connections/") && method === "DELETE") {
       return Promise.resolve(new Response(null, { status: 204 }));
     }
+    if (method === "POST" && url.includes("/scan")) {
+      return Promise.resolve(
+        json({
+          items: [{ id: { S: "user-0001" }, email: { S: "a@example.com" } }],
+          count: 1,
+          scannedCount: 1,
+          hasMore: false,
+          consumedCapacity: { rcu: 0.5 },
+        }),
+      );
+    }
     if (method === "GET" && /\/tables\/[^/?]+/.test(url)) {
       return Promise.resolve(
         json(errorBody("NOT_FOUND", "That table doesn't exist (anymore)."), 404),
