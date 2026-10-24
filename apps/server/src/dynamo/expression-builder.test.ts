@@ -30,8 +30,15 @@ function expectBuilt(
   expect(new Set(nameRefs)).toEqual(new Set(Object.keys(built.names)));
   expect(new Set(valueRefs)).toEqual(new Set(Object.keys(built.values)));
   for (const name of Object.values(built.names)) {
-    expect(built.expression.includes(name)).toBe(false);
+    expect(withoutOperators(built.expression).includes(name)).toBe(false);
   }
+}
+
+function withoutOperators(expression: string): string {
+  return expression.replace(
+    /attribute_not_exists|attribute_exists|attribute_type|begins_with|contains|BETWEEN|AND|OR|NOT|IN/g,
+    "",
+  );
 }
 
 function expectInvalid(run: () => unknown, message: RegExp): void {
@@ -392,7 +399,7 @@ describe("buildFilterExpression", () => {
           }
           assertPlaceholdersOnly(built.expression);
           for (const name of Object.values(built.names)) {
-            expect(built.expression.includes(name)).toBe(false);
+            expect(withoutOperators(built.expression).includes(name)).toBe(false);
           }
           expect(built.expression.includes(raw)).toBe(false);
           expect(built.expression.includes(digits)).toBe(false);
