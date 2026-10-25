@@ -237,6 +237,8 @@ export function ItemEditor(props: {
     setBaseline(formatted);
     setHash(result.hash);
     setPreview(result.item);
+    setEditing(false);
+    setDraftKind("view");
     clearConflict();
     showSnackbar("Saved");
   }

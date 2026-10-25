@@ -84,6 +84,17 @@ test("shows a conflict when another session changes the item", async ({ page }) 
   await expect(page.getByText("The conflict check is best-effort.")).toBeVisible();
   await page.getByRole("button", { name: "Reload latest" }).click();
   await expect(page.getByText("theirs@example.com").first()).toBeVisible();
+  await page.getByRole("button", { name: "Edit", exact: true }).click();
+  await replaceEditor(page, itemJson(id, { email: "mine-again@example.com" }));
+  await updateItem(page, id, { email: { S: "third@example.com" } });
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "This item changed since you opened it" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Overwrite" }).click();
+  await expect(page.getByRole("button", { name: "Edit", exact: true })).toBeVisible();
+  const stored = await getItem(page, id);
+  expect(stored.email).toEqual({ S: "mine-again@example.com" });
   await deleteItem(page, id);
 });
 
