@@ -29,6 +29,7 @@ import {
   type ColumnPrefs,
 } from "./columns.js";
 import { createTemplate } from "./editor-text.js";
+import { SelectionDelete } from "./SelectionDelete.js";
 import { useScanItems, type ScanQueryInput } from "./use-scan-items.js";
 
 const PAGE_SIZES = [25, 50, 100, 500] as const;
@@ -255,7 +256,19 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
       {selected.size > 0 ? (
         <div className="flex items-center gap-2 border-b border-outline px-3 py-2">
           <span>{`${String(selected.size)} selected`}</span>
-          <Button disabled>Delete</Button>
+          <SelectionDelete
+            connectionId={connectionId}
+            enabled={described.data !== undefined}
+            env={connection.data?.summary.env ?? "local"}
+            items={items}
+            keyNames={keys.map((key) => key.name)}
+            keys={keys.map((key) => ({ name: key.name, type: key.type }))}
+            selected={selected}
+            table={table}
+            onDone={() => {
+              setSelected(new Set());
+            }}
+          />
           <Button disabled>Copy</Button>
         </div>
       ) : null}

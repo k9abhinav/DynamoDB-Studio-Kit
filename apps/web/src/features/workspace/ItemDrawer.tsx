@@ -6,6 +6,7 @@ import { DRAWER_BREAKPOINT, DRAWER_MAX, DRAWER_MIN } from "../../lib/layout.js";
 import { useUiStore } from "../../stores/ui.js";
 import { ItemEditor } from "../items/ItemEditor.js";
 import { useTable } from "../tables/use-table.js";
+import { useLiveConnection } from "./use-live-connection.js";
 
 export function ItemDrawer({
   connectionId = "",
@@ -16,6 +17,7 @@ export function ItemDrawer({
 }) {
   const open = useUiStore((state) => state.drawerOpen);
   const described = useTable(connectionId, table);
+  const connection = useLiveConnection(connectionId);
   const width = useUiStore((state) => state.drawerWidth);
   const setWidth = useUiStore((state) => state.setDrawerWidth);
   const setOpen = useUiStore((state) => state.setDrawerOpen);
@@ -99,6 +101,7 @@ export function ItemDrawer({
               name: key.name,
               type: key.type,
             }))}
+            env={connection.data?.summary.env ?? "local"}
             kind={draftKind}
             table={table}
           />

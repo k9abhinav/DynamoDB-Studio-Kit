@@ -3,9 +3,11 @@ import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import { extractKey, type Item, type ItemKeySpec } from "@dynamo-studio/shared";
 import { useEffect, useState } from "react";
+import { ConfirmDialog } from "../../components/ConfirmDialog.js";
 import { ApiError } from "../../lib/api.js";
 import { useOverlayStore } from "../../stores/overlay.js";
 import { useUiStore } from "../../stores/ui.js";
+import { deleteConfirmation } from "./delete-confirm.js";
 import { EditorPane } from "./EditorPane.js";
 import {
   duplicateItem,
@@ -23,6 +25,7 @@ export function ItemEditor(props: {
   item: Item;
   keys: readonly ItemKeySpec[];
   kind: "view" | "create";
+  env: string;
 }) {
   const mutations = useItemMutations(props.connectionId, props.table);
   const showSnackbar = useOverlayStore((state) => state.showSnackbar);
@@ -35,12 +38,19 @@ export function ItemEditor(props: {
   const [baseline, setBaseline] = useState(text);
   const [hash, setHash] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
   const [issues, setIssues] = useState(
     () => readEditorDocument(text, "plain", options(props)).issues,
   );
   const dirty = text !== baseline;
   const blocking = issues.some((issue) => issue.severity !== "warning");
   const warning = issues.find((issue) => issue.severity === "warning");
+  const singleDelete = deleteConfirmation({
+    count: 1,
+    env: props.env,
+    table: props.table,
+    preview: "",
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -149,6 +159,22 @@ export function ItemEditor(props: {
     }
   }
 
+  async function removeItem(): Promise<void> {
+    setConfirming(false);
+    const key = extractKey(props.item, props.keys);
+    const result = await mutations.remove.mutateAsync(key);
+    setPreview(null);
+    useUiStore.getState().setDrawerOpen(false);
+    if (!result.deleted || result.previousItem === undefined) {
+      showSnackbar("Already deleted");
+      return;
+    }
+    const previous = result.previousItem;
+    showSnackbar("Deleted", () => {
+      void mutations.create.mutateAsync({ key, item: previous });
+    });
+  }
+
   async function openExisting(): Promise<void> {
     const read = readEditorDocument(text, mode, options(props));
     if (read.item === null) {
@@ -204,6 +230,14 @@ export function ItemEditor(props: {
               Duplicate
             </Button>
             <Button
+              color="error"
+              onClick={() => {
+                setConfirming(true);
+              }}
+            >
+              Delete
+            </Button>
+            <Button
               variant="contained"
               onClick={() => {
                 setEditing(true);
@@ -252,6 +286,19 @@ export function ItemEditor(props: {
           This item changed since you opened it.
         </p>
       )}
+      <ConfirmDialog
+        open={confirming}
+        title={singleDelete.title}
+        body={JSON.stringify(extractKey(props.item, props.keys))}
+        confirmLabel="Delete"
+        {...(singleDelete.typedName === undefined ? {} : { typedName: singleDelete.typedName })}
+        onConfirm={() => {
+          void removeItem();
+        }}
+        onClose={() => {
+          setConfirming(false);
+        }}
+      />
     </div>
   );
 }

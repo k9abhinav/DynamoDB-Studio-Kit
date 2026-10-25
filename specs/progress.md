@@ -75,7 +75,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T5.6 JSON editor
 - [x] T5.7 Item drawer
 - [x] T5.8 Create and duplicate
-- [ ] T5.9 Delete and undo
+- [x] T5.9 Delete and undo
 - [ ] T5.10 Conflict dialog
 - [ ] T5.11 Copy menu
 - [ ] T5.12 Read-only and unsaved guard
@@ -97,6 +97,8 @@ T5.6 ✔ `apps/web/src/features/items/EditorPane.test.tsx`. Monaco is loaded fro
 T5.7 ✔ `apps/web/src/features/items/editor-text.test.ts` and `ItemsPanel.test.tsx`. Opening a row shows plain JSON, so `1E+2` stays text. A changed key or an empty set blocks save. Save sends the hash from when the item was opened.
 
 T5.8 ✔ `editor-text.test.ts`. A new item starts with an empty string key or `"0"` for a number key, so save stays disabled until the key is filled. Duplicate copies the other attributes and clears the key. A collision says an item with this key already exists and offers Open existing item.
+
+T5.9 ✔ `delete-confirm.test.ts`. One item confirms normally. Production types the table name. More than 25 items types DELETE. Undo of a delete puts the previous item back with `ifNotExists`. A missing item says Already deleted. Bulk delete shows progress and can be cancelled between chunks.
 
 ## Acceptance criteria evidence
 
