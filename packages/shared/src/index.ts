@@ -105,6 +105,17 @@ export {
   toPlainItem,
 } from "./typed-json.js";
 export {
+  ITEM_SIZE_LIMIT,
+  ITEM_SIZE_WARN,
+  estimateItemSize,
+  extractKey,
+  itemHash,
+  validateTypedItem,
+  type ItemIssue,
+  type ItemKeySpec,
+  type ValidateItemOptions,
+} from "./item-check.js";
+export {
   PROJECTION_LIMIT,
   SCAN_PAGE_DEFAULT,
   SCAN_PAGE_MAX,

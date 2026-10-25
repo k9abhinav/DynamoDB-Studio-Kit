@@ -68,7 +68,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 
 ## Phase 5 tasks
 - [x] T5.1 Typed JSON plain projection
-- [ ] T5.2 Validation, hash, and size
+- [x] T5.2 Validation, hash, and size
 - [ ] T5.3 Item routes
 - [ ] T5.4 Batch delete
 - [ ] T5.5 Web mutations
@@ -83,6 +83,8 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [ ] T5.14 Progress summary
 
 T5.1 ✔ `packages/shared/src/typed-json.test.ts`. 1,000 generated items and the edge fixtures round-trip through `lossless-json`, including a 38-digit number, `1E+2`, `-0`, and `$b` keys. `lossless-json` 4.3.3 is the approved parser. `fast-check` 4.10.2 is a shared dev dependency for that property test.
+
+T5.2 ✔ `packages/shared/src/item-check.test.ts`. Empty sets, duplicate members, bad numbers, bad binary, depth 33, and a changed key are errors. A 390,000-character string stays under 400 KB. The hash is SHA-256 base64url of canonical typed JSON, so `1E+2` does not match `100`.
 
 ## Acceptance criteria evidence
 
