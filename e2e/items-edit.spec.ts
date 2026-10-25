@@ -146,12 +146,9 @@ test("saves a 390 KB item and blocks one over 400 KB", async ({ page }) => {
   await editModel(page, (current) => current.replace("aaaaaaaa", "aaaaaaab"));
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByRole("button", { name: "Edit", exact: true })).toBeVisible();
-  const stored = await getItem(page, "large");
-  expect(stored.blob.S?.includes("aaaaaaab")).toBe(true);
+  expect((await blobText(page, "large")).includes("aaaaaaab")).toBe(true);
   await page.getByRole("button", { name: "Undo", exact: true }).click();
-  await expect
-    .poll(async () => (await getItem(page, "large")).blob.S?.includes("aaaaaaab"))
-    .toBe(false);
+  await expect.poll(async () => (await blobText(page, "large")).includes("aaaaaaab")).toBe(false);
   await page.getByRole("button", { name: "Edit", exact: true }).click();
   const oversized = (await readModel(page)).replace("a".repeat(100), "a".repeat(20_000));
   await writeModel(page, oversized);
@@ -252,6 +249,18 @@ async function updateItem(page: Page, id: string, extra: Record<string, unknown>
     data: { key: { id: { S: id } }, item: { id: { S: id }, ...extra } },
   });
   expect(response.ok(), await response.text()).toBeTruthy();
+}
+
+function requiredString(value: { S?: string } | undefined): string {
+  if (value === undefined || value.S === undefined) {
+    throw new Error("missing value");
+  }
+  return value.S;
+}
+
+async function blobText(page: Page, id: string): Promise<string> {
+  const item = await getItem(page, id);
+  return requiredString(item.blob);
 }
 
 async function getItem(
