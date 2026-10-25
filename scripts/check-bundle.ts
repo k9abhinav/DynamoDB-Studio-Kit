@@ -34,6 +34,17 @@ export async function initialJavaScriptGzip(distDir: string): Promise<number> {
   return total;
 }
 
+export async function entryImportsMonaco(distDir: string): Promise<boolean> {
+  const html = await readFile(join(distDir, "index.html"), "utf8");
+  for (const path of initialScriptPaths(html)) {
+    const source = await readFile(join(distDir, path), "utf8");
+    if (source.includes("monaco-editor") || source.includes("MonacoEnvironment")) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export function initialBudgetMessage(bytes: number, budget = INITIAL_JS_BUDGET): string {
   return `Initial JavaScript gzip: ${String(bytes)} bytes (budget ${String(budget)})`;
 }
@@ -42,6 +53,10 @@ const entry = process.argv[1];
 if (entry !== undefined && fileURLToPath(import.meta.url) === entry) {
   const bytes = await initialJavaScriptGzip("apps/web/dist");
   process.stdout.write(`${initialBudgetMessage(bytes)}\n`);
+  if (await entryImportsMonaco("apps/web/dist")) {
+    process.stderr.write("Monaco is in the initial JavaScript entry\n");
+    process.exit(1);
+  }
   if (bytes > INITIAL_JS_BUDGET) {
     process.stderr.write("Initial JavaScript exceeds the 230 KB gzip budget\n");
     process.exit(1);

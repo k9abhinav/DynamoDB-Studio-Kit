@@ -180,11 +180,22 @@ export function ItemEditor(props: {
       );
       if (!creating) {
         showSnackbar("Saved", () => {
-          void mutations.undoEdit({
-            key: extractKey(before, props.keys),
-            previous: before,
-            savedHash: result.hash,
-          });
+          void mutations
+            .undoEdit({
+              key: extractKey(before, props.keys),
+              previous: before,
+              savedHash: result.hash,
+            })
+            .then((restored) => {
+              if (restored === undefined) {
+                return;
+              }
+              const next = formatItem(restored.item, mode);
+              setText(next);
+              setBaseline(next);
+              setHash(restored.hash);
+              setPreview(restored.item);
+            });
         });
       } else {
         showSnackbar("Created");
@@ -348,7 +359,13 @@ export function ItemEditor(props: {
             onChange={setText}
           />
         ) : (
-          <pre className="h-full overflow-auto font-mono text-[13px] leading-5">{text}</pre>
+          <pre
+            aria-label="Item JSON"
+            className="h-full overflow-auto font-mono text-[13px] leading-5"
+            tabIndex={0} // eslint-disable-line jsx-a11y/no-noninteractive-tabindex -- keyboard access to the scrollable item
+          >
+            {text}
+          </pre>
         )}
       </div>
       {warning === undefined ? null : (

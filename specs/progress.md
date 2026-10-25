@@ -79,7 +79,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T5.10 Conflict dialog
 - [x] T5.11 Copy menu
 - [x] T5.12 Read-only and unsaved guard
-- [ ] T5.13 Playwright
+- [x] T5.13 Playwright
 - [ ] T5.14 Progress summary
 
 T5.1 ✔ `packages/shared/src/typed-json.test.ts`. 1,000 generated items and the edge fixtures round-trip through `lossless-json`, including a 38-digit number, `1E+2`, `-0`, and `$b` keys. `lossless-json` 4.3.3 is the approved parser. `fast-check` 4.10.2 is a shared dev dependency for that property test.
@@ -105,6 +105,8 @@ T5.10 ✔ `ConflictDialog.test.tsx`. A hash mismatch shows your edit and the lat
 T5.11 ✔ `copy-command.test.ts`. The AWS CLI command single-quotes quotes, unicode, and newlines, adds `--endpoint-url` only for a non-AWS host, and never includes credentials.
 
 T5.12 ✔ `ItemDrawer.test.tsx`. Closing the drawer with unsaved edits asks "Discard changes?" before the drawer goes away. Read-only connections disable Edit, Duplicate, Delete, and Create with the tooltip "This connection is read-only". Navigation away is blocked the same way. The server still returns 403 for a read-only write.
+
+T5.13 ✔ `e2e/items-edit.spec.ts` (7 tests) and `scripts/check-bundle.test.ts`. Edit, undo, a second-session conflict, a create collision, a production typed delete, and a 100-item delete all ran in Chromium. Saving through the textarea fallback kept the string, the number (`100`), and the string set. A 390 KB item saved and undid; growing it past 400 KB disabled Save and showed the limit message. The open drawer had no serious or critical axe violations in light or dark, and Escape returned focus to the `large` cell. Screenshots are `docs/screenshots/phase-5/item-drawer-light.png` and `item-drawer-dark.png`. Monaco's package exports do not expose `esm/vs/...` or the CSS file, so the workers import `monaco-editor/editor/editor.worker` and `monaco-editor/language/json/json.worker`, and Vite aliases the CSS onto the real file. The entry-script check rejects `monaco-editor` and `MonacoEnvironment`.
 
 ## Acceptance criteria evidence
 

@@ -3,7 +3,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 import { afterEach, describe, expect, it } from "vitest";
-import { INITIAL_JS_BUDGET, initialJavaScriptGzip, initialScriptPaths } from "./check-bundle.js";
+import {
+  INITIAL_JS_BUDGET,
+  entryImportsMonaco,
+  initialJavaScriptGzip,
+  initialScriptPaths,
+} from "./check-bundle.js";
 
 describe("initial JavaScript budget", () => {
   let directory = "";
@@ -39,5 +44,8 @@ describe("initial JavaScript budget", () => {
     await writeFile(join(directory, "assets", "index.js"), entry);
     await writeFile(join(directory, "assets", "ConnectScreen.js"), lazy);
     await expect(initialJavaScriptGzip(directory)).resolves.toBe(gzipSync(entry).byteLength);
+    await expect(entryImportsMonaco(directory)).resolves.toBe(false);
+    await writeFile(join(directory, "assets", "index.js"), "monaco-editor");
+    await expect(entryImportsMonaco(directory)).resolves.toBe(true);
   });
 });

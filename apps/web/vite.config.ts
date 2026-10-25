@@ -1,3 +1,4 @@
+import { realpathSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,6 +9,8 @@ import { defineConfig, type Alias } from "vite";
 const sharedSource = fileURLToPath(new URL("../../packages/shared/src/index.ts", import.meta.url));
 
 const require = createRequire(import.meta.url);
+const webRoot = path.dirname(fileURLToPath(import.meta.url));
+const monacoRoot = realpathSync(path.join(webRoot, "node_modules/monaco-editor"));
 
 /**
  * react-router@7.18.4's export map points `import`, `module`, and `default`
@@ -55,6 +58,10 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: [
       { find: "@dynamo-studio/shared", replacement: sharedSource },
+      {
+        find: "monaco-editor/min/vs/editor/editor.main.css",
+        replacement: path.join(monacoRoot, "min/vs/editor/editor.main.css"),
+      },
       ...(mode === "production" ? reactRouterProductionAliases() : []),
     ],
   },

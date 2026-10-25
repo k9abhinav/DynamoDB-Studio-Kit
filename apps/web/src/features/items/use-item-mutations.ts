@@ -90,9 +90,13 @@ export function useItemMutations(connectionId: string, table: string) {
     },
   });
 
-  async function undoEdit(input: { key: Item; previous: Item; savedHash: string }): Promise<void> {
+  async function undoEdit(input: {
+    key: Item;
+    previous: Item;
+    savedHash: string;
+  }): Promise<ItemWriteResponse | undefined> {
     try {
-      await update.mutateAsync({
+      return await update.mutateAsync({
         key: input.key,
         item: input.previous,
         expectedHash: input.savedHash,
