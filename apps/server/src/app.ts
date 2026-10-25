@@ -14,6 +14,7 @@ import { registerSecurity, type SecurityOptions } from "./plugins/security.js";
 import { connectionRoutes } from "./routes/connections.js";
 import { healthRoutes } from "./routes/health.js";
 import { profileRoutes } from "./routes/profiles.js";
+import { itemRoutes } from "./routes/items.js";
 import { tableRoutes } from "./routes/tables.js";
 import { HttpError } from "./http-error.js";
 import { createConnectionManager } from "./services/connection-manager.js";
@@ -84,6 +85,7 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   await app.register(connectionRoutes);
   await app.register(profileRoutes);
   await app.register(tableRoutes);
+  await app.register(itemRoutes);
   if (options.enableProbe ?? process.env.NODE_ENV === "test") {
     app.post("/api/v1/connections/:id/mutations/probe", async (request, reply) => {
       const params = z.strictObject({ id: z.string().min(1) }).parse(request.params);

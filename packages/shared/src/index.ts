@@ -116,6 +116,22 @@ export {
   type ValidateItemOptions,
 } from "./item-check.js";
 export {
+  DeleteItemRequest,
+  DeleteItemResponse,
+  GetItemRequest,
+  GetItemResponse,
+  ItemWriteResponse,
+  PutItemRequest,
+  UpdateItemRequest,
+  type DeleteItemRequest as DeleteItemRequestBody,
+  type DeleteItemResponse as DeleteItemResponseBody,
+  type GetItemRequest as GetItemRequestBody,
+  type GetItemResponse as GetItemResponseBody,
+  type ItemWriteResponse as ItemWriteResponseBody,
+  type PutItemRequest as PutItemRequestBody,
+  type UpdateItemRequest as UpdateItemRequestBody,
+} from "./api/items.js";
+export {
   PROJECTION_LIMIT,
   SCAN_PAGE_DEFAULT,
   SCAN_PAGE_MAX,
