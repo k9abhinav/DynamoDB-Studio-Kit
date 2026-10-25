@@ -150,11 +150,11 @@ test("disables writes on a read-only connection", async ({ page }) => {
   expect(errorCode(await denied.json())).toBe("READ_ONLY");
 });
 
-test("deletes 100 created items from the grid", async ({ page }) => {
+test("deletes 120 created items from the grid", async ({ page }) => {
   test.setTimeout(180_000);
   await openWorkspace(page, "/t/edge-cases/items");
   const prefix = `p5-bulk-${stamp}-`;
-  for (let index = 0; index < 100; index += 1) {
+  for (let index = 0; index < 120; index += 1) {
     await putItem(page, `${prefix}${String(index).padStart(3, "0")}`, {
       email: { S: "bulk@example.com" },
     });
@@ -167,13 +167,13 @@ test("deletes 100 created items from the grid", async ({ page }) => {
   await page.getByRole("option", { name: "begins_with" }).click();
   await page.getByRole("textbox", { name: "Value" }).fill(prefix);
   await page.getByRole("button", { name: "Apply filter" }).click();
-  await expect(page.getByText(/Showing 100 ·/)).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByText(/Showing 120 ·/)).toBeVisible({ timeout: 60_000 });
   await page.getByRole("checkbox", { name: "Select all loaded items" }).click();
   await page.getByRole("button", { name: "Delete", exact: true }).click();
-  const dialog = page.getByRole("dialog", { name: "Delete 100 items?" });
+  const dialog = page.getByRole("dialog", { name: "Delete 120 items?" });
   await dialog.getByRole("textbox", { name: "Type DELETE to confirm" }).fill("DELETE");
   await dialog.getByRole("button", { name: "Delete" }).click();
-  await expect(page.getByText("Deleted 100, 0 failed")).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByText("Deleted 120, 0 failed")).toBeVisible({ timeout: 60_000 });
 });
 
 test("saves a 390 KB item and blocks one over 400 KB", async ({ page }) => {

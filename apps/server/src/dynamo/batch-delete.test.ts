@@ -49,6 +49,31 @@ describe("batchDeleteItems", () => {
     expect(sent).toEqual([25, 1, 5, 1]);
   });
 
+  it("retries unprocessed keys across 120 items", async () => {
+    const sent: number[] = [];
+    const client: DynamoCaller = {
+      destroy() {
+        return undefined;
+      },
+      send(command) {
+        const batch = batchOf(command);
+        sent.push(batch.length);
+        if (batch.length > 25) {
+          return Promise.reject(new Error("chunk too big"));
+        }
+        if (batch.length > 1) {
+          return Promise.resolve({ UnprocessedItems: { users: batch.slice(0, 1) } });
+        }
+        return Promise.resolve({ UnprocessedItems: {} });
+      },
+    };
+    const keys = Array.from({ length: 120 }, (_unused, index) => key(String(index)));
+    const result = await batchDeleteItems(scope(client), keys, () => Promise.resolve());
+    expect(result).toEqual({ deleted: 120, failed: [] });
+    expect(sent.every((count) => count <= 25)).toBe(true);
+    expect(sent).toEqual([25, 1, 25, 1, 25, 1, 25, 1, 20, 1]);
+  });
+
   it("returns keys that stay unprocessed after the retry budget", async () => {
     const sleep = vi.fn(() => Promise.resolve());
     const client: DynamoCaller = {
