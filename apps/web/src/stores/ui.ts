@@ -15,6 +15,8 @@ interface UiState {
   drawerOpen: boolean;
   itemPreview: Item | null;
   draftKind: "view" | "create";
+  editorDirty: boolean;
+  discardPrompt: boolean;
   openTables: string[];
   lastTab: Record<string, TableTab>;
   setDensity: (density: Density) => void;
@@ -23,6 +25,8 @@ interface UiState {
   setDrawerOpen: (open: boolean) => void;
   setItemPreview: (preview: Item | null) => void;
   setDraftKind: (kind: "view" | "create") => void;
+  setEditorDirty: (dirty: boolean) => void;
+  setDiscardPrompt: (open: boolean) => void;
   openTable: (name: string) => boolean;
   closeTable: (name: string) => string | undefined;
   rememberTab: (name: string, tab: TableTab) => void;
@@ -35,6 +39,8 @@ export const uiDefaults = {
   drawerOpen: false,
   itemPreview: null as Item | null,
   draftKind: "view" as const,
+  editorDirty: false,
+  discardPrompt: false,
   openTables: [] as string[],
   lastTab: {} as Record<string, TableTab>,
 };
@@ -60,6 +66,12 @@ export const useUiStore = create<UiState>()(
       },
       setDraftKind: (draftKind) => {
         set({ draftKind });
+      },
+      setEditorDirty: (editorDirty) => {
+        set({ editorDirty });
+      },
+      setDiscardPrompt: (discardPrompt) => {
+        set({ discardPrompt });
       },
       openTable: (name) => {
         const { openTables } = get();

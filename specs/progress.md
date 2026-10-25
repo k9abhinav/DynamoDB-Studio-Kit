@@ -78,7 +78,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T5.9 Delete and undo
 - [x] T5.10 Conflict dialog
 - [x] T5.11 Copy menu
-- [ ] T5.12 Read-only and unsaved guard
+- [x] T5.12 Read-only and unsaved guard
 - [ ] T5.13 Playwright
 - [ ] T5.14 Progress summary
 
@@ -103,6 +103,8 @@ T5.9 ✔ `delete-confirm.test.ts`. One item confirms normally. Production types 
 T5.10 ✔ `ConflictDialog.test.tsx`. A hash mismatch shows your edit and the latest item, says the check is best-effort, and offers Reload latest or Overwrite. Overwrite saves without the hash but still requires the item to exist.
 
 T5.11 ✔ `copy-command.test.ts`. The AWS CLI command single-quotes quotes, unicode, and newlines, adds `--endpoint-url` only for a non-AWS host, and never includes credentials.
+
+T5.12 ✔ `ItemDrawer.test.tsx`. Closing the drawer with unsaved edits asks "Discard changes?" before the drawer goes away. Read-only connections disable Edit, Duplicate, Delete, and Create with the tooltip "This connection is read-only". Navigation away is blocked the same way. The server still returns 403 for a read-only write.
 
 ## Acceptance criteria evidence
 

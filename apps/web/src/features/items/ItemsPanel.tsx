@@ -138,7 +138,16 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
       <div className="flex flex-wrap items-center gap-2 border-b border-outline px-3 py-2">
         <Toolbar mode={mode} onMode={setMode} />
         {loaded > 0 ? (
-          <Button variant="contained" disabled={described.data === undefined} onClick={startCreate}>
+          <Button
+            variant="contained"
+            disabled={described.data === undefined || connection.data?.summary.readOnly === true}
+            title={
+              connection.data?.summary.readOnly === true
+                ? "This connection is read-only"
+                : undefined
+            }
+            onClick={startCreate}
+          >
             Create item
           </Button>
         ) : null}
@@ -261,6 +270,7 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
           <SelectionDelete
             connectionId={connectionId}
             enabled={described.data !== undefined}
+            readOnly={connection.data?.summary.readOnly === true}
             env={connection.data?.summary.env ?? "local"}
             items={items}
             keyNames={keys.map((key) => key.name)}
@@ -349,7 +359,9 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
             action={
               <Button
                 variant="contained"
-                disabled={described.data === undefined}
+                disabled={
+                  described.data === undefined || connection.data?.summary.readOnly === true
+                }
                 onClick={startCreate}
               >
                 Create item

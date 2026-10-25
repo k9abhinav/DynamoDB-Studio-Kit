@@ -1,4 +1,5 @@
 import Button from "@mui/material/Button";
+import Tooltip from "@mui/material/Tooltip";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
@@ -24,6 +25,7 @@ export function SelectionDelete(props: {
   keyNames: readonly string[];
   keys: readonly ItemKeySpec[];
   enabled: boolean;
+  readOnly: boolean;
   onDone: () => void;
 }) {
   const queryClient = useQueryClient();
@@ -91,14 +93,18 @@ export function SelectionDelete(props: {
 
   return (
     <>
-      <Button
-        disabled={!props.enabled || targets.length === 0}
-        onClick={() => {
-          setOpen(true);
-        }}
-      >
-        Delete
-      </Button>
+      <Tooltip title={props.readOnly ? "This connection is read-only" : ""}>
+        <span>
+          <Button
+            disabled={!props.enabled || targets.length === 0 || props.readOnly}
+            onClick={() => {
+              setOpen(true);
+            }}
+          >
+            Delete
+          </Button>
+        </span>
+      </Tooltip>
       <ConfirmDialog
         open={open}
         title={confirm.title}

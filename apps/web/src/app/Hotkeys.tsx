@@ -30,6 +30,10 @@ export function Hotkeys() {
         }
         if (drawerOpen) {
           event.preventDefault();
+          if (useUiStore.getState().editorDirty) {
+            useUiStore.getState().setDiscardPrompt(true);
+            return;
+          }
           useUiStore.getState().setDrawerOpen(false);
         }
         return;

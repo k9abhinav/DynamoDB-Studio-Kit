@@ -1,4 +1,5 @@
 import CloseOutlined from "@mui/icons-material/CloseOutlined";
+import { ConfirmDialog } from "../../components/ConfirmDialog.js";
 import IconButton from "@mui/material/IconButton";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Unstable_TrapFocus from "@mui/material/Unstable_TrapFocus";
@@ -21,6 +22,19 @@ export function ItemDrawer({
   const width = useUiStore((state) => state.drawerWidth);
   const setWidth = useUiStore((state) => state.setDrawerWidth);
   const setOpen = useUiStore((state) => state.setDrawerOpen);
+  const editorDirty = useUiStore((state) => state.editorDirty);
+  const discardPrompt = useUiStore((state) => state.discardPrompt);
+  const setDiscardPrompt = useUiStore((state) => state.setDiscardPrompt);
+  const setEditorDirty = useUiStore((state) => state.setEditorDirty);
+  const readOnly = connection.data?.summary.readOnly === true;
+
+  function requestClose(): void {
+    if (editorDirty) {
+      setDiscardPrompt(true);
+      return;
+    }
+    setOpen(false);
+  }
   const preview = useUiStore((state) => state.itemPreview);
   const draftKind = useUiStore((state) => state.draftKind);
   const overlay = useMediaQuery(`(max-width: ${String(DRAWER_BREAKPOINT - 1)}px)`);
@@ -29,7 +43,7 @@ export function ItemDrawer({
   }
 
   const panel = (
-    <Unstable_TrapFocus open>
+    <Unstable_TrapFocus open={!discardPrompt}>
       <div
         role="dialog"
         aria-labelledby="item-drawer-title"
@@ -42,12 +56,7 @@ export function ItemDrawer({
           <h2 id="item-drawer-title" className="text-base font-medium">
             Item details
           </h2>
-          <IconButton
-            aria-label="Close item details"
-            onClick={() => {
-              setOpen(false);
-            }}
-          >
+          <IconButton aria-label="Close item details" onClick={requestClose}>
             <CloseOutlined />
           </IconButton>
         </header>
@@ -105,6 +114,7 @@ export function ItemDrawer({
             env={connection.data?.summary.env ?? "local"}
             region={connection.data?.summary.region ?? ""}
             kind={draftKind}
+            readOnly={readOnly}
             table={table}
           />
         )}
@@ -112,8 +122,30 @@ export function ItemDrawer({
     </Unstable_TrapFocus>
   );
 
+  const discard = (
+    <ConfirmDialog
+      open={discardPrompt}
+      title="Discard changes?"
+      body="You have unsaved edits."
+      confirmLabel="Discard"
+      onConfirm={() => {
+        setEditorDirty(false);
+        setDiscardPrompt(false);
+        setOpen(false);
+      }}
+      onClose={() => {
+        setDiscardPrompt(false);
+      }}
+    />
+  );
+
   if (!overlay) {
-    return panel;
+    return (
+      <>
+        {panel}
+        {discard}
+      </>
+    );
   }
 
   return (
@@ -122,11 +154,10 @@ export function ItemDrawer({
         type="button"
         aria-label="Close item details"
         className="fixed inset-0 z-10 bg-text/30"
-        onClick={() => {
-          setOpen(false);
-        }}
+        onClick={requestClose}
       />
       {panel}
+      {discard}
     </>
   );
 }

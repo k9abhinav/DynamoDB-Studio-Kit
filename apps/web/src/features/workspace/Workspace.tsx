@@ -4,7 +4,8 @@ import Button from "@mui/material/Button";
 import type { ConnectionHeartbeatBody } from "@dynamo-studio/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { Navigate, useNavigate, useParams } from "react-router-dom";
+import { Navigate, useBlocker, useNavigate, useParams } from "react-router-dom";
+import { ConfirmDialog } from "../../components/ConfirmDialog.js";
 import { EmptyState } from "../../components/EmptyState.js";
 import { api, ApiError } from "../../lib/api.js";
 import { stopScans } from "../items/use-scan-items.js";
@@ -25,6 +26,9 @@ export function Workspace() {
   const queryClient = useQueryClient();
   const { connId = "", table, tab } = useParams();
   const openTables = useUiStore((state) => state.openTables);
+  const editorDirty = useUiStore((state) => state.editorDirty);
+  const setEditorDirty = useUiStore((state) => state.setEditorDirty);
+  const blocker = useBlocker(editorDirty);
   const query = useLiveConnection(connId);
   const blocked =
     table !== undefined && !openTables.includes(table) && openTables.length >= MAX_OPEN_TABLES;
@@ -141,6 +145,23 @@ export function Workspace() {
             )}
           </main>
           <ItemDrawer connectionId={connId} table={table ?? ""} />
+          <ConfirmDialog
+            open={blocker.state === "blocked"}
+            title="Discard changes?"
+            body="You have unsaved edits."
+            confirmLabel="Discard"
+            onConfirm={() => {
+              setEditorDirty(false);
+              if (blocker.state === "blocked") {
+                blocker.proceed();
+              }
+            }}
+            onClose={() => {
+              if (blocker.state === "blocked") {
+                blocker.reset();
+              }
+            }}
+          />
         </div>
       </div>
     </div>

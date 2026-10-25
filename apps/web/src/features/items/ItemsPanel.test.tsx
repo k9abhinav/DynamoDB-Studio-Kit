@@ -13,7 +13,14 @@ beforeEach(() => {
   localStorage.clear();
   sessionStorage.clear();
   resetApiSession();
-  useUiStore.setState({ drawerOpen: false, itemPreview: null, openTables: [], draftKind: "view" });
+  useUiStore.setState({
+    drawerOpen: false,
+    itemPreview: null,
+    openTables: [],
+    draftKind: "view",
+    editorDirty: false,
+    discardPrompt: false,
+  });
 });
 
 describe("ItemsPanel", () => {

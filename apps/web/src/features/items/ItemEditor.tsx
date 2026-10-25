@@ -1,4 +1,5 @@
 import Button from "@mui/material/Button";
+import Tooltip from "@mui/material/Tooltip";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import { extractKey, type Item, type ItemKeySpec } from "@dynamo-studio/shared";
@@ -30,12 +31,14 @@ export function ItemEditor(props: {
   env: string;
   region: string;
   endpoint: string;
+  readOnly: boolean;
 }) {
   const mutations = useItemMutations(props.connectionId, props.table);
   const showSnackbar = useOverlayStore((state) => state.showSnackbar);
   const [mode, setMode] = useState<JsonMode>("plain");
   const setPreview = useUiStore((state) => state.setItemPreview);
   const setDraftKind = useUiStore((state) => state.setDraftKind);
+  const setEditorDirty = useUiStore((state) => state.setEditorDirty);
   const creating = props.kind === "create";
   const [editing, setEditing] = useState(creating);
   const [text, setText] = useState(() => formatItem(props.item, "plain"));
@@ -58,6 +61,16 @@ export function ItemEditor(props: {
     table: props.table,
     preview: "",
   });
+
+  useEffect(() => {
+    setEditorDirty(editing && dirty);
+  }, [dirty, editing, setEditorDirty]);
+
+  useEffect(() => {
+    return () => {
+      setEditorDirty(false);
+    };
+  }, [setEditorDirty]);
 
   useEffect(() => {
     let cancelled = false;
@@ -272,43 +285,58 @@ export function ItemEditor(props: {
         {editing ? (
           <Button
             variant="contained"
-            disabled={!dirty || blocking || (!creating && hash === null)}
+            disabled={props.readOnly || !dirty || blocking || (!creating && hash === null)}
             onClick={() => void save()}
           >
             Save
           </Button>
         ) : (
           <>
-            <Button
-              onClick={() => {
-                setDraftKind("create");
-                setPreview(duplicateItem(props.item, props.keys));
-              }}
-            >
-              Duplicate
-            </Button>
             <CopyMenu
               endpoint={props.endpoint}
               item={props.item}
               region={props.region}
               table={props.table}
             />
-            <Button
-              color="error"
-              onClick={() => {
-                setConfirming(true);
-              }}
-            >
-              Delete
-            </Button>
-            <Button
-              variant="contained"
-              onClick={() => {
-                setEditing(true);
-              }}
-            >
-              Edit
-            </Button>
+            <Tooltip title={props.readOnly ? "This connection is read-only" : ""}>
+              <span>
+                <Button
+                  color="error"
+                  disabled={props.readOnly}
+                  onClick={() => {
+                    setConfirming(true);
+                  }}
+                >
+                  Delete
+                </Button>
+              </span>
+            </Tooltip>
+            <Tooltip title={props.readOnly ? "This connection is read-only" : ""}>
+              <span>
+                <Button
+                  disabled={props.readOnly}
+                  onClick={() => {
+                    setDraftKind("create");
+                    setPreview(duplicateItem(props.item, props.keys));
+                  }}
+                >
+                  Duplicate
+                </Button>
+              </span>
+            </Tooltip>
+            <Tooltip title={props.readOnly ? "This connection is read-only" : ""}>
+              <span>
+                <Button
+                  variant="contained"
+                  disabled={props.readOnly}
+                  onClick={() => {
+                    setEditing(true);
+                  }}
+                >
+                  Edit
+                </Button>
+              </span>
+            </Tooltip>
           </>
         )}
       </div>
