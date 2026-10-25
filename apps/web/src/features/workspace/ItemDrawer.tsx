@@ -4,9 +4,18 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import Unstable_TrapFocus from "@mui/material/Unstable_TrapFocus";
 import { DRAWER_BREAKPOINT, DRAWER_MAX, DRAWER_MIN } from "../../lib/layout.js";
 import { useUiStore } from "../../stores/ui.js";
+import { ItemEditor } from "../items/ItemEditor.js";
+import { useTable } from "../tables/use-table.js";
 
-export function ItemDrawer() {
+export function ItemDrawer({
+  connectionId = "",
+  table = "",
+}: {
+  connectionId?: string;
+  table?: string;
+}) {
   const open = useUiStore((state) => state.drawerOpen);
+  const described = useTable(connectionId, table);
   const width = useUiStore((state) => state.drawerWidth);
   const setWidth = useUiStore((state) => state.setDrawerWidth);
   const setOpen = useUiStore((state) => state.setDrawerOpen);
@@ -82,9 +91,12 @@ export function ItemDrawer() {
             Select an item to see its details.
           </p>
         ) : (
-          <pre className="min-h-0 flex-1 overflow-auto px-4 py-4 font-mono text-[13px] leading-5">
-            {preview}
-          </pre>
+          <ItemEditor
+            connectionId={connectionId}
+            item={preview}
+            keys={described.data?.keySchema ?? []}
+            table={table}
+          />
         )}
       </div>
     </Unstable_TrapFocus>

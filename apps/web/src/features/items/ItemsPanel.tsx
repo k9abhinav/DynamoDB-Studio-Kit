@@ -306,7 +306,7 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
             selected={selected}
             onSelected={setSelected}
             onOpen={(item) => {
-              setPreview(JSON.stringify(item, null, 2));
+              setPreview(item);
               setDrawerOpen(true);
             }}
             onNearEnd={() => {

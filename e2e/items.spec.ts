@@ -33,7 +33,9 @@ test("browses orders, filters status, and opens an item from the keyboard", asyn
     .nth(1);
   await cell.focus();
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("dialog", { name: "Item details" })).toContainText('"S": "SHIPPED"');
+  await expect(page.getByRole("dialog", { name: "Item details" })).toContainText(
+    '"status": "SHIPPED"',
+  );
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog", { name: "Item details" })).toBeHidden();
 

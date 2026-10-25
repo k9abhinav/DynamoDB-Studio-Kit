@@ -104,6 +104,14 @@ export function stringifyPlain(value: unknown): string {
   return text;
 }
 
+export function formatPlain(value: unknown): string {
+  const text = stringify(value, null, 2);
+  if (text === undefined) {
+    throw new PlainJsonError("Could not format this JSON.");
+  }
+  return text;
+}
+
 export function parsePlain(text: string): unknown {
   return parse(text);
 }

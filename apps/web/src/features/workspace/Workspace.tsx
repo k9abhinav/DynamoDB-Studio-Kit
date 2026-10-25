@@ -140,7 +140,7 @@ export function Workspace() {
               </>
             )}
           </main>
-          <ItemDrawer />
+          <ItemDrawer connectionId={connId} table={table ?? ""} />
         </div>
       </div>
     </div>

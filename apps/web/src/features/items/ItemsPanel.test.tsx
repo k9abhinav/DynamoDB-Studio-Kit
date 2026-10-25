@@ -17,7 +17,7 @@ beforeEach(() => {
 });
 
 describe("ItemsPanel", () => {
-  it("shows an empty table, then a typed preview", async () => {
+  it("shows an empty table, then a plain JSON preview", async () => {
     const user = userEvent.setup();
     stubScan({
       items: [{ id: { S: "user-0001" }, email: { S: "a@example.com" } }],
@@ -29,7 +29,7 @@ describe("ItemsPanel", () => {
     render(
       <AppProviders>
         <ItemsPanel connectionId="local" table="users" />
-        <ItemDrawer />
+        <ItemDrawer connectionId="local" table="users" />
       </AppProviders>,
     );
     expect(await screen.findByText("Showing 1 · Scanned 4 · 1.5 RCU")).toBeInTheDocument();
@@ -40,9 +40,8 @@ describe("ItemsPanel", () => {
     expect(screen.getByRole("button", { name: "Delete" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Copy" })).toBeDisabled();
     await user.click(screen.getByText("a@example.com"));
-    expect(screen.getByRole("dialog", { name: "Item details" })).toHaveTextContent(
-      '"S": "a@example.com"',
-    );
+    expect(screen.getByRole("dialog", { name: "Item details" })).toHaveTextContent("a@example.com");
+    expect(screen.getByRole("dialog", { name: "Item details" })).not.toHaveTextContent('"S":');
     await user.click(screen.getByRole("button", { name: "Query" }));
     expect(screen.getByText("Query builder arrives in the next step")).toBeInTheDocument();
   });

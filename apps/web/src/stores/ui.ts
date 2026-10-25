@@ -1,3 +1,4 @@
+import type { Item } from "@dynamo-studio/shared";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { clampDrawerWidth, DRAWER_MIN, type rowHeight } from "../lib/layout.js";
@@ -12,14 +13,14 @@ interface UiState {
   sidebarCollapsed: boolean;
   drawerWidth: number;
   drawerOpen: boolean;
-  itemPreview: string | null;
+  itemPreview: Item | null;
   openTables: string[];
   lastTab: Record<string, TableTab>;
   setDensity: (density: Density) => void;
   toggleSidebar: () => void;
   setDrawerWidth: (width: number) => void;
   setDrawerOpen: (open: boolean) => void;
-  setItemPreview: (preview: string | null) => void;
+  setItemPreview: (preview: Item | null) => void;
   openTable: (name: string) => boolean;
   closeTable: (name: string) => string | undefined;
   rememberTab: (name: string, tab: TableTab) => void;
@@ -30,7 +31,7 @@ export const uiDefaults = {
   sidebarCollapsed: false,
   drawerWidth: DRAWER_MIN,
   drawerOpen: false,
-  itemPreview: null as string | null,
+  itemPreview: null as Item | null,
   openTables: [] as string[],
   lastTab: {} as Record<string, TableTab>,
 };

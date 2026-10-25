@@ -97,6 +97,7 @@ export {
 export {
   PlainJsonError,
   canonicalTypedJson,
+  formatPlain,
   fromPlain,
   fromPlainItem,
   parsePlain,

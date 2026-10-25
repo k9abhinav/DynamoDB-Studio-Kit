@@ -73,7 +73,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T5.4 Batch delete
 - [x] T5.5 Web mutations
 - [x] T5.6 JSON editor
-- [ ] T5.7 Item drawer
+- [x] T5.7 Item drawer
 - [ ] T5.8 Create and duplicate
 - [ ] T5.9 Delete and undo
 - [ ] T5.10 Conflict dialog
@@ -93,6 +93,8 @@ T5.4 ✔ `apps/server/src/dynamo/batch-delete.test.ts` retries one unprocessed k
 T5.5 ✔ `apps/web/src/features/items/use-item-mutations.test.tsx`. A failed save restores the scan row. Undo sends the saved hash and records a conflict on 409. Bulk delete requests are chunks of 25 and a cancelled signal sends nothing further.
 
 T5.6 ✔ `apps/web/src/features/items/EditorPane.test.tsx`. Monaco is loaded from the local `monaco-editor` package (`loader.config({ monaco })`) with ES module workers for Chrome and Firefox. View mode does not import it. If that chunk fails, a textarea remains. `monaco-editor` 0.57.0 and `@monaco-editor/react` 4.7.0 are bundled so the editor never fetches a CDN.
+
+T5.7 ✔ `apps/web/src/features/items/editor-text.test.ts` and `ItemsPanel.test.tsx`. Opening a row shows plain JSON, so `1E+2` stays text. A changed key or an empty set blocks save. Save sends the hash from when the item was opened.
 
 ## Acceptance criteria evidence
 
