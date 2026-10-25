@@ -110,6 +110,8 @@ T5.13 ✔ `e2e/items-edit.spec.ts` (7 tests) and `scripts/check-bundle.test.ts`.
 
 T5.14 ✔ This file. EDT-7 stays in `specs/backlog.md`. The JSON drawer already creates, edits, duplicates, and deletes, and `ItemEditor.tsx` is past the size where a second attribute editor belongs in this phase.
 
+Follow-up ✔ `apps/server/src/routes/items.int.test.ts` > "round-trips every edge-cases item through plain JSON and the update route". Plain JSON keeps `1E+2` and a `$b` key. DynamoDB stores that number as `100`. Writing the stored item back leaves every edge-cases attribute unchanged, including sets, binary, the 38-digit number, and empty strings.
+
 ## Acceptance criteria evidence
 
 - AC-0.1 ✔ `pnpm verify` on 2026-10-23 with DynamoDB Local up: lint, typecheck, 14 unit tests, 2 integration tests, production build. Web JavaScript gzip 100585 bytes (budget 256000).

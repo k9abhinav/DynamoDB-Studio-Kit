@@ -5,7 +5,13 @@ import {
   DeleteItemResponse,
   GetItemResponse,
   ItemWriteResponse,
+  ScanResponse,
+  formatPlain,
+  fromPlainItem,
   itemHash,
+  parsePlain,
+  toPlainItem,
+  type AttributeValue,
   type Item,
 } from "@dynamo-studio/shared";
 import { buildApp } from "../app.js";
@@ -221,4 +227,152 @@ describe("item writes against DynamoDB Local", () => {
     });
     expect(GetItemResponse.parse(gone.json()).item).toBeNull();
   });
+
+  it("round-trips every edge-cases item through plain JSON and the update route", async () => {
+    const app = await buildApp();
+    const open = await session(app);
+    const headers = { cookie: open.cookie, [CSRF_HEADER]: open.csrf };
+    const connectionId = await connect(app, open.cookie, open.csrf, false);
+    const base = `/api/v1/connections/${connectionId}/tables/edge-cases`;
+    const fixtureId = `p5-plain-${String(Date.now())}`;
+    const digits = "12345678901234567890123456789012345678";
+    const binary = Buffer.from("hi").toString("base64");
+    const fixture: Item = {
+      id: { S: fixtureId },
+      $b: { S: "dollar-key" },
+      exponent: { N: "1E+2" },
+      digits: { N: digits },
+      note: { S: "" },
+      labels: { SS: ["alpha", "beta"] },
+      scores: { NS: ["1", "1E+2", "2.5"] },
+      payload: { B: binary },
+      blobs: { BS: [binary] },
+    };
+    expect(plainRoundTrip(fixture)).toEqual(fixture);
+
+    try {
+      const put = await app.inject({
+        method: "PUT",
+        url: `${base}/items`,
+        headers,
+        payload: { item: fixture, ifNotExists: true },
+      });
+      expect(put.statusCode, put.body).toBe(200);
+      const storedFixture = ItemWriteResponse.parse(put.json()).item;
+      expect(storedFixture.$b).toEqual({ S: "dollar-key" });
+      expect(storedFixture.exponent).toEqual({ N: "100" });
+      expect(stableValue(storedFixture.scores ?? { NULL: true })).toEqual({
+        NS: ["1", "100", "2.5"],
+      });
+
+      const items = await scanAll(app, headers, `${base}/scan`);
+      const ids = items.map((item) => stringId(item));
+      for (const name of ["number-38", "sets", "binary", "empty-string", "large", fixtureId]) {
+        expect(ids).toContain(name);
+      }
+
+      for (const item of items) {
+        const restored = plainRoundTrip(item);
+        expect(stableItem(restored)).toEqual(stableItem(item));
+        const key = { id: { S: stringId(item) } };
+        const updated = await app.inject({
+          method: "POST",
+          url: `${base}/items/update`,
+          headers,
+          payload: { key, item: restored, expectedHash: await itemHash(item) },
+        });
+        expect(updated.statusCode, updated.body).toBe(200);
+        const written = ItemWriteResponse.parse(updated.json()).item;
+        expect(stableItem(written)).toEqual(stableItem(item));
+        const again = await app.inject({
+          method: "POST",
+          url: `${base}/items/get`,
+          headers,
+          payload: { key },
+        });
+        const loaded = GetItemResponse.parse(again.json()).item;
+        expect(loaded).not.toBeNull();
+        if (loaded !== null) {
+          expect(stableItem(loaded)).toEqual(stableItem(item));
+        }
+      }
+    } finally {
+      await app.inject({
+        method: "POST",
+        url: `${base}/items/delete`,
+        headers,
+        payload: { key: { id: { S: fixtureId } } },
+      });
+      await app.close();
+    }
+  });
 });
+
+function plainRoundTrip(item: Item): Item {
+  return fromPlainItem(parsePlain(formatPlain(toPlainItem(item))));
+}
+
+async function scanAll(
+  app: Awaited<ReturnType<typeof buildApp>>,
+  headers: { cookie: string; [CSRF_HEADER]: string },
+  url: string,
+): Promise<Item[]> {
+  const items: Item[] = [];
+  let cursor: string | undefined;
+  do {
+    const response = await app.inject({
+      method: "POST",
+      url,
+      headers,
+      payload: {
+        limit: 100,
+        fillPage: true,
+        consistentRead: true,
+        ...(cursor === undefined ? {} : { cursor }),
+      },
+    });
+    expect(response.statusCode, response.body).toBe(200);
+    const page = ScanResponse.parse(response.json());
+    items.push(...page.items);
+    cursor = page.nextCursor;
+  } while (cursor !== undefined);
+  return items;
+}
+
+function stringId(item: Item): string {
+  const id = item.id;
+  if (id === undefined || !("S" in id)) {
+    throw new Error("edge-cases item is missing a string id");
+  }
+  return id.S;
+}
+
+function stableItem(item: Item): Item {
+  const sorted: Item = {};
+  for (const key of Object.keys(item).sort()) {
+    const value = item[key];
+    if (value !== undefined) {
+      sorted[key] = stableValue(value);
+    }
+  }
+  return sorted;
+}
+
+function stableValue(value: AttributeValue): AttributeValue {
+  if ("SS" in value) {
+    return { SS: [...value.SS].sort() };
+  }
+  if ("NS" in value) {
+    return { NS: [...value.NS].sort() };
+  }
+  if ("BS" in value) {
+    return { BS: [...value.BS].sort() };
+  }
+  if ("L" in value) {
+    return { L: value.L.map((child) => stableValue(child)) };
+  }
+  if ("M" in value) {
+    return { M: stableItem(value.M) };
+  }
+  return value;
+}
