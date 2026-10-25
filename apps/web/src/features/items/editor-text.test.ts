@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatItem, readEditorDocument } from "./editor-text.js";
+import { createTemplate, duplicateItem, formatItem, readEditorDocument } from "./editor-text.js";
 
 const digits = "12345678901234567890123456789012345678";
 
@@ -29,6 +29,30 @@ describe("editor text", () => {
       "plain",
     );
     expect(empty.issues.map((issue) => issue.message).join(" ")).toMatch(/empty/i);
+  });
+
+  it("starts a new item from the key schema and clears keys when duplicating", () => {
+    expect(
+      createTemplate([
+        { name: "id", type: "S" },
+        { name: "n", type: "N" },
+      ]),
+    ).toEqual({
+      id: { S: "" },
+      n: { N: "0" },
+    });
+    expect(
+      duplicateItem({ id: { S: "a" }, email: { S: "a@b.c" } }, [{ name: "id", type: "S" }]),
+    ).toEqual({ id: { S: "" }, email: { S: "a@b.c" } });
+    const empty = readEditorDocument(
+      formatItem(createTemplate([{ name: "id", type: "S" }]), "plain"),
+      "plain",
+      {
+        keys: [{ name: "id", type: "S" }],
+      },
+    );
+    expect(empty.item).toBeNull();
+    expect(empty.issues.map((issue) => issue.message).join(" ")).toMatch(/cannot be empty/);
   });
 
   it("points a syntax error at a line", () => {

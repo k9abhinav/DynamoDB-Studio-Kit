@@ -28,6 +28,7 @@ import {
   readColumnPrefs,
   type ColumnPrefs,
 } from "./columns.js";
+import { createTemplate } from "./editor-text.js";
 import { useScanItems, type ScanQueryInput } from "./use-scan-items.js";
 
 const PAGE_SIZES = [25, 50, 100, 500] as const;
@@ -56,6 +57,7 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
   }
   const density = useUiStore((state) => state.density);
   const setPreview = useUiStore((state) => state.setItemPreview);
+  const setDraftKind = useUiStore((state) => state.setDraftKind);
   const setDrawerOpen = useUiStore((state) => state.setDrawerOpen);
   const endpoint = connection.data?.summary.endpoint;
   const region = connection.data?.summary.region;
@@ -102,6 +104,17 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
     }
   }
 
+  function startCreate(): void {
+    if (described.data === undefined) {
+      return;
+    }
+    setPreview(
+      createTemplate(described.data.keySchema.map((key) => ({ name: key.name, type: key.type }))),
+    );
+    setDraftKind("create");
+    setDrawerOpen(true);
+  }
+
   function refresh(): void {
     void queryClient.resetQueries({
       queryKey: scanKeys.table(connectionId, table, query),
@@ -121,6 +134,11 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <div className="flex flex-wrap items-center gap-2 border-b border-outline px-3 py-2">
         <Toolbar mode={mode} onMode={setMode} />
+        {loaded > 0 ? (
+          <Button variant="contained" disabled={described.data === undefined} onClick={startCreate}>
+            Create item
+          </Button>
+        ) : null}
         <TextField
           select
           size="small"
@@ -288,7 +306,11 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
             title="This table is empty."
             help="Add your first item when editing arrives."
             action={
-              <Button variant="contained" disabled>
+              <Button
+                variant="contained"
+                disabled={described.data === undefined}
+                onClick={startCreate}
+              >
                 Create item
               </Button>
             }
@@ -307,6 +329,7 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
             onSelected={setSelected}
             onOpen={(item) => {
               setPreview(item);
+              setDraftKind("view");
               setDrawerOpen(true);
             }}
             onNearEnd={() => {

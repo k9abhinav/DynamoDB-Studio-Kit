@@ -107,11 +107,15 @@ function coords(text: string, index: number): { line: number; column: number } {
 }
 
 export function createTemplate(keys: readonly ItemKeySpec[]): Item {
-  const item: Item = {};
+  return duplicateItem({}, keys);
+}
+
+export function duplicateItem(item: Item, keys: readonly ItemKeySpec[]): Item {
+  const copy: Item = { ...item };
   for (const key of keys) {
-    item[key.name] = key.type === "N" ? { N: "0" } : key.type === "B" ? { B: "" } : { S: "" };
+    copy[key.name] = key.type === "N" ? { N: "0" } : key.type === "B" ? { B: "" } : { S: "" };
   }
-  return item;
+  return copy;
 }
 
 export type EditorIssueWithSeverity = EditorIssue & { severity: "error" | "warning" };

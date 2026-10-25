@@ -5,8 +5,16 @@ import { extractKey, type Item, type ItemKeySpec } from "@dynamo-studio/shared";
 import { useEffect, useState } from "react";
 import { ApiError } from "../../lib/api.js";
 import { useOverlayStore } from "../../stores/overlay.js";
+import { useUiStore } from "../../stores/ui.js";
 import { EditorPane } from "./EditorPane.js";
-import { formatItem, hashItem, readEditorDocument, type JsonMode } from "./editor-text.js";
+import {
+  duplicateItem,
+  formatItem,
+  hashItem,
+  readEditorDocument,
+  type JsonMode,
+} from "./editor-text.js";
+import { getStoredItem } from "./item-api.js";
 import { useItemMutations } from "./use-item-mutations.js";
 
 export function ItemEditor(props: {
@@ -14,11 +22,15 @@ export function ItemEditor(props: {
   table: string;
   item: Item;
   keys: readonly ItemKeySpec[];
+  kind: "view" | "create";
 }) {
   const mutations = useItemMutations(props.connectionId, props.table);
   const showSnackbar = useOverlayStore((state) => state.showSnackbar);
   const [mode, setMode] = useState<JsonMode>("plain");
-  const [editing, setEditing] = useState(false);
+  const setPreview = useUiStore((state) => state.setItemPreview);
+  const setDraftKind = useUiStore((state) => state.setDraftKind);
+  const creating = props.kind === "create";
+  const [editing, setEditing] = useState(creating);
   const [text, setText] = useState(() => formatItem(props.item, "plain"));
   const [baseline, setBaseline] = useState(text);
   const [hash, setHash] = useState<string | null>(null);
@@ -98,33 +110,61 @@ export function ItemEditor(props: {
 
   async function save(): Promise<void> {
     const read = readEditorDocument(text, mode, options(props));
-    if (read.item === null || hash === null || text === baseline) {
+    if (read.item === null || text === baseline || (!creating && hash === null)) {
       return;
     }
     const before = props.item;
+    const key = extractKey(read.item, props.keys);
     try {
-      const result = await mutations.update.mutateAsync({
-        key: extractKey(before, props.keys),
-        item: read.item,
-        expectedHash: hash,
-      });
+      const result = creating
+        ? await mutations.create.mutateAsync({ key, item: read.item })
+        : await mutations.update.mutateAsync({
+            key: extractKey(before, props.keys),
+            item: read.item,
+            ...(hash === null ? {} : { expectedHash: hash }),
+          });
       const formatted = formatItem(result.item, mode);
       setText(formatted);
       setBaseline(formatted);
       setHash(result.hash);
+      setEditing(false);
+      setDraftKind("view");
+      setPreview(result.item);
       setNotice(
         result.weakConcurrency === true ? "Saved. The conflict check was best-effort." : null,
       );
-      showSnackbar("Saved", () => {
-        void mutations.undoEdit({
-          key: extractKey(before, props.keys),
-          previous: before,
-          savedHash: result.hash,
+      if (!creating) {
+        showSnackbar("Saved", () => {
+          void mutations.undoEdit({
+            key: extractKey(before, props.keys),
+            previous: before,
+            savedHash: result.hash,
+          });
         });
-      });
+      } else {
+        showSnackbar("Created");
+      }
     } catch (error) {
       setNotice(error instanceof ApiError ? error.message : "The save failed.");
     }
+  }
+
+  async function openExisting(): Promise<void> {
+    const read = readEditorDocument(text, mode, options(props));
+    if (read.item === null) {
+      return;
+    }
+    const existing = await getStoredItem(
+      props.connectionId,
+      props.table,
+      extractKey(read.item, props.keys),
+    );
+    if (existing === null) {
+      setNotice("That item is not there anymore.");
+      return;
+    }
+    setDraftKind("view");
+    setPreview(existing);
   }
 
   return (
@@ -148,20 +188,30 @@ export function ItemEditor(props: {
         {editing ? (
           <Button
             variant="contained"
-            disabled={!dirty || blocking || hash === null}
+            disabled={!dirty || blocking || (!creating && hash === null)}
             onClick={() => void save()}
           >
             Save
           </Button>
         ) : (
-          <Button
-            variant="contained"
-            onClick={() => {
-              setEditing(true);
-            }}
-          >
-            Edit
-          </Button>
+          <>
+            <Button
+              onClick={() => {
+                setDraftKind("create");
+                setPreview(duplicateItem(props.item, props.keys));
+              }}
+            >
+              Duplicate
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => {
+                setEditing(true);
+              }}
+            >
+              Edit
+            </Button>
+          </>
         )}
       </div>
       <div className="min-h-0 flex-1 px-4 pb-3">
@@ -179,9 +229,14 @@ export function ItemEditor(props: {
         <p className="px-4 pb-2 text-sm text-warning-text">{warning.message}</p>
       )}
       {notice === null ? null : (
-        <p className="px-4 pb-2 text-sm" role="alert">
+        <div className="px-4 pb-2 text-sm" role="alert">
           {notice}
-        </p>
+          {notice.includes("already exists") ? (
+            <Button className="ml-2" onClick={() => void openExisting()}>
+              Open existing item
+            </Button>
+          ) : null}
+        </div>
       )}
       {blocking ? (
         <ul className="px-6 pb-3 text-sm text-error">
@@ -201,6 +256,8 @@ export function ItemEditor(props: {
   );
 }
 
-function options(props: { item: Item; keys: readonly ItemKeySpec[] }) {
-  return { keys: props.keys, original: props.item };
+function options(props: { item: Item; keys: readonly ItemKeySpec[]; kind: "view" | "create" }) {
+  return props.kind === "create"
+    ? { keys: props.keys }
+    : { keys: props.keys, original: props.item };
 }

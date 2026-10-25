@@ -20,6 +20,7 @@ export function ItemDrawer({
   const setWidth = useUiStore((state) => state.setDrawerWidth);
   const setOpen = useUiStore((state) => state.setDrawerOpen);
   const preview = useUiStore((state) => state.itemPreview);
+  const draftKind = useUiStore((state) => state.draftKind);
   const overlay = useMediaQuery(`(max-width: ${String(DRAWER_BREAKPOINT - 1)}px)`);
   if (!open) {
     return null;
@@ -94,7 +95,11 @@ export function ItemDrawer({
           <ItemEditor
             connectionId={connectionId}
             item={preview}
-            keys={described.data?.keySchema ?? []}
+            keys={(described.data?.keySchema ?? []).map((key) => ({
+              name: key.name,
+              type: key.type,
+            }))}
+            kind={draftKind}
             table={table}
           />
         )}

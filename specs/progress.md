@@ -74,7 +74,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T5.5 Web mutations
 - [x] T5.6 JSON editor
 - [x] T5.7 Item drawer
-- [ ] T5.8 Create and duplicate
+- [x] T5.8 Create and duplicate
 - [ ] T5.9 Delete and undo
 - [ ] T5.10 Conflict dialog
 - [ ] T5.11 Copy menu
@@ -95,6 +95,8 @@ T5.5 ✔ `apps/web/src/features/items/use-item-mutations.test.tsx`. A failed sav
 T5.6 ✔ `apps/web/src/features/items/EditorPane.test.tsx`. Monaco is loaded from the local `monaco-editor` package (`loader.config({ monaco })`) with ES module workers for Chrome and Firefox. View mode does not import it. If that chunk fails, a textarea remains. `monaco-editor` 0.57.0 and `@monaco-editor/react` 4.7.0 are bundled so the editor never fetches a CDN.
 
 T5.7 ✔ `apps/web/src/features/items/editor-text.test.ts` and `ItemsPanel.test.tsx`. Opening a row shows plain JSON, so `1E+2` stays text. A changed key or an empty set blocks save. Save sends the hash from when the item was opened.
+
+T5.8 ✔ `editor-text.test.ts`. A new item starts with an empty string key or `"0"` for a number key, so save stays disabled until the key is filled. Duplicate copies the other attributes and clears the key. A collision says an item with this key already exists and offers Open existing item.
 
 ## Acceptance criteria evidence
 

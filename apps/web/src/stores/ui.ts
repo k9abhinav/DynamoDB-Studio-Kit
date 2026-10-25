@@ -14,6 +14,7 @@ interface UiState {
   drawerWidth: number;
   drawerOpen: boolean;
   itemPreview: Item | null;
+  draftKind: "view" | "create";
   openTables: string[];
   lastTab: Record<string, TableTab>;
   setDensity: (density: Density) => void;
@@ -21,6 +22,7 @@ interface UiState {
   setDrawerWidth: (width: number) => void;
   setDrawerOpen: (open: boolean) => void;
   setItemPreview: (preview: Item | null) => void;
+  setDraftKind: (kind: "view" | "create") => void;
   openTable: (name: string) => boolean;
   closeTable: (name: string) => string | undefined;
   rememberTab: (name: string, tab: TableTab) => void;
@@ -32,6 +34,7 @@ export const uiDefaults = {
   drawerWidth: DRAWER_MIN,
   drawerOpen: false,
   itemPreview: null as Item | null,
+  draftKind: "view" as const,
   openTables: [] as string[],
   lastTab: {} as Record<string, TableTab>,
 };
@@ -54,6 +57,9 @@ export const useUiStore = create<UiState>()(
       },
       setItemPreview: (itemPreview) => {
         set({ itemPreview });
+      },
+      setDraftKind: (draftKind) => {
+        set({ draftKind });
       },
       openTable: (name) => {
         const { openTables } = get();
