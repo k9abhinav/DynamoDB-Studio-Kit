@@ -3,7 +3,7 @@
 > The agent updates this file at the end of every task and phase. It is the memory between sessions.
 > Format for evidence: `AC-3.2 ✔ apps/web/src/features/tables/SidebarTableList.test.tsx > "filters as you type"`
 
-**Current phase:** 5 (in progress)
+**Current phase:** 5 (done)
 **Last updated:** 2026-10-25
 
 ## Phase status
@@ -14,7 +14,7 @@
 | 2 | Backend & connection | ✅ done | ✅ | 2026-10-23 |
 | 3 | Table explorer | ✅ done | ✅ | 2026-10-24 |
 | 4 | Items browser | ✅ done | ✅ | 2026-10-24 |
-| 5 | Item editor & CRUD | 🔄 in progress | ☐ | |
+| 5 | Item editor & CRUD | ✅ done | ✅ | 2026-10-25 |
 | 6 | Query builder & PartiQL | ☐ not started | ☐ | |
 | 7 | Table management & import/export | ☐ not started | ☐ | |
 | 8 | Polish, hardening, packaging | ☐ not started | ☐ | |
@@ -80,7 +80,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T5.11 Copy menu
 - [x] T5.12 Read-only and unsaved guard
 - [x] T5.13 Playwright
-- [ ] T5.14 Progress summary
+- [x] T5.14 Progress summary
 
 T5.1 ✔ `packages/shared/src/typed-json.test.ts`. 1,000 generated items and the edge fixtures round-trip through `lossless-json`, including a 38-digit number, `1E+2`, `-0`, and `$b` keys. `lossless-json` 4.3.3 is the approved parser. `fast-check` 4.10.2 is a shared dev dependency for that property test.
 
@@ -107,6 +107,8 @@ T5.11 ✔ `copy-command.test.ts`. The AWS CLI command single-quotes quotes, unic
 T5.12 ✔ `ItemDrawer.test.tsx`. Closing the drawer with unsaved edits asks "Discard changes?" before the drawer goes away. Read-only connections disable Edit, Duplicate, Delete, and Create with the tooltip "This connection is read-only". Navigation away is blocked the same way. The server still returns 403 for a read-only write.
 
 T5.13 ✔ `e2e/items-edit.spec.ts` (7 tests) and `scripts/check-bundle.test.ts`. Edit, undo, a second-session conflict, a create collision, a production typed delete, and a 100-item delete all ran in Chromium. Saving through the textarea fallback kept the string, the number (`100`), and the string set. A 390 KB item saved and undid; growing it past 400 KB disabled Save and showed the limit message. The open drawer had no serious or critical axe violations in light or dark, and Escape returned focus to the `large` cell. Screenshots are `docs/screenshots/phase-5/item-drawer-light.png` and `item-drawer-dark.png`. Monaco's package exports do not expose `esm/vs/...` or the CSS file, so the workers import `monaco-editor/editor/editor.worker` and `monaco-editor/language/json/json.worker`, and Vite aliases the CSS onto the real file. The entry-script check rejects `monaco-editor` and `MonacoEnvironment`.
+
+T5.14 ✔ This file. EDT-7 stays in `specs/backlog.md`. The JSON drawer already creates, edits, duplicates, and deletes, and `ItemEditor.tsx` is past the size where a second attribute editor belongs in this phase.
 
 ## Acceptance criteria evidence
 
@@ -153,6 +155,18 @@ T5.13 ✔ `e2e/items-edit.spec.ts` (7 tests) and `scripts/check-bundle.test.ts`.
 - AC-4.8 ✔ `e2e/items.spec.ts` finds `12345678901234567890123456789012345678` on `edge-cases`. `DataGrid.test.tsx` > "virtualizes a thousand rows and keeps a 38-digit number exact". `filter-ops.test.ts` > "keeps a 38-digit number as a decimal string". `ItemsPanel.test.tsx` > "caps 500 columns and sends a 38-digit number as a string" asserts the POST body.
 - AC-4.9 ✔ The items Playwright test focuses a body cell, presses Enter, sees `"S": "SHIPPED"` in Item details, and Escape closes it. `e2e/items.spec.ts` > "items screenshots and axe in light" and "items screenshots and axe in dark" have 0 serious or critical violations, then zoom the page to 200% at 1280×800 and still show Add filter and the grid. Screenshots: `docs/screenshots/phase-4/items-light.png` and `items-dark.png`. Names are noted in `docs/a11y-notes.md`.
 - AC-4.10 ✔ `apps/server/src/dynamo/expression-builder.test.ts` > "keeps user text out of expression strings". Branch coverage of `expression-builder.ts` was 100% (99/99) on 2026-10-24. The property test strips operator words before it looks for attribute names, so a path named `type` is not treated as a leak inside `attribute_type`.
+- AC-5.1 ✔ `packages/shared/src/typed-json.test.ts` > the 1,000-run property. Save stays disabled until the JSON changes, so a no-edit save does not write. The browser tests compare the stored item after a real edit and after undo.
+- AC-5.2 ✔ `e2e/items-edit.spec.ts` > "edits an item locally and undoes it". The item is created on `edge-cases` with an email, not a seed `users` row. `apps/server/src/routes/items.int.test.ts` writes a real user.
+- AC-5.3 ✔ `apps/web/src/features/items/editor-text.test.ts` and `packages/shared/src/item-check.test.ts` > "The key id cannot change". The update route returns 400 VALIDATION for a changed key.
+- AC-5.4 ✔ `e2e/items-edit.spec.ts` > "shows a conflict when another session changes the item". Reload shows the other session's email. Overwrite stores `mine-again@example.com` and returns to view mode. `ConflictDialog.test.tsx` clicks Overwrite.
+- AC-5.5 ✔ The same browser file > "explains a create collision and confirms a production delete". The integration test asserts the same collision message.
+- AC-5.6 ✔ The browser file deletes 100 created `edge-cases` items and expects "Deleted 100, 0 failed". It does not delete 120. `batch-delete.test.ts` injects unprocessed keys. DynamoDB Local did not return unprocessed items. The integration test deletes 3 users.
+- AC-5.7 ✔ The collision browser test connects with `env: "production"` against local DynamoDB and must type `edge-cases` before Delete.
+- AC-5.8 ✔ `items.int.test.ts` returns 403 READ_ONLY for a write. The drawer and the selection Delete button are disabled with "This connection is read-only". There is no Playwright journey that connects read-only and clicks those buttons.
+- AC-5.9 ✔ The browser file > "saves a 390 KB item and blocks one over 400 KB". The client message is "This item is over 400 KB. DynamoDB allows 400 KB." `items.int.test.ts` returns LIMIT_EXCEEDED for a 401 KB item.
+- AC-5.10 ✔ `scripts/check-bundle.ts` rejects `monaco-editor` and `MonacoEnvironment` in the entry script. `pnpm verify` on 2026-10-25 printed `Initial JavaScript gzip: 181131 bytes`. The browser file aborts the Monaco chunk, saves through the textarea, and checks the stored string, number `100`, and string set. While the editor is open, a request whose host is not `127.0.0.1` or `localhost` fails the edit test.
+- AC-5.11 ✔ `apps/web/src/features/items/copy-command.test.ts`.
+- AC-5.12 ✔ The browser file > "opens a large item and checks the drawer for serious accessibility issues" in light and dark, then Escape focuses the `large` cell. Zoom is 200% at 1280×800 and Edit stays visible. `docs/a11y-notes.md` records the drawer names. This was the accessibility tree, not a live screen reader. Screenshots: `docs/screenshots/phase-5/item-drawer-light.png` and `item-drawer-dark.png`.
 
 ## Security checklist (05 section 8, Phase 2)
 
@@ -255,6 +269,12 @@ After connect, the sidebar loads table names a page at a time, filters what is a
 
 The Items tab scans the open table into a virtualized grid. Cells show a type letter and keep numbers as decimal strings, including a 38-digit value. Missing, null, and empty string stay distinct. Filters are type-aware, one joiner covers the list, and a number filter is still a string in the POST body. The first 200 columns show until "Show more columns". Visibility and widths persist under `ds-columns:` plus a hash of endpoint, region, and table. Delete and Copy stay disabled. Opening a cell shows typed JSON in the existing drawer. Query mode is the placeholder "Query builder arrives in the next step". `pnpm verify` is green (215 unit tests, 6 integration tests). `pnpm exec playwright test --workers=1` passed 22 tests. Initial JS gzip is 180241 bytes, up from 180217. Scrolling 10,000 loaded orders rows measured 60.2 fps at 4x CPU on an Apple M5 in Chromium. Q-025 through Q-029 stay on the defaults used here. Do not start Phase 5 until asked.
 
+### Phase 5 — Item editor and CRUD (2026-10-25)
+
+Opening an item shows plain JSON. Edit, create, and duplicate load Monaco from the local package, not a CDN. Save replaces the item and sends the hash from when it was opened. A second session opens the conflict dialog; Reload keeps the latest item and Overwrite writes yours, then returns to view mode. Undo of an edit writes the previous item only when the saved hash still matches. Create, duplicate, single delete, and a 100-item delete are confirmed, and a production-tagged connection types the table name. A 390 KB item saves. Past 400 KB, Save stays disabled. Read-only disables the write buttons, and the server still returns 403. EDT-7 is in the backlog. `pnpm verify` is green (244 unit tests, 7 integration tests). `pnpm exec playwright test --workers=1` passed 29 tests. Initial JS gzip is 181131 bytes, up from 180241. Monaco's editor chunk is separate. Q-030 through Q-034 stay on the defaults used here. Q-029 stays open. Do not start Phase 6 until asked.
+
+Not verified: `rm -rf node_modules && pnpm install --frozen-lockfile`. `pnpm dev` was using `node_modules`, so that install was not wiped. A live screen reader was not used. The browser bulk delete was 100 items, not 120. DynamoDB Local did not produce unprocessed items.
+
 ## Metrics log
 
 - 2026-10-23 — Phase 0 web JavaScript gzip: 100585 bytes. Budget 256000.
@@ -263,3 +283,4 @@ The Items tab scans the open table into a virtualized grid. Cells show a type le
 - 2026-10-23 — Bundle hygiene, before Phase 3. Initial JS gzip: 179897 bytes (`apps/web/dist/assets/index-CmvQX7hT.js`). Early budget 235520. Phase 8 budget 256000. Lazy chunks, not in the initial number: ConnectScreen 24575 bytes (`ConnectScreen-Bsad9utP.js`), Workspace 11540 bytes (`Workspace-DW0JNnCI.js`), shared EnvChip chunk 44317 bytes (`EnvChip-Cmx54p1T.js`). CSS gzip 21228 bytes. `/__design` is absent from the production dist. Production resolves react-router to `dist/production`.
 - 2026-10-24 — Phase 3. Initial JS gzip: 180217 bytes (`apps/web/dist/assets/index-Bmi6LIIc.js`). Early budget 235520. Phase 8 budget 256000. Start of phase was 179897. Lazy chunks, not in the initial number: ConnectScreen 24572 bytes (`ConnectScreen-CNHxz0bb.js`), Workspace 27131 bytes (`Workspace-DgMtF1qO.js`), shared EnvChip chunk 45053 bytes (`EnvChip-S0IorpDR.js`). CSS gzip 21491 bytes. `/__design` is absent. Machine: local Darwin, Node from the verify run. `pnpm verify`: 154 unit tests, 4 integration tests.
 - 2026-10-24 — Phase 4. Initial JS gzip: 180241 bytes (`apps/web/dist/assets/index-BfifoS_0.js`), up from 180217. Early budget 235520. Phase 8 budget 256000. The grid stays in the Workspace chunk: 48688 bytes gzip (`Workspace-Dq5PvBe8.js`; Phase 3 was 27131). ConnectScreen 23313 bytes gzip (`ConnectScreen-BIoJ6yZu.js`). EnvChip 49078 bytes gzip (`EnvChip-DcB0uiD0.js`). CSS gzip 21907 bytes (`index-CZUeD1da.css`). `/__design` is absent. Scroll: 60.2 fps, Apple M5, Chromium, CPU throttle 4x, `requestAnimationFrame` scrolling the items grid by 96px for 2 seconds on the Vite dev server after 10,000 orders were loaded. `pnpm verify`: 215 unit tests, 6 integration tests. `pnpm exec playwright test --workers=1`: 22 passed.
+- 2026-10-25 — Phase 5. Initial JS gzip: 181131 bytes (scripts linked from `index.html`, including `apps/web/dist/assets/index-DgzeP6bc.js`), up from 180241. Early budget 235520. Phase 8 budget 256000. Monaco is not in that entry. Lazy chunks, not in the initial number: JsonEditor 331.68 KB gzip (`JsonEditor-B4X21hQa.js`), editor.api 706.08 KB gzip (`editor.api-BefY29eV.js`), Workspace 54.98 KB gzip (`Workspace-BkdKzpeh.js`). The Monaco package also emits json, editor, html, css, and ts worker chunks. CSS gzip 22.12 KB (`index-hJASPadC.css`). `/__design` is absent. `pnpm verify`: 244 unit tests, 7 integration tests. `pnpm exec playwright test --workers=1`: 29 passed. Frozen install was not run.

@@ -4,7 +4,7 @@ Add ideas here instead of building them. Format: `- [area] idea. Why. (date, pha
 
 - [data] Transactions viewer / TransactWriteItems builder
 - [data] Streams viewer
-- [ux] Attribute-level mini editor with type switching (EDT-7) if not done in Phase 5
+- [ux] Attribute-level mini editor with type switching (EDT-7). Deferred at the end of Phase 5. The JSON drawer already creates, edits, duplicates, and deletes, and ItemEditor is past the size where a second editor belongs in this phase. (2026-10-25)
 - [ux] Saved column layouts per table
 - [ux] Item diff view between two items
 - [ops] Backup / PITR management

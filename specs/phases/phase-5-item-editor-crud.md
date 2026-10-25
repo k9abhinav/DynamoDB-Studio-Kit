@@ -42,7 +42,7 @@ Attribute-level mini editor (EDT-7; only if everything else is complete and gree
 - [x] T5.11 Copy menu (+ AWS CLI generator with escaping tests)
 - [x] T5.12 Read-only UX + tests; unsaved guard + tests
 - [x] T5.13 Playwright: edit-save-undo, conflict scenario (two sessions), create, delete, bulk delete 100 items, light/dark screenshots, axe, keyboard-only
-- [ ] T5.14 Progress + phase summary (decide EDT-7 go/no-go; if no-go move to backlog)
+- [x] T5.14 Progress + phase summary (decide EDT-7 go/no-go; if no-go move to backlog)
 
 ## 5. Acceptance criteria
 - **AC-5.1** Round-trip property holds for 1,000 generated items and all `edge-cases` fixtures: `fromPlain(toPlain(x))` equals `x`; stored data is unchanged after open -> save without edits (E2E compares raw item before/after).
