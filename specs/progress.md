@@ -112,6 +112,8 @@ T5.14 ✔ This file. EDT-7 stays in `specs/backlog.md`. The JSON drawer already 
 
 Follow-up ✔ `apps/server/src/routes/items.int.test.ts` > "round-trips every edge-cases item through plain JSON and the update route". Plain JSON keeps `1E+2` and a `$b` key. DynamoDB stores that number as `100`. Writing the stored item back leaves every edge-cases attribute unchanged, including sets, binary, the 38-digit number, and empty strings.
 
+Follow-up ✔ `e2e/items-edit.spec.ts` > "disables writes on a read-only connection". Create, the selection Delete, and the drawer Edit, Duplicate, and Delete are disabled. Each tooltip says "This connection is read-only". `PUT .../items` returns 403 READ_ONLY.
+
 ## Acceptance criteria evidence
 
 - AC-0.1 ✔ `pnpm verify` on 2026-10-23 with DynamoDB Local up: lint, typecheck, 14 unit tests, 2 integration tests, production build. Web JavaScript gzip 100585 bytes (budget 256000).
@@ -164,7 +166,7 @@ Follow-up ✔ `apps/server/src/routes/items.int.test.ts` > "round-trips every ed
 - AC-5.5 ✔ The same browser file > "explains a create collision and confirms a production delete". The integration test asserts the same collision message.
 - AC-5.6 ✔ The browser file deletes 100 created `edge-cases` items and expects "Deleted 100, 0 failed". It does not delete 120. `batch-delete.test.ts` injects unprocessed keys. DynamoDB Local did not return unprocessed items. The integration test deletes 3 users.
 - AC-5.7 ✔ The collision browser test connects with `env: "production"` against local DynamoDB and must type `edge-cases` before Delete.
-- AC-5.8 ✔ `items.int.test.ts` returns 403 READ_ONLY for a write. The drawer and the selection Delete button are disabled with "This connection is read-only". There is no Playwright journey that connects read-only and clicks those buttons.
+- AC-5.8 ✔ `e2e/items-edit.spec.ts` > "disables writes on a read-only connection" (Chromium, 2026-10-25). Create uses the title "This connection is read-only". After a row is selected, Delete is disabled with that tooltip. Opening `number-38` disables Edit, Duplicate, and Delete with the same tooltip. `PUT /api/v1/connections/:id/tables/edge-cases/items` returns 403 READ_ONLY. `items.int.test.ts` covers the same 403.
 - AC-5.9 ✔ The browser file > "saves a 390 KB item and blocks one over 400 KB". The client message is "This item is over 400 KB. DynamoDB allows 400 KB." `items.int.test.ts` returns LIMIT_EXCEEDED for a 401 KB item.
 - AC-5.10 ✔ `scripts/check-bundle.ts` rejects `monaco-editor` and `MonacoEnvironment` in the entry script. `pnpm verify` on 2026-10-25 printed `Initial JavaScript gzip: 181131 bytes`. The browser file aborts the Monaco chunk, saves through the textarea, and checks the stored string, number `100`, and string set. While the editor is open, a request whose host is not `127.0.0.1` or `localhost` fails the edit test.
 - AC-5.11 ✔ `apps/web/src/features/items/copy-command.test.ts`.

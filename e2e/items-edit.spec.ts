@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import { isSerious } from "./axe.js";
 import { openWorkspace } from "./session.js";
 
@@ -121,6 +121,33 @@ test("explains a create collision and confirms a production delete", async ({ pa
   await dialog.getByRole("textbox", { name: "Type edge-cases to confirm" }).fill("edge-cases");
   await dialog.getByRole("button", { name: "Delete" }).click();
   await expect(page.getByText("Deleted")).toBeVisible();
+});
+
+test("disables writes on a read-only connection", async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const connectionId = await connectReadOnly(page);
+  await page.goto(`/c/${connectionId}/t/edge-cases/items`);
+  await expect(page.getByRole("grid", { name: "Items" })).toBeVisible();
+  const create = page.getByRole("button", { name: "Create item" });
+  await expect(create).toBeDisabled();
+  await expect(create).toHaveAttribute("title", "This connection is read-only");
+  await page.getByRole("checkbox", { name: "Select row 1", exact: true }).click();
+  await expectReadOnly(page, page.getByRole("button", { name: "Delete", exact: true }));
+  await showItem(page, "number-38");
+  const dialog = page.getByRole("dialog", { name: "Item details" });
+  await expectReadOnly(page, dialog.getByRole("button", { name: "Edit", exact: true }));
+  await expectReadOnly(page, dialog.getByRole("button", { name: "Duplicate", exact: true }));
+  await expectReadOnly(page, dialog.getByRole("button", { name: "Delete", exact: true }));
+  const denied = await page.request.put(
+    `/api/v1/connections/${connectionId}/tables/edge-cases/items`,
+    {
+      headers: { "x-ds-csrf": await csrf(page) },
+      data: { item: { id: { S: "p5-ro" }, note: { S: "no" } }, ifNotExists: true },
+    },
+  );
+  expect(denied.status()).toBe(403);
+  expect(errorCode(await denied.json())).toBe("READ_ONLY");
 });
 
 test("deletes 100 created items from the grid", async ({ page }) => {
@@ -294,6 +321,48 @@ async function deleteItem(page: Page, id: string): Promise<void> {
     headers: { "x-ds-csrf": await csrf(page) },
     data: { key: { id: { S: id } } },
   });
+}
+
+async function expectReadOnly(page: Page, button: Locator): Promise<void> {
+  await expect(button).toBeDisabled();
+  await page.mouse.move(0, 0);
+  await button.locator("xpath=..").hover();
+  await expect(page.locator(".MuiTooltip-popper:not(.MuiTooltip-popperClose)")).toHaveText(
+    "This connection is read-only",
+  );
+}
+
+async function connectReadOnly(page: Page): Promise<string> {
+  const created = await page.request.post("/api/v1/connections", {
+    headers: { "x-ds-csrf": await csrf(page) },
+    data: {
+      endpoint: "http://127.0.0.1:8000",
+      region: "us-east-1",
+      auth: { type: "local" },
+      env: "local",
+      readOnly: true,
+      remember: false,
+    },
+  });
+  const body = (await created.json()) as { connectionId?: string };
+  if (!created.ok() || body.connectionId === undefined) {
+    throw new Error("read-only connect failed");
+  }
+  return body.connectionId;
+}
+
+function errorCode(value: unknown): string {
+  if (typeof value !== "object" || value === null || !("error" in value)) {
+    throw new Error("missing error");
+  }
+  const error = value.error;
+  if (typeof error !== "object" || error === null || !("code" in error)) {
+    throw new Error("missing error code");
+  }
+  if (typeof error.code !== "string") {
+    throw new Error("missing error code");
+  }
+  return error.code;
 }
 
 async function connectProduction(page: Page): Promise<string> {
