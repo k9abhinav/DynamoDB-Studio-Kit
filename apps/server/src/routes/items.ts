@@ -1,6 +1,8 @@
 import type { FastifyPluginCallback, FastifyRequest } from "fastify";
 import { z } from "zod";
 import {
+  BatchDeleteRequest,
+  BatchDeleteResponse,
   DeleteItemRequest,
   DeleteItemResponse,
   GetItemRequest,
@@ -10,6 +12,7 @@ import {
   TABLE_NAME_PATTERN,
   UpdateItemRequest,
 } from "@dynamo-studio/shared";
+import { batchDeleteItems } from "../dynamo/batch-delete.js";
 import { deleteItem, getItem, putItem, updateItem, type ItemScope } from "../dynamo/items.js";
 import { HttpError } from "../http-error.js";
 
@@ -72,6 +75,17 @@ export const itemRoutes: FastifyPluginCallback = (app, _options, done) => {
         item: body.item,
         ...(body.expectedHash === undefined ? {} : { expectedHash: body.expectedHash }),
       }),
+    );
+  });
+
+  app.post(`${base}/items/batch-delete`, async (request) => {
+    const params = TableParams.parse(request.params);
+    const body = BatchDeleteRequest.parse(request.body);
+    const id = sessionId(request);
+    app.connections.assertWritable(id, params.id);
+    const open = app.connections.open(id, params.id);
+    return BatchDeleteResponse.parse(
+      await batchDeleteItems(scope(open, params.table, request), body.keys),
     );
   });
 

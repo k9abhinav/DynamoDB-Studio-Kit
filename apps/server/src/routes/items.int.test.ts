@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  BatchDeleteResponse,
   CSRF_HEADER,
   DeleteItemResponse,
   GetItemResponse,
@@ -193,5 +194,31 @@ describe("item writes against DynamoDB Local", () => {
       headers,
       payload: { key: { id: { S: `${id}-wide` } } },
     });
+
+    const batchIds = [0, 1, 2].map((index) => `${id}-batch-${String(index)}`);
+    for (const batchId of batchIds) {
+      const put = await app.inject({
+        method: "PUT",
+        url: url(writable, ""),
+        headers,
+        payload: { item: { id: { S: batchId }, email: { S: "a@b.c" } }, ifNotExists: true },
+      });
+      expect(put.statusCode).toBe(200);
+    }
+    const batched = await app.inject({
+      method: "POST",
+      url: url(writable, "/batch-delete"),
+      headers,
+      payload: { keys: batchIds.map((batchId) => ({ id: { S: batchId } })) },
+    });
+    expect(batched.statusCode).toBe(200);
+    expect(BatchDeleteResponse.parse(batched.json())).toEqual({ deleted: 3, failed: [] });
+    const gone = await app.inject({
+      method: "POST",
+      url: url(writable, "/get"),
+      headers,
+      payload: { key: { id: { S: `${id}-batch-0` } } },
+    });
+    expect(GetItemResponse.parse(gone.json()).item).toBeNull();
   });
 });

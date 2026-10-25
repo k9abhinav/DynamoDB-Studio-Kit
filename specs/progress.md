@@ -70,7 +70,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T5.1 Typed JSON plain projection
 - [x] T5.2 Validation, hash, and size
 - [x] T5.3 Item routes
-- [ ] T5.4 Batch delete
+- [x] T5.4 Batch delete
 - [ ] T5.5 Web mutations
 - [ ] T5.6 JSON editor
 - [ ] T5.7 Item drawer
@@ -87,6 +87,8 @@ T5.1 ✔ `packages/shared/src/typed-json.test.ts`. 1,000 generated items and the
 T5.2 ✔ `packages/shared/src/item-check.test.ts`. Empty sets, duplicate members, bad numbers, bad binary, depth 33, and a changed key are errors. A 390,000-character string stays under 400 KB. The hash is SHA-256 base64url of canonical typed JSON, so `1E+2` does not match `100`.
 
 T5.3 ✔ `apps/server/src/routes/items.int.test.ts` against DynamoDB Local. Read-only writes return 403. A changed key is 400 VALIDATION. A hash mismatch is 409. An item over 400 KB is LIMIT_EXCEEDED before PutItem. A second create says an item with this key already exists. Deleting a missing item returns `{ deleted: false }`. DynamoDB rewrites `1E+2` to `100`, and the returned hash is of that stored item.
+
+T5.4 ✔ `apps/server/src/dynamo/batch-delete.test.ts` retries one unprocessed key, caps each request at 25, and stops after an abort. The same integration file deletes 3 real users. `specs/04-api-contract.md` records that each request still accepts at most 500 keys and that the client sends chunks of 25.
 
 ## Acceptance criteria evidence
 

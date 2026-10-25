@@ -116,6 +116,8 @@ export {
   type ValidateItemOptions,
 } from "./item-check.js";
 export {
+  BatchDeleteRequest,
+  BatchDeleteResponse,
   DeleteItemRequest,
   DeleteItemResponse,
   GetItemRequest,
@@ -123,6 +125,8 @@ export {
   ItemWriteResponse,
   PutItemRequest,
   UpdateItemRequest,
+  type BatchDeleteRequest as BatchDeleteRequestBody,
+  type BatchDeleteResponse as BatchDeleteResponseBody,
   type DeleteItemRequest as DeleteItemRequestBody,
   type DeleteItemResponse as DeleteItemResponseBody,
   type GetItemRequest as GetItemRequestBody,
