@@ -34,7 +34,7 @@ Attribute-level mini editor (EDT-7; only if everything else is complete and gree
 - [x] T5.3 Server `DynamoService` item operations + conditions + hash + tests; routes + integration tests (including read-only 403 and conflict)
 - [x] T5.4 Batch delete with chunking, backoff, partial failures + tests (simulate UnprocessedItems)
 - [x] T5.5 Web mutations with optimistic updates + rollback + tests
-- [ ] T5.6 `JsonEditor` Monaco wrapper (lazy, theme sync, markers from validation) + fallback + tests
+- [x] T5.6 `JsonEditor` Monaco wrapper (lazy, theme sync, markers from validation) + fallback + tests
 - [ ] T5.7 ItemDrawer View/Edit, ModeToggle, validation panel, SaveBar + tests
 - [ ] T5.8 Create/Duplicate flows + tests
 - [ ] T5.9 Delete/Bulk delete UX (confirm, typed confirm, progress, summary, undo) + tests

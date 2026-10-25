@@ -65,4 +65,10 @@ export default defineConfig(({ mode }) => ({
       "/api": "http://127.0.0.1:8080",
     },
   },
+  worker: {
+    format: "es",
+  },
+  optimizeDeps: {
+    include: ["monaco-editor"],
+  },
 }));

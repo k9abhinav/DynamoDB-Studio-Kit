@@ -72,7 +72,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T5.3 Item routes
 - [x] T5.4 Batch delete
 - [x] T5.5 Web mutations
-- [ ] T5.6 JSON editor
+- [x] T5.6 JSON editor
 - [ ] T5.7 Item drawer
 - [ ] T5.8 Create and duplicate
 - [ ] T5.9 Delete and undo
@@ -91,6 +91,8 @@ T5.3 ✔ `apps/server/src/routes/items.int.test.ts` against DynamoDB Local. Read
 T5.4 ✔ `apps/server/src/dynamo/batch-delete.test.ts` retries one unprocessed key, caps each request at 25, and stops after an abort. The same integration file deletes 3 real users. `specs/04-api-contract.md` records that each request still accepts at most 500 keys and that the client sends chunks of 25.
 
 T5.5 ✔ `apps/web/src/features/items/use-item-mutations.test.tsx`. A failed save restores the scan row. Undo sends the saved hash and records a conflict on 409. Bulk delete requests are chunks of 25 and a cancelled signal sends nothing further.
+
+T5.6 ✔ `apps/web/src/features/items/EditorPane.test.tsx`. Monaco is loaded from the local `monaco-editor` package (`loader.config({ monaco })`) with ES module workers for Chrome and Firefox. View mode does not import it. If that chunk fails, a textarea remains. `monaco-editor` 0.57.0 and `@monaco-editor/react` 4.7.0 are bundled so the editor never fetches a CDN.
 
 ## Acceptance criteria evidence
 

@@ -96,7 +96,7 @@ The rate limit is 30 requests per minute per session, and it applies only to `PO
 - **Trade-off:** More code. Mitigated by one well-tested `DataGrid` component reused by Scan, Query and PartiQL.
 
 ### ADR-006: Monaco lazily loaded
-- `@monaco-editor/react` with dynamic `import()`, loaded only when an editor is first opened. Theme synced with app theme.
+- `@monaco-editor/react` with dynamic `import()`, loaded only when an editor is first opened. `loader.config({ monaco })` points at the local `monaco-editor` package, including its editor and JSON workers. No CDN. Theme synced with app theme.
 
 ### ADR-007: State management
 - Server state: TanStack Query. UI state: Zustand (theme, density, drawer, open tabs). URL is the source of truth for the selected connection/table/tab (`/c/:connId/t/:table/:tab`) so refresh and deep links work.
@@ -107,7 +107,7 @@ The rate limit is 30 requests per minute per session, and it applies only to `PO
 
 ## 4. Approved dependencies (add others only with justification)
 
-**web:** react, react-dom, react-router-dom, @mui/material, @mui/icons-material, @emotion/react, @emotion/styled, tailwindcss, @tailwindcss/vite, @tanstack/react-query, @tanstack/react-table, @tanstack/react-virtual, zustand, react-hook-form, @hookform/resolvers, zod, @monaco-editor/react, lossless-json, date-fns, clsx, @fontsource/roboto, @fontsource/roboto-mono. The command palette and snackbars use MUI. Do not add `cmdk` or `notistack`.
+**web:** react, react-dom, react-router-dom, @mui/material, @mui/icons-material, @emotion/react, @emotion/styled, tailwindcss, @tailwindcss/vite, @tanstack/react-query, @tanstack/react-table, @tanstack/react-virtual, zustand, react-hook-form, @hookform/resolvers, zod, @monaco-editor/react, monaco-editor, lossless-json, date-fns, clsx, @fontsource/roboto, @fontsource/roboto-mono. The command palette and snackbars use MUI. Do not add `cmdk` or `notistack`.
 **server:** fastify, @fastify/cookie, @fastify/static, @fastify/multipart, @fastify/rate-limit, @aws-sdk/client-dynamodb, @aws-sdk/util-dynamodb (tests and fixtures only), @aws-sdk/credential-providers, zod, pino, pino-pretty (dev). The product path uses `client-dynamodb` so numbers stay strings. Do not add `lib-dynamodb`.
 **dev:** typescript, vite, vitest, @testing-library/react, @testing-library/user-event, @testing-library/jest-dom, msw, playwright, @axe-core/playwright, eslint (flat config), typescript-eslint, eslint-plugin-react-hooks, eslint-plugin-jsx-a11y, prettier, husky, lint-staged, tsx.
 
