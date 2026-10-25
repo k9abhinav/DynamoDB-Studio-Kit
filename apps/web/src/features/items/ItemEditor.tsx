@@ -7,6 +7,8 @@ import { ConfirmDialog } from "../../components/ConfirmDialog.js";
 import { ApiError } from "../../lib/api.js";
 import { useOverlayStore } from "../../stores/overlay.js";
 import { useUiStore } from "../../stores/ui.js";
+import { ConflictDialog } from "./ConflictDialog.js";
+import { CopyMenu } from "./CopyMenu.js";
 import { deleteConfirmation } from "./delete-confirm.js";
 import { EditorPane } from "./EditorPane.js";
 import {
@@ -17,7 +19,7 @@ import {
   type JsonMode,
 } from "./editor-text.js";
 import { getStoredItem } from "./item-api.js";
-import { useItemMutations } from "./use-item-mutations.js";
+import { useItemMutations, type EditConflict } from "./use-item-mutations.js";
 
 export function ItemEditor(props: {
   connectionId: string;
@@ -26,6 +28,8 @@ export function ItemEditor(props: {
   keys: readonly ItemKeySpec[];
   kind: "view" | "create";
   env: string;
+  region: string;
+  endpoint: string;
 }) {
   const mutations = useItemMutations(props.connectionId, props.table);
   const showSnackbar = useOverlayStore((state) => state.showSnackbar);
@@ -39,6 +43,9 @@ export function ItemEditor(props: {
   const [hash, setHash] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
+  const [localConflict, setLocalConflict] = useState<EditConflict | null>(null);
+  const [latest, setLatest] = useState<Item | null>(null);
+  const activeConflict = localConflict ?? mutations.conflict;
   const [issues, setIssues] = useState(
     () => readEditorDocument(text, "plain", options(props)).issues,
   );
@@ -72,6 +79,21 @@ export function ItemEditor(props: {
       clearTimeout(timer);
     };
   }, [mode, props, text]);
+
+  useEffect(() => {
+    if (activeConflict === null) {
+      return undefined;
+    }
+    let cancelled = false;
+    void getStoredItem(props.connectionId, props.table, activeConflict.key).then((item) => {
+      if (!cancelled) {
+        setLatest(item);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeConflict, props.connectionId, props.table]);
 
   useEffect(() => {
     if (!editing) {
@@ -155,8 +177,44 @@ export function ItemEditor(props: {
         showSnackbar("Created");
       }
     } catch (error) {
+      if (
+        error instanceof ApiError &&
+        error.code === "CONDITION_FAILED" &&
+        !creating &&
+        hash !== null
+      ) {
+        setLocalConflict({
+          key: extractKey(before, props.keys),
+          attempted: read.item,
+          expectedHash: hash,
+        });
+        return;
+      }
       setNotice(error instanceof ApiError ? error.message : "The save failed.");
     }
+  }
+
+  function clearConflict(): void {
+    setLocalConflict(null);
+    mutations.clearConflict();
+    setLatest(null);
+  }
+
+  async function overwrite(): Promise<void> {
+    if (activeConflict === null) {
+      return;
+    }
+    const result = await mutations.update.mutateAsync({
+      key: activeConflict.key,
+      item: activeConflict.attempted,
+    });
+    const formatted = formatItem(result.item, mode);
+    setText(formatted);
+    setBaseline(formatted);
+    setHash(result.hash);
+    setPreview(result.item);
+    clearConflict();
+    showSnackbar("Saved");
   }
 
   async function removeItem(): Promise<void> {
@@ -229,6 +287,12 @@ export function ItemEditor(props: {
             >
               Duplicate
             </Button>
+            <CopyMenu
+              endpoint={props.endpoint}
+              item={props.item}
+              region={props.region}
+              table={props.table}
+            />
             <Button
               color="error"
               onClick={() => {
@@ -281,11 +345,27 @@ export function ItemEditor(props: {
             ))}
         </ul>
       ) : null}
-      {mutations.conflict === null ? null : (
-        <p className="px-4 pb-3 text-sm" role="alert">
-          This item changed since you opened it.
-        </p>
-      )}
+      <ConflictDialog
+        latest={latest}
+        open={activeConflict !== null}
+        yours={activeConflict?.attempted ?? null}
+        onClose={clearConflict}
+        onOverwrite={() => {
+          void overwrite();
+        }}
+        onReload={() => {
+          if (latest === null) {
+            return;
+          }
+          const formatted = formatItem(latest, mode);
+          setText(formatted);
+          setBaseline(formatted);
+          setPreview(latest);
+          setEditing(false);
+          void hashItem(latest).then(setHash);
+          clearConflict();
+        }}
+      />
       <ConfirmDialog
         open={confirming}
         title={singleDelete.title}

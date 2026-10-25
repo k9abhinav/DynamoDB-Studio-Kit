@@ -101,7 +101,9 @@ export function ItemDrawer({
               name: key.name,
               type: key.type,
             }))}
+            endpoint={connection.data?.summary.endpoint ?? ""}
             env={connection.data?.summary.env ?? "local"}
+            region={connection.data?.summary.region ?? ""}
             kind={draftKind}
             table={table}
           />

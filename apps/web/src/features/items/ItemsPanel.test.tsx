@@ -38,7 +38,7 @@ describe("ItemsPanel", () => {
     await user.click(screen.getByRole("checkbox", { name: "Select row 1" }));
     expect(screen.getByText("1 selected")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Delete" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Copy" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Copy" })).toBeEnabled();
     await user.click(screen.getByText("a@example.com"));
     expect(screen.getByRole("dialog", { name: "Item details" })).toHaveTextContent("a@example.com");
     expect(screen.getByRole("dialog", { name: "Item details" })).not.toHaveTextContent('"S":');

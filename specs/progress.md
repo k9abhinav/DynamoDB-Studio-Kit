@@ -76,8 +76,8 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T5.7 Item drawer
 - [x] T5.8 Create and duplicate
 - [x] T5.9 Delete and undo
-- [ ] T5.10 Conflict dialog
-- [ ] T5.11 Copy menu
+- [x] T5.10 Conflict dialog
+- [x] T5.11 Copy menu
 - [ ] T5.12 Read-only and unsaved guard
 - [ ] T5.13 Playwright
 - [ ] T5.14 Progress summary
@@ -99,6 +99,10 @@ T5.7 ✔ `apps/web/src/features/items/editor-text.test.ts` and `ItemsPanel.test.
 T5.8 ✔ `editor-text.test.ts`. A new item starts with an empty string key or `"0"` for a number key, so save stays disabled until the key is filled. Duplicate copies the other attributes and clears the key. A collision says an item with this key already exists and offers Open existing item.
 
 T5.9 ✔ `delete-confirm.test.ts`. One item confirms normally. Production types the table name. More than 25 items types DELETE. Undo of a delete puts the previous item back with `ifNotExists`. A missing item says Already deleted. Bulk delete shows progress and can be cancelled between chunks.
+
+T5.10 ✔ `ConflictDialog.test.tsx`. A hash mismatch shows your edit and the latest item, says the check is best-effort, and offers Reload latest or Overwrite. Overwrite saves without the hash but still requires the item to exist.
+
+T5.11 ✔ `copy-command.test.ts`. The AWS CLI command single-quotes quotes, unicode, and newlines, adds `--endpoint-url` only for a non-AWS host, and never includes credentials.
 
 ## Acceptance criteria evidence
 

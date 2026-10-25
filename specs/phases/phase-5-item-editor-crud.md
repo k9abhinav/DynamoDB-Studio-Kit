@@ -38,8 +38,8 @@ Attribute-level mini editor (EDT-7; only if everything else is complete and gree
 - [x] T5.7 ItemDrawer View/Edit, ModeToggle, validation panel, SaveBar + tests
 - [x] T5.8 Create/Duplicate flows + tests
 - [x] T5.9 Delete/Bulk delete UX (confirm, typed confirm, progress, summary, undo) + tests
-- [ ] T5.10 Conflict diff dialog + tests
-- [ ] T5.11 Copy menu (+ AWS CLI generator with escaping tests)
+- [x] T5.10 Conflict diff dialog + tests
+- [x] T5.11 Copy menu (+ AWS CLI generator with escaping tests)
 - [ ] T5.12 Read-only UX + tests; unsaved guard + tests
 - [ ] T5.13 Playwright: edit-save-undo, conflict scenario (two sessions), create, delete, bulk delete 100 items, light/dark screenshots, axe, keyboard-only
 - [ ] T5.14 Progress + phase summary (decide EDT-7 go/no-go; if no-go move to backlog)

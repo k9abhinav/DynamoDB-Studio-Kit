@@ -24,10 +24,12 @@ import { FilterBar } from "./FilterBar.js";
 import {
   cappedAttributes,
   columnStorageKey,
+  itemKey,
   orderedAttributes,
   readColumnPrefs,
   type ColumnPrefs,
 } from "./columns.js";
+import { CopyMenu } from "./CopyMenu.js";
 import { createTemplate } from "./editor-text.js";
 import { SelectionDelete } from "./SelectionDelete.js";
 import { useScanItems, type ScanQueryInput } from "./use-scan-items.js";
@@ -269,7 +271,33 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
               setSelected(new Set());
             }}
           />
-          <Button disabled>Copy</Button>
+          <CopyMenu
+            disabled={
+              items.find((item) =>
+                selected.has(
+                  itemKey(
+                    item,
+                    keys.map((key) => key.name),
+                  ),
+                ),
+              ) === undefined
+            }
+            endpoint={connection.data?.summary.endpoint ?? ""}
+            item={
+              items.find((item) =>
+                selected.has(
+                  itemKey(
+                    item,
+                    keys.map((key) => key.name),
+                  ),
+                ),
+              ) ?? {
+                id: { S: "" },
+              }
+            }
+            region={connection.data?.summary.region ?? ""}
+            table={table}
+          />
         </div>
       ) : null}
       <div className="relative min-h-0 flex-1">
