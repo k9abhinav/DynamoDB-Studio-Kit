@@ -29,7 +29,7 @@ Attribute-level mini editor (EDT-7; only if everything else is complete and gree
 - **FR-5.14** Drawer is keyboard-first: `Cmd/Ctrl+S` save, `Esc` close (with guard), `Cmd/Ctrl+Shift+F` format JSON, `Alt+M` toggle mode.
 
 ## 4. Tasks
-- [ ] T5.1 `typed-json` (toPlain/fromPlain/escape rules) tests first, including fast-check round-trip properties and the edge-cases fixtures
+- [x] T5.1 `typed-json` (toPlain/fromPlain/escape rules) tests first, including fast-check round-trip properties and the edge-cases fixtures
 - [ ] T5.2 `validateTypedItem`, `itemHash`, size estimator + tests
 - [ ] T5.3 Server `DynamoService` item operations + conditions + hash + tests; routes + integration tests (including read-only 403 and conflict)
 - [ ] T5.4 Batch delete with chunking, backoff, partial failures + tests (simulate UnprocessedItems)

@@ -3,8 +3,8 @@
 > The agent updates this file at the end of every task and phase. It is the memory between sessions.
 > Format for evidence: `AC-3.2 ✔ apps/web/src/features/tables/SidebarTableList.test.tsx > "filters as you type"`
 
-**Current phase:** 4 (done)
-**Last updated:** 2026-10-24
+**Current phase:** 5 (in progress)
+**Last updated:** 2026-10-25
 
 ## Phase status
 | Phase | Name | Status | Verify green | Date |
@@ -14,7 +14,7 @@
 | 2 | Backend & connection | ✅ done | ✅ | 2026-10-23 |
 | 3 | Table explorer | ✅ done | ✅ | 2026-10-24 |
 | 4 | Items browser | ✅ done | ✅ | 2026-10-24 |
-| 5 | Item editor & CRUD | ☐ not started | ☐ | |
+| 5 | Item editor & CRUD | 🔄 in progress | ☐ | |
 | 6 | Query builder & PartiQL | ☐ not started | ☐ | |
 | 7 | Table management & import/export | ☐ not started | ☐ | |
 | 8 | Polish, hardening, packaging | ☐ not started | ☐ | |
@@ -65,6 +65,24 @@
 - [x] T4.14 Progress summary
 
 T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 100% (99/99) on 2026-10-24 with `@vitest/coverage-v8` for `expression-builder.ts`. A 38-digit number and `1E+2` stay decimal strings in the value map.
+
+## Phase 5 tasks
+- [x] T5.1 Typed JSON plain projection
+- [ ] T5.2 Validation, hash, and size
+- [ ] T5.3 Item routes
+- [ ] T5.4 Batch delete
+- [ ] T5.5 Web mutations
+- [ ] T5.6 JSON editor
+- [ ] T5.7 Item drawer
+- [ ] T5.8 Create and duplicate
+- [ ] T5.9 Delete and undo
+- [ ] T5.10 Conflict dialog
+- [ ] T5.11 Copy menu
+- [ ] T5.12 Read-only and unsaved guard
+- [ ] T5.13 Playwright
+- [ ] T5.14 Progress summary
+
+T5.1 ✔ `packages/shared/src/typed-json.test.ts`. 1,000 generated items and the edge fixtures round-trip through `lossless-json`, including a 38-digit number, `1E+2`, `-0`, and `$b` keys. `lossless-json` 4.3.3 is the approved parser. `fast-check` 4.10.2 is a shared dev dependency for that property test.
 
 ## Acceptance criteria evidence
 
@@ -149,7 +167,7 @@ Phase 1 installed, from `pnpm list` on 2026-10-23:
 
 Phase 2 added on the web app: react-hook-form 7.90.0, @hookform/resolvers 6.0.0, zod 4.6.7 (already used by shared). Server dependencies from earlier in the phase: @fastify/cookie 11.1.3, @fastify/static 10.1.7, @fastify/rate-limit 11.2.1, @aws-sdk/credential-providers 3.1155.0.
 
-Monaco stays out until Phase 5.
+Monaco stays out until Phase 5. Phase 5 added `lossless-json` 4.3.3 to `@dynamo-studio/shared` and `fast-check` 4.10.2 as a dev dependency there.
 
 `exactOptionalPropertyTypes` stayed on. `pnpm dev` is `scripts/dev.ts`, not `concurrently`.
 

@@ -95,6 +95,16 @@ export {
   type FilterOp as FilterOpName,
 } from "./api/filter.js";
 export {
+  PlainJsonError,
+  canonicalTypedJson,
+  fromPlain,
+  fromPlainItem,
+  parsePlain,
+  stringifyPlain,
+  toPlain,
+  toPlainItem,
+} from "./typed-json.js";
+export {
   PROJECTION_LIMIT,
   SCAN_PAGE_DEFAULT,
   SCAN_PAGE_MAX,
