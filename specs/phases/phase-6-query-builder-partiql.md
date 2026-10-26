@@ -32,7 +32,7 @@ Query plan estimation; multi-statement batch; transactions; autocomplete beyond 
 - [x] T6.5 Web `QueryBuilder` form + validation + "Show request" + tests
 - [x] T6.6 Scan/Query toggle integration with grid, summary, pagination + tests
 - [ ] T6.7 PartiQL editor (Monaco, Monarch grammar, error markers) + run/stop + results + tests
-- [ ] T6.8 History + Saved queries (storage layer with versioned schema) + tests. Include a Clear history action for local history and for saved queries.
+- [x] T6.8 History + Saved queries (storage layer with versioned schema) + tests. Include a Clear history action for local history and for saved queries.
 - [ ] T6.9 Mutation confirmation UX + typed confirmation + tests
 - [ ] T6.10 Playwright: query `orders` by userId + sort key range via GSI and base table; PartiQL select/update; history/saved; light/dark screenshots; axe; keyboard-only
 - [ ] T6.11 Progress + phase summary

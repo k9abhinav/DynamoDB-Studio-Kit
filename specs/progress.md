@@ -90,12 +90,14 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T6.5 Query builder
 - [x] T6.6 Scan/Query toggle
 - [ ] T6.7 PartiQL editor
-- [ ] T6.8 History and saved queries
+- [x] T6.8 History and saved queries
 - [ ] T6.9 Mutation confirmation
 - [ ] T6.10 Playwright
 - [ ] T6.11 Progress summary
 
 T6.1 ✔ `packages/shared/src/query-request.test.ts` and `apps/server/src/dynamo/expression-builder.test.ts` > "aliases reserved words and rejects begins_with on a number". Partition-key equality and every sort-key operator use `#n` / `:v` placeholders. `status`, `name`, and `timestamp` stay in the names map. A 38-digit number and `1E+2` are unchanged. `begins_with` accepts string and binary and rejects a number. The server wrapper maps that rejection to `400 VALIDATION`.
+
+T6.8 ✔ `apps/web/src/features/partiql/partiql-storage.test.ts`. History keeps 100 statements, drops a consecutive duplicate after turning `\r\n` into `\n`, and uses schema `{ v: 1 }`. The storage key is `ds-partiql-history:` plus the SHA-256 of the endpoint and region, so the endpoint is not in the key or the value. Clear history removes that key and `ds-partiql-saved:`.
 
 T6.6 ✔ `apps/web/src/features/items/ItemsPanel.test.tsx` > "runs a query in the same grid and clears filters unless asked". The query result uses the scan grid. Page size stays available. Filters clear on Scan/Query unless Keep filters is checked. `Cmd/Ctrl+Enter` runs the query from `QueryBuilder.test.tsx`.
 
