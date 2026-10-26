@@ -35,7 +35,7 @@ Query plan estimation; multi-statement batch; transactions; autocomplete beyond 
 - [x] T6.8 History + Saved queries (storage layer with versioned schema) + tests. Include a Clear history action for local history and for saved queries.
 - [x] T6.9 Mutation confirmation UX + typed confirmation + tests
 - [x] T6.10 Playwright: query `orders` by userId + sort key range via GSI and base table; PartiQL select/update; history/saved; light/dark screenshots; axe; keyboard-only
-- [ ] T6.11 Progress + phase summary
+- [x] T6.11 Progress + phase summary
 
 ## 5. Acceptance criteria
 - **AC-6.1** Query on `orders` by `userId` with `createdAt between X and Y` returns exactly the expected items in descending order (integration).
