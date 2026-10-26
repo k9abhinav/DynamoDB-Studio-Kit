@@ -136,6 +136,7 @@ export {
   type PutItemRequest as PutItemRequestBody,
   type UpdateItemRequest as UpdateItemRequestBody,
 } from "./api/items.js";
+export { classifyStatement, type StatementKind } from "./partiql.js";
 export {
   QueryRequestError,
   buildKeyCondition,
