@@ -1,11 +1,13 @@
 import type { FastifyPluginCallback, FastifyRequest } from "fastify";
 import { z } from "zod";
 import {
+  QueryRequest,
   ScanRequest,
   TABLE_NAME_PATTERN,
   TableListQuery,
   TableListResponse,
 } from "@dynamo-studio/shared";
+import { queryTable } from "../dynamo/query.js";
 import { scanTable } from "../dynamo/scan.js";
 import {
   describeConnectionTable,
@@ -76,6 +78,37 @@ export const tableRoutes: FastifyPluginCallback = (app, _options, done) => {
       ...(body.projection === undefined ? {} : { projection: body.projection }),
       ...(body.consistentRead === undefined ? {} : { consistentRead: body.consistentRead }),
       ...(body.segment === undefined ? {} : { segment: body.segment }),
+      ...(body.fillPage === undefined ? {} : { fillPage: body.fillPage }),
+      signal: requestSignal(request),
+    });
+  });
+
+  app.post("/api/v1/connections/:id/tables/:table/query", async (request) => {
+    const params = TableParams.parse(request.params);
+    const body = QueryRequest.parse(request.body ?? {});
+    const id = sessionId(request);
+    const open = app.connections.open(id, params.id);
+    return queryTable(open.client, open.endpoint, {
+      table: params.table,
+      partitionKey: body.key.pk,
+      scanForward: body.scanForward,
+      limit: body.limit,
+      filterJoiner: body.filterJoiner,
+      ...(body.index === undefined ? {} : { index: body.index }),
+      ...(body.key.sk === undefined
+        ? {}
+        : {
+            sortKey: {
+              name: body.key.sk.name,
+              op: body.key.sk.op,
+              value: body.key.sk.value,
+              ...(body.key.sk.value2 === undefined ? {} : { value2: body.key.sk.value2 }),
+            },
+          }),
+      ...(body.cursor === undefined ? {} : { cursor: body.cursor }),
+      ...(body.filters === undefined ? {} : { filters: body.filters }),
+      ...(body.projection === undefined ? {} : { projection: body.projection }),
+      ...(body.consistentRead === undefined ? {} : { consistentRead: body.consistentRead }),
       ...(body.fillPage === undefined ? {} : { fillPage: body.fillPage }),
       signal: requestSignal(request),
     });

@@ -84,7 +84,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 
 ## Phase 6 tasks
 - [x] T6.1 Key-condition builder
-- [ ] T6.2 Server query route
+- [x] T6.2 Server query route
 - [ ] T6.3 PartiQL classifier
 - [ ] T6.4 PartiQL route
 - [ ] T6.5 Query builder
@@ -96,6 +96,8 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [ ] T6.11 Progress summary
 
 T6.1 ✔ `packages/shared/src/query-request.test.ts` and `apps/server/src/dynamo/expression-builder.test.ts` > "aliases reserved words and rejects begins_with on a number". Partition-key equality and every sort-key operator use `#n` / `:v` placeholders. `status`, `name`, and `timestamp` stay in the names map. A 38-digit number and `1E+2` are unchanged. `begins_with` accepts string and binary and rejects a number. The server wrapper maps that rejection to `400 VALIDATION`.
+
+T6.2 ✔ `apps/server/src/dynamo/query.test.ts` and `apps/server/src/routes/query.int.test.ts` against DynamoDB Local. Descending `userId = user-0001` with `createdAt BETWEEN` returns those orders. `status-createdAt-index` with `begins_with` returns `SHIPPED` items. Consistent read on that GSI is `400 VALIDATION` before Query. Filters on `name` and `timestamp` use their own placeholders after the key aliases, so the names map contains `userId`, `name`, and `timestamp`. A cursor from a descending query is `400 VALIDATION` when the direction changes. The seed has no LSI, so consistent read on a local index was not exercised.
 
 T5.1 ✔ `packages/shared/src/typed-json.test.ts`. 1,000 generated items and the edge fixtures round-trip through `lossless-json`, including a 38-digit number, `1E+2`, `-0`, and `$b` keys. `lossless-json` 4.3.3 is the approved parser. `fast-check` 4.10.2 is a shared dev dependency for that property test.
 

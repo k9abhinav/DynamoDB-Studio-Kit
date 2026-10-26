@@ -146,6 +146,16 @@ export {
   type KeySort,
 } from "./query-request.js";
 export {
+  KeyConditionOp,
+  QueryPreview,
+  QueryRequest,
+  QueryResponse,
+  type KeyConditionOp as KeyConditionOpName,
+  type QueryPreview as QueryPreviewBody,
+  type QueryRequest as QueryRequestBody,
+  type QueryResponse as QueryResponseBody,
+} from "./api/query.js";
+export {
   PROJECTION_LIMIT,
   SCAN_PAGE_DEFAULT,
   SCAN_PAGE_MAX,
