@@ -3,9 +3,14 @@ import {
   FILTER_LIMIT,
   IN_VALUE_LIMIT,
   PROJECTION_LIMIT,
+  QueryRequestError,
+  buildKeyCondition,
   type AttributeTypeName,
   type AttributeValue,
+  type BuiltKeyCondition,
   type Filter,
+  type KeyAttribute,
+  type KeySort,
 } from "@dynamo-studio/shared";
 import { HttpError } from "../http-error.js";
 
@@ -213,6 +218,20 @@ function compile(filter: Filter, state: AliasState): string {
     case ">":
     case ">=":
       return `${path} ${filter.op} ${addValue(state, oneValue(filter))}`;
+  }
+}
+
+export function buildKeyConditionExpression(input: {
+  readonly partitionKey: KeyAttribute;
+  readonly sortKey?: KeySort;
+}): BuiltKeyCondition {
+  try {
+    return buildKeyCondition(input);
+  } catch (error) {
+    if (error instanceof QueryRequestError) {
+      throw new HttpError("VALIDATION", error.message);
+    }
+    throw error;
   }
 }
 

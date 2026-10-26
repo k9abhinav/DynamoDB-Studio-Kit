@@ -3,8 +3,8 @@
 > The agent updates this file at the end of every task and phase. It is the memory between sessions.
 > Format for evidence: `AC-3.2 ✔ apps/web/src/features/tables/SidebarTableList.test.tsx > "filters as you type"`
 
-**Current phase:** 5 (done)
-**Last updated:** 2026-10-25
+**Current phase:** 6
+**Last updated:** 2026-10-26
 
 ## Phase status
 | Phase | Name | Status | Verify green | Date |
@@ -81,6 +81,21 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T5.12 Read-only and unsaved guard
 - [x] T5.13 Playwright
 - [x] T5.14 Progress summary
+
+## Phase 6 tasks
+- [x] T6.1 Key-condition builder
+- [ ] T6.2 Server query route
+- [ ] T6.3 PartiQL classifier
+- [ ] T6.4 PartiQL route
+- [ ] T6.5 Query builder
+- [ ] T6.6 Scan/Query toggle
+- [ ] T6.7 PartiQL editor
+- [ ] T6.8 History and saved queries
+- [ ] T6.9 Mutation confirmation
+- [ ] T6.10 Playwright
+- [ ] T6.11 Progress summary
+
+T6.1 ✔ `packages/shared/src/query-request.test.ts` and `apps/server/src/dynamo/expression-builder.test.ts` > "aliases reserved words and rejects begins_with on a number". Partition-key equality and every sort-key operator use `#n` / `:v` placeholders. `status`, `name`, and `timestamp` stay in the names map. A 38-digit number and `1E+2` are unchanged. `begins_with` accepts string and binary and rejects a number. The server wrapper maps that rejection to `400 VALIDATION`.
 
 T5.1 ✔ `packages/shared/src/typed-json.test.ts`. 1,000 generated items and the edge fixtures round-trip through `lossless-json`, including a 38-digit number, `1E+2`, `-0`, and `$b` keys. `lossless-json` 4.3.3 is the approved parser. `fast-check` 4.10.2 is a shared dev dependency for that property test.
 

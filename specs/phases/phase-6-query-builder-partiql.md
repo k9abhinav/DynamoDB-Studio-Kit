@@ -25,14 +25,14 @@ Query plan estimation; multi-statement batch; transactions; autocomplete beyond 
 - **FR-6.11** Cancel: Stop aborts the fetch; server stops (no orphan loops).
 
 ## 4. Tasks
-- [ ] T6.1 Key-condition builder in `ExpressionBuilder` (all operators, name/value placeholders, validation rules like `begins_with` only for S/B) tests first
+- [x] T6.1 Key-condition builder in `ExpressionBuilder` (all operators, name/value placeholders, validation rules like `begins_with` only for S/B) tests first
 - [ ] T6.2 Server `query` + route + integration tests (table, GSI, LSI if seeded, desc order, between, begins_with, filters, projection, pagination, consistent read rules)
-- [ ] T6.3 PartiQL statement classifier (tokenizer-based) + tests for tricky inputs (strings containing "DELETE", comments, mixed case, leading whitespace)
-- [ ] T6.4 Server `partiql` + route + integration tests (select with params, pagination via NextToken, mutation confirm header, read-only)
+- [ ] T6.3 PartiQL statement classifier (tokenizer-based) + tests for tricky inputs (strings containing "DELETE", comments, mixed case, leading whitespace). Fail closed: empty input, typos, and more than one statement separated by `;` are mutations. Table-driven tests cover those.
+- [ ] T6.4 Server `partiql` + route + integration tests (select with params, pagination via NextToken, mutation confirm header, read-only). The server classifies the statement itself and ignores any client-sent kind. A `DELETE` sent with a header that implies a select is still a mutation. `NextToken` cursors hash the statement, parameters, and consistent read; a mismatch is `400 VALIDATION`.
 - [ ] T6.5 Web `QueryBuilder` form + validation + "Show request" + tests
 - [ ] T6.6 Scan/Query toggle integration with grid, summary, pagination + tests
 - [ ] T6.7 PartiQL editor (Monaco, Monarch grammar, error markers) + run/stop + results + tests
-- [ ] T6.8 History + Saved queries (storage layer with versioned schema) + tests
+- [ ] T6.8 History + Saved queries (storage layer with versioned schema) + tests. Include a Clear history action for local history and for saved queries.
 - [ ] T6.9 Mutation confirmation UX + typed confirmation + tests
 - [ ] T6.10 Playwright: query `orders` by userId + sort key range via GSI and base table; PartiQL select/update; history/saved; light/dark screenshots; axe; keyboard-only
 - [ ] T6.11 Progress + phase summary
@@ -42,10 +42,10 @@ Query plan estimation; multi-statement batch; transactions; autocomplete beyond 
 - **AC-6.2** GSI `status-createdAt-index` query works; consistent read control is disabled for it.
 - **AC-6.3** "Show request" output equals the request captured by the server for the same run (test compares).
 - **AC-6.4** Reserved words (`status`, `name`, `timestamp`) work in key conditions and filters (integration).
-- **AC-6.5** PartiQL classifier tests: `select`, `SELECT`, leading comments, `-- DELETE` in a comment, a string containing `'DELETE'`, `UPDATE`, `INSERT`, `DELETE` all classified correctly (table-driven).
-- **AC-6.6** PartiQL `UPDATE` on a read-only connection returns `READ_ONLY`; on a writable connection, a direct API call without `X-DS-Confirm: mutation` returns `400 VALIDATION`.
-- **AC-6.7** History keeps the last 100 per connection, de-duplicates consecutive identical statements; saved queries survive reload; no secrets stored (inspect localStorage in test).
-- **AC-6.8** Position-based error highlighting works for a seeded syntax error.
+- **AC-6.5** PartiQL classifier tests: `select`, `SELECT`, leading comments, `-- DELETE` in a comment, a string containing `'DELETE'`, `UPDATE`, `INSERT`, `DELETE` all classified correctly (table-driven). Empty input, typos, and multiple statements separated by `;` are mutations.
+- **AC-6.6** PartiQL `UPDATE` on a read-only connection returns `READ_ONLY`; on a writable connection, a direct API call without `X-DS-Confirm: mutation` returns `400 VALIDATION`. The server classifies independently: a `DELETE` sent with a header implying a select is still a mutation.
+- **AC-6.7** History keeps the last 100 per connection, de-duplicates consecutive identical statements; saved queries survive reload; no secrets stored (inspect localStorage in test). Clear history removes local history and saved queries.
+- **AC-6.8** Position-based error highlighting works for a seeded syntax error. If DynamoDB Local returns no position, the evidence is the component test, and progress says AWS was not checked.
 - **AC-6.9** Stop cancels long-running PartiQL pagination (test asserts server loop ends).
 - **AC-6.10** axe 0 serious/critical on Query and PartiQL views; keyboard-only run via `Cmd/Ctrl+Enter` works.
 

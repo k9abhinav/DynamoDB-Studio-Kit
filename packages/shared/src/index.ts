@@ -137,6 +137,15 @@ export {
   type UpdateItemRequest as UpdateItemRequestBody,
 } from "./api/items.js";
 export {
+  QueryRequestError,
+  buildKeyCondition,
+  isKeyOp,
+  type BuiltKeyCondition,
+  type KeyAttribute,
+  type KeyOp,
+  type KeySort,
+} from "./query-request.js";
+export {
   PROJECTION_LIMIT,
   SCAN_PAGE_DEFAULT,
   SCAN_PAGE_MAX,

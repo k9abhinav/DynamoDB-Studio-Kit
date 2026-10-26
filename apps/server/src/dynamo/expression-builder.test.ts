@@ -2,7 +2,11 @@ import { type AttributeValue, type Filter, type FilterOp } from "@dynamo-studio/
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import { HttpError } from "../http-error.js";
-import { buildFilterExpression, buildProjectionExpression } from "./expression-builder.js";
+import {
+  buildFilterExpression,
+  buildKeyConditionExpression,
+  buildProjectionExpression,
+} from "./expression-builder.js";
 
 const DIGITS = "12345678901234567890123456789012345678";
 
@@ -55,6 +59,32 @@ function expectInvalid(run: () => unknown, message: RegExp): void {
   expect(caught.code).toBe("VALIDATION");
   expect(caught.message).toMatch(message);
 }
+
+describe("buildKeyConditionExpression", () => {
+  it("aliases reserved words and rejects begins_with on a number", () => {
+    const built = buildKeyConditionExpression({
+      partitionKey: { name: "status", value: { S: "SHIPPED" } },
+      sortKey: { name: "name", op: "=", value: { S: "ada" } },
+    });
+    expect(built.expression).toBe("#n0 = :v0 AND #n1 = :v1");
+    expect(built.names).toEqual({ "#n0": "status", "#n1": "name" });
+    expect(built.expression.includes("status")).toBe(false);
+    expect(() =>
+      buildKeyConditionExpression({
+        partitionKey: { name: "id", value: { N: DIGITS } },
+        sortKey: { name: "timestamp", op: "begins_with", value: { N: "1E+2" } },
+      }),
+    ).toThrow(HttpError);
+    try {
+      buildKeyConditionExpression({
+        partitionKey: { name: "id", value: { N: DIGITS } },
+        sortKey: { name: "timestamp", op: "begins_with", value: { N: "1E+2" } },
+      });
+    } catch (error) {
+      expect(error).toMatchObject({ code: "VALIDATION" });
+    }
+  });
+});
 
 describe("buildFilterExpression", () => {
   it.each([
