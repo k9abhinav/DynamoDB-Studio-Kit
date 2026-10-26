@@ -113,6 +113,80 @@ describe("PartiqlPanel", () => {
     expect(stored).toEqual([]);
     expect(JSON.stringify(bodies)).not.toMatch(/secret/u);
   });
+
+  it("stops a running statement and returns to idle", async () => {
+    const user = userEvent.setup();
+    let signal: AbortSignal | undefined;
+    vi.stubGlobal("fetch", (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+      const method = init?.method ?? "GET";
+      if (url.endsWith("/api/v1/session")) {
+        return Promise.resolve(json({ csrfToken: "csrf-test", version: "0.0.0" }));
+      }
+      if (method === "GET" && url.includes("/tables/")) {
+        return Promise.resolve(json(usersTable));
+      }
+      if (method === "GET" && url.includes("/connections/")) {
+        return Promise.resolve(
+          json({
+            summary: {
+              name: "Local",
+              endpoint: "http://127.0.0.1:8000",
+              region: "us-east-1",
+              env: "local",
+              readOnly: false,
+              authType: "local",
+            },
+            latencyMs: 1,
+          }),
+        );
+      }
+      if (method === "POST" && url.includes("/partiql")) {
+        const abort = init?.signal;
+        if (abort === undefined || abort === null) {
+          return Promise.reject(new Error("missing abort signal"));
+        }
+        signal = abort;
+        return new Promise((_resolve, reject) => {
+          const fail = () => {
+            reject(new DOMException("The operation was aborted.", "AbortError"));
+          };
+          if (abort.aborted) {
+            fail();
+            return;
+          }
+          abort.addEventListener("abort", fail, { once: true });
+        });
+      }
+      return Promise.resolve(
+        json(
+          { error: { code: "NOT_FOUND", message: "Missing.", retryable: false, requestId: "req" } },
+          404,
+        ),
+      );
+    });
+    render(
+      <AppProviders>
+        <PartiqlPanel connectionId="local" table="users" />
+      </AppProviders>,
+    );
+    await user.click(await screen.findByRole("button", { name: "Templates" }));
+    await user.click(screen.getByRole("menuitem", { name: "Select all" }));
+    await user.click(screen.getByRole("button", { name: "Run" }));
+    const stop = screen.getByRole("button", { name: "Stop" });
+    await waitFor(() => {
+      expect(stop).toBeEnabled();
+    });
+    await user.click(stop);
+    await waitFor(() => {
+      expect(signal?.aborted).toBe(true);
+    });
+    await waitFor(() => {
+      expect(stop).toBeDisabled();
+    });
+    expect(screen.getByText("Run a statement to see items.")).toBeInTheDocument();
+    expect(screen.queryByText(/failed|aborted/i)).not.toBeInTheDocument();
+  });
 });
 
 const usersTable = {
