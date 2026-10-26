@@ -71,6 +71,7 @@ export async function api<T>(
   init: {
     method?: string;
     body?: unknown;
+    headers?: Readonly<Record<string, string>>;
     signal?: AbortSignal;
     schema?: Parser<T>;
   } = {},
@@ -85,6 +86,9 @@ export async function api<T>(
   }
   if (isMutation(method) && csrfToken !== undefined) {
     headers.set(CSRF_HEADER, csrfToken);
+  }
+  for (const [name, value] of Object.entries(init.headers ?? {})) {
+    headers.set(name, value);
   }
   const response = await fetch(path, {
     method,

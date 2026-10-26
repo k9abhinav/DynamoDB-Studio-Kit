@@ -31,9 +31,9 @@ Query plan estimation; multi-statement batch; transactions; autocomplete beyond 
 - [x] T6.4 Server `partiql` + route + integration tests (select with params, pagination via NextToken, mutation confirm header, read-only). The server classifies the statement itself and ignores any client-sent kind. A `DELETE` sent with a header that implies a select is still a mutation. `NextToken` cursors hash the statement, parameters, and consistent read; a mismatch is `400 VALIDATION`.
 - [x] T6.5 Web `QueryBuilder` form + validation + "Show request" + tests
 - [x] T6.6 Scan/Query toggle integration with grid, summary, pagination + tests
-- [ ] T6.7 PartiQL editor (Monaco, Monarch grammar, error markers) + run/stop + results + tests
+- [x] T6.7 PartiQL editor (Monaco, Monarch grammar, error markers) + run/stop + results + tests
 - [x] T6.8 History + Saved queries (storage layer with versioned schema) + tests. Include a Clear history action for local history and for saved queries.
-- [ ] T6.9 Mutation confirmation UX + typed confirmation + tests
+- [x] T6.9 Mutation confirmation UX + typed confirmation + tests
 - [ ] T6.10 Playwright: query `orders` by userId + sort key range via GSI and base table; PartiQL select/update; history/saved; light/dark screenshots; axe; keyboard-only
 - [ ] T6.11 Progress + phase summary
 

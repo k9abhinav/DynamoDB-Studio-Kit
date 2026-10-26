@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { classifyStatement } from "./partiql.js";
+import { classifyStatement, leadingKeyword, selectWithoutWhere } from "./partiql.js";
 
 const cases: Array<[string, "select" | "mutation", string]> = [
   ["select * from t", "select", "lowercase select"],
@@ -25,6 +25,16 @@ const cases: Array<[string, "select" | "mutation", string]> = [
   ["/* never ends SELECT * FROM t", "mutation", "unclosed comment"],
   ["DROP TABLE t", "mutation", "unrecognized verb"],
 ];
+
+describe("selectWithoutWhere", () => {
+  it("ignores WHERE hidden in a comment and treats a real WHERE as a filter", () => {
+    expect(selectWithoutWhere("SELECT * FROM t WHERE name = 'x'")).toBe(false);
+    expect(selectWithoutWhere("SELECT * FROM t")).toBe(true);
+    expect(selectWithoutWhere("-- WHERE\nSELECT * FROM t")).toBe(true);
+    expect(selectWithoutWhere("UPDATE t SET a = 1")).toBe(false);
+    expect(leadingKeyword("  update t")).toBe("UPDATE");
+  });
+});
 
 describe("classifyStatement", () => {
   it.each(cases)("%s -> %s (%s)", (source, kind) => {

@@ -1,7 +1,10 @@
-import InboxOutlined from "@mui/icons-material/InboxOutlined";
+import { lazy, Suspense } from "react";
 import { useParams } from "react-router-dom";
-import { EmptyState } from "../../components/EmptyState.js";
 import { ItemsPanel } from "../items/ItemsPanel.js";
+
+const PartiqlPanel = lazy(() =>
+  import("../partiql/PartiqlPanel.js").then((module) => ({ default: module.PartiqlPanel })),
+);
 import { IndexList } from "../tables/IndexList.js";
 import { TableOverview } from "../tables/TableOverview.js";
 import { TablePanel } from "../tables/TablePanel.js";
@@ -39,10 +42,8 @@ export function TabPanel() {
   }
 
   return (
-    <EmptyState
-      icon={<InboxOutlined className="text-[48px]" />}
-      title="PartiQL arrives in a later version."
-      help="This is a mock workspace."
-    />
+    <Suspense fallback={<p className="px-4 py-6 text-sm">Loading PartiQL</p>}>
+      <PartiqlPanel connectionId={connId} table={table} />
+    </Suspense>
   );
 }

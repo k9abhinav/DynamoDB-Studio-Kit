@@ -113,3 +113,24 @@ export function classifyStatement(source: string): StatementKind {
   }
   return "select";
 }
+
+export function leadingKeyword(source: string): string | undefined {
+  const tokens = tokenize(source);
+  if (tokens === "invalid") {
+    return undefined;
+  }
+  const word = tokens.find((token) => token.kind === "word");
+  return word === undefined ? undefined : word.text.toUpperCase();
+}
+
+/** A SELECT with no WHERE keyword token. Words inside comments and strings do not count. */
+export function selectWithoutWhere(source: string): boolean {
+  if (classifyStatement(source) !== "select") {
+    return false;
+  }
+  const tokens = tokenize(source);
+  if (tokens === "invalid") {
+    return false;
+  }
+  return !tokens.some((token) => token.kind === "word" && token.text.toLowerCase() === "where");
+}

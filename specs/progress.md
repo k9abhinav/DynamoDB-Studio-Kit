@@ -89,13 +89,17 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T6.4 PartiQL route
 - [x] T6.5 Query builder
 - [x] T6.6 Scan/Query toggle
-- [ ] T6.7 PartiQL editor
+- [x] T6.7 PartiQL editor
 - [x] T6.8 History and saved queries
-- [ ] T6.9 Mutation confirmation
+- [x] T6.9 Mutation confirmation
 - [ ] T6.10 Playwright
 - [ ] T6.11 Progress summary
 
 T6.1 ✔ `packages/shared/src/query-request.test.ts` and `apps/server/src/dynamo/expression-builder.test.ts` > "aliases reserved words and rejects begins_with on a number". Partition-key equality and every sort-key operator use `#n` / `:v` placeholders. `status`, `name`, and `timestamp` stay in the names map. A 38-digit number and `1E+2` are unchanged. `begins_with` accepts string and binary and rejects a number. The server wrapper maps that rejection to `400 VALIDATION`.
+
+T6.7 ✔ `apps/web/src/features/partiql/PartiqlPanel.test.tsx` and `PartiqlCodeEditor.test.tsx`. The editor is a lazy chunk with a small Monarch grammar. Templates quote the current table. A SELECT without WHERE on a non-loopback endpoint uses the scan cost hint. Stop cancels the PartiQL query. `PartiqlCodeEditor.test.tsx` injects line 2, column 4 and checks the Monaco marker. DynamoDB Local's syntax error has no position, and AWS was not checked.
+
+T6.9 ✔ The same panel test. An UPDATE opens a confirmation dialog that names the verb. Production types the quoted table name (`users`). The request then sends `X-DS-Confirm: mutation`. The snackbar says the statement ran when DynamoDB does not return an affected count.
 
 T6.8 ✔ `apps/web/src/features/partiql/partiql-storage.test.ts`. History keeps 100 statements, drops a consecutive duplicate after turning `\r\n` into `\n`, and uses schema `{ v: 1 }`. The storage key is `ds-partiql-history:` plus the SHA-256 of the endpoint and region, so the endpoint is not in the key or the value. Clear history removes that key and `ds-partiql-saved:`.
 

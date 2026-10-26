@@ -137,7 +137,12 @@ export {
   type PutItemRequest as PutItemRequestBody,
   type UpdateItemRequest as UpdateItemRequestBody,
 } from "./api/items.js";
-export { classifyStatement, type StatementKind } from "./partiql.js";
+export {
+  classifyStatement,
+  leadingKeyword,
+  selectWithoutWhere,
+  type StatementKind,
+} from "./partiql.js";
 export {
   PARTIQL_STATEMENT_BYTES,
   PartiqlRequest,

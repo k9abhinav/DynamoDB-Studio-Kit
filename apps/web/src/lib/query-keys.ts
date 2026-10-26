@@ -16,6 +16,11 @@ export const scanKeys = {
     ] as const,
 };
 
+export const partiqlKeys = {
+  connection: (connectionId: string) => ["partiql", connectionId] as const,
+  run: (connectionId: string, body: unknown) => ["partiql", connectionId, body] as const,
+};
+
 export const queryKeys = {
   table: (connectionId: string, table: string, body: unknown) =>
     ["query", connectionId, table, body] as const,
