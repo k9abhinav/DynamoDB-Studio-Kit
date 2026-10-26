@@ -16,6 +16,11 @@ export const scanKeys = {
     ] as const,
 };
 
+export const queryKeys = {
+  table: (connectionId: string, table: string, body: unknown) =>
+    ["query", connectionId, table, body] as const,
+};
+
 export const tableKeys = {
   connection: (connectionId: string) => ["connection-tables", connectionId] as const,
   list: (connectionId: string) => ["connection-tables", connectionId, "list"] as const,
