@@ -51,6 +51,7 @@ export {
 } from "./api/profile.js";
 export {
   CONNECT_RATE_LIMIT_PER_MINUTE,
+  CONFIRM_HEADER,
   CSRF_HEADER,
   MAX_CONNECTIONS_PER_SESSION,
   SESSION_COOKIE,
@@ -137,6 +138,13 @@ export {
   type UpdateItemRequest as UpdateItemRequestBody,
 } from "./api/items.js";
 export { classifyStatement, type StatementKind } from "./partiql.js";
+export {
+  PARTIQL_STATEMENT_BYTES,
+  PartiqlRequest,
+  PartiqlResponse,
+  type PartiqlRequest as PartiqlRequestBody,
+  type PartiqlResponse as PartiqlResponseBody,
+} from "./api/partiql.js";
 export {
   QueryRequestError,
   buildKeyCondition,

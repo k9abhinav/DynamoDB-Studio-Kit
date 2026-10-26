@@ -28,7 +28,7 @@ Query plan estimation; multi-statement batch; transactions; autocomplete beyond 
 - [x] T6.1 Key-condition builder in `ExpressionBuilder` (all operators, name/value placeholders, validation rules like `begins_with` only for S/B) tests first
 - [x] T6.2 Server `query` + route + integration tests (table, GSI, LSI if seeded, desc order, between, begins_with, filters, projection, pagination, consistent read rules)
 - [x] T6.3 PartiQL statement classifier (tokenizer-based) + tests for tricky inputs (strings containing "DELETE", comments, mixed case, leading whitespace). Fail closed: empty input, typos, and more than one statement separated by `;` are mutations. Table-driven tests cover those.
-- [ ] T6.4 Server `partiql` + route + integration tests (select with params, pagination via NextToken, mutation confirm header, read-only). The server classifies the statement itself and ignores any client-sent kind. A `DELETE` sent with a header that implies a select is still a mutation. `NextToken` cursors hash the statement, parameters, and consistent read; a mismatch is `400 VALIDATION`.
+- [x] T6.4 Server `partiql` + route + integration tests (select with params, pagination via NextToken, mutation confirm header, read-only). The server classifies the statement itself and ignores any client-sent kind. A `DELETE` sent with a header that implies a select is still a mutation. `NextToken` cursors hash the statement, parameters, and consistent read; a mismatch is `400 VALIDATION`.
 - [ ] T6.5 Web `QueryBuilder` form + validation + "Show request" + tests
 - [ ] T6.6 Scan/Query toggle integration with grid, summary, pagination + tests
 - [ ] T6.7 PartiQL editor (Monaco, Monarch grammar, error markers) + run/stop + results + tests

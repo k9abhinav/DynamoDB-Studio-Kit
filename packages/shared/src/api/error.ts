@@ -44,6 +44,12 @@ export const ErrorDetails = z.strictObject({
   requestId: z.string().min(1).optional(),
   networkCode: z.string().min(1).optional(),
   fields: z.array(ErrorField).optional(),
+  position: z
+    .strictObject({
+      line: z.number().int().min(1),
+      column: z.number().int().min(1),
+    })
+    .optional(),
 });
 
 export type ErrorDetails = z.infer<typeof ErrorDetails>;
