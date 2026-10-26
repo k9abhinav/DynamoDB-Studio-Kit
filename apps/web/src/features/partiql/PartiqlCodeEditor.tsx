@@ -62,6 +62,10 @@ export function PartiqlCodeEditor({
       }}
       onMount={(editor) => {
         editorRef.current = editor;
+        const node = editor.getDomNode();
+        if (node !== null) {
+          Object.assign(node, { studioEditor: editor });
+        }
         syncMonacoTheme(monaco);
       }}
     />

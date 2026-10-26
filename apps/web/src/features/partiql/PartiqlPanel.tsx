@@ -219,7 +219,7 @@ export function PartiqlPanel({ connectionId, table }: { connectionId: string; ta
           </MenuItem>
         ))}
       </Menu>
-      <div className="h-[220px] border-b border-outline">
+      <div className="h-[220px] shrink-0 border-b border-outline">
         <PartiqlCodeEditor value={statement} onChange={setStatement} issues={issues} />
       </div>
       <div className="flex flex-wrap items-end gap-2 border-b border-outline px-3 py-2">
@@ -275,7 +275,7 @@ export function PartiqlPanel({ connectionId, table }: { connectionId: string; ta
           This select reads the table and consumes read capacity.
         </Alert>
       ) : null}
-      <div className="relative min-h-0 flex-1">
+      <div className="relative min-h-48 flex-1">
         {items.length > 0 ? (
           <DataGrid
             items={items}

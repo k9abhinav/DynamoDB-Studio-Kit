@@ -92,10 +92,12 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T6.7 PartiQL editor
 - [x] T6.8 History and saved queries
 - [x] T6.9 Mutation confirmation
-- [ ] T6.10 Playwright
+- [x] T6.10 Playwright
 - [ ] T6.11 Progress summary
 
 T6.1 ✔ `packages/shared/src/query-request.test.ts` and `apps/server/src/dynamo/expression-builder.test.ts` > "aliases reserved words and rejects begins_with on a number". Partition-key equality and every sort-key operator use `#n` / `:v` placeholders. `status`, `name`, and `timestamp` stay in the names map. A 38-digit number and `1E+2` are unchanged. `begins_with` accepts string and binary and rejects a number. The server wrapper maps that rejection to `400 VALIDATION`.
+
+T6.10 ✔ `e2e/query.spec.ts`. `Control+Enter` queries `orders` for `user-0001`, then `createdAt BETWEEN` descending. The GSI `status-createdAt-index` query uses `begins_with` on `createdAt`, disables consistent read, and returns 50 `SHIPPED` items. Show request includes the key condition and an AWS CLI command without credentials. PartiQL selects by partition key, keeps the statement in history, inserts `p6-e2e`, and deletes it. axe reports 0 serious or critical violations on the query view and the PartiQL view in light and dark. Screenshots: `docs/screenshots/phase-6/query-light.png`, `query-dark.png`, `partiql-light.png`, `partiql-dark.png`. At 200% zoom the Run query button stays visible.
 
 T6.7 ✔ `apps/web/src/features/partiql/PartiqlPanel.test.tsx` and `PartiqlCodeEditor.test.tsx`. The editor is a lazy chunk with a small Monarch grammar. Templates quote the current table. A SELECT without WHERE on a non-loopback endpoint uses the scan cost hint. Stop cancels the PartiQL query. `PartiqlCodeEditor.test.tsx` injects line 2, column 4 and checks the Monaco marker. DynamoDB Local's syntax error has no position, and AWS was not checked.
 
