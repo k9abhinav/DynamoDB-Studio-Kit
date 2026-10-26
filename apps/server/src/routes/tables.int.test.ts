@@ -1,21 +1,23 @@
 import {
   CreateTableCommand,
-  DeleteTableCommand,
   DescribeTableCommand,
   ResourceInUseException,
-  ResourceNotFoundException,
   DynamoDBClient,
   UpdateTimeToLiveCommand,
   type CreateTableCommandInput,
 } from "@aws-sdk/client-dynamodb";
 import { afterAll, describe, expect, it } from "vitest";
 import { CSRF_HEADER, TableDescription, TableListResponse } from "@dynamo-studio/shared";
+import { deleteLocalTables, uniqueToken } from "../local-cleanup.js";
 import { buildApp } from "../app.js";
 
-const generated = [
-  "my.table-v2",
-  ...Array.from({ length: 101 }, (_unused, index) => `p3t-${String(index).padStart(3, "0")}`),
-];
+function pageNames(prefix: string): string[] {
+  return Array.from({ length: 101 }, (_unused, index) => {
+    return `${prefix}${String(index).padStart(3, "0")}`;
+  });
+}
+
+let created: string[] = [];
 
 async function session(app: Awaited<ReturnType<typeof buildApp>>): Promise<{
   cookie: string;
@@ -95,10 +97,10 @@ function localClient(): DynamoDBClient {
   });
 }
 
-async function ensureGenerated(): Promise<void> {
+async function ensureGenerated(names: readonly string[]): Promise<void> {
   const client = localClient();
   try {
-    for (const name of generated) {
+    for (const name of names) {
       try {
         await client.send(
           new CreateTableCommand({
@@ -152,129 +154,125 @@ async function ensureGenerated(): Promise<void> {
 
 describe("table routes against DynamoDB Local", () => {
   afterAll(async () => {
-    const client = localClient();
-    try {
-      for (const name of generated) {
-        try {
-          await client.send(new DeleteTableCommand({ TableName: name }));
-        } catch (error) {
-          if (!(error instanceof ResourceNotFoundException)) {
-            throw error;
-          }
-        }
-      }
-    } finally {
-      client.destroy();
-    }
+    await deleteLocalTables(created);
   });
 
   it("lists seed tables, describes orders and sessions, and pages a dotted name", async () => {
-    await ensureGenerated();
-    const app = await buildApp();
-    const open = await session(app);
-    const headers = { cookie: open.cookie, [CSRF_HEADER]: open.csrf };
-    const created = await app.inject({
-      method: "POST",
-      url: "/api/v1/connections",
-      headers,
-      payload: {
-        endpoint: "http://127.0.0.1:8000",
-        region: "us-east-1",
-        auth: { type: "local" },
-        env: "local",
-        readOnly: true,
-        remember: false,
-      },
-    });
-    expect(created.statusCode).toBe(201);
-    const connectionId = created.json<{ connectionId: string }>().connectionId;
+    const token = uniqueToken();
+    const prefix = `p3${token}-`;
+    const dotted = `my.table-${token}`;
+    const names = pageNames(prefix);
+    created = [...names, dotted];
+    try {
+      await ensureGenerated(created);
+      const app = await buildApp();
+      const open = await session(app);
+      const headers = { cookie: open.cookie, [CSRF_HEADER]: open.csrf };
+      const connected = await app.inject({
+        method: "POST",
+        url: "/api/v1/connections",
+        headers,
+        payload: {
+          endpoint: "http://127.0.0.1:8000",
+          region: "us-east-1",
+          auth: { type: "local" },
+          env: "local",
+          readOnly: true,
+          remember: false,
+        },
+      });
+      expect(connected.statusCode).toBe(201);
+      const connectionId = connected.json<{ connectionId: string }>().connectionId;
 
-    const names = new Set<string>();
-    let cursor: string | undefined;
-    for (let page = 0; page < 20; page += 1) {
-      const query = cursor === undefined ? "" : `?cursor=${encodeURIComponent(cursor)}`;
-      const listed = await app.inject({
+      const names = new Set<string>();
+      let cursor: string | undefined;
+      for (let page = 0; page < 20; page += 1) {
+        const query = cursor === undefined ? "" : `?cursor=${encodeURIComponent(cursor)}`;
+        const listed = await app.inject({
+          method: "GET",
+          url: `/api/v1/connections/${connectionId}/tables${query}`,
+          headers,
+        });
+        expect(listed.statusCode).toBe(200);
+        const body = TableListResponse.parse(listed.json());
+        for (const name of body.tables) {
+          names.add(name);
+        }
+        cursor = body.nextCursor;
+        if (cursor === undefined) {
+          break;
+        }
+      }
+      expect(names.has("users")).toBe(true);
+      expect(names.has("orders")).toBe(true);
+      expect(names.has("sessions")).toBe(true);
+      expect(names.has("edge-cases")).toBe(true);
+
+      const orders = await app.inject({
         method: "GET",
-        url: `/api/v1/connections/${connectionId}/tables${query}`,
+        url: `/api/v1/connections/${connectionId}/tables/orders`,
         headers,
       });
-      expect(listed.statusCode).toBe(200);
-      const body = TableListResponse.parse(listed.json());
-      for (const name of body.tables) {
-        names.add(name);
-      }
-      cursor = body.nextCursor;
-      if (cursor === undefined) {
-        break;
-      }
-    }
-    expect(names.has("users")).toBe(true);
-    expect(names.has("orders")).toBe(true);
-    expect(names.has("sessions")).toBe(true);
-    expect(names.has("edge-cases")).toBe(true);
+      const described = TableDescription.parse(orders.json());
+      expect(described.keySchema.map((key) => key.name)).toEqual(["userId", "createdAt"]);
+      expect(described.gsis.map((index) => index.name)).toContain("status-createdAt-index");
 
-    const orders = await app.inject({
-      method: "GET",
-      url: `/api/v1/connections/${connectionId}/tables/orders`,
-      headers,
-    });
-    const described = TableDescription.parse(orders.json());
-    expect(described.keySchema.map((key) => key.name)).toEqual(["userId", "createdAt"]);
-    expect(described.gsis.map((index) => index.name)).toContain("status-createdAt-index");
-
-    const sessions = await app.inject({
-      method: "GET",
-      url: `/api/v1/connections/${connectionId}/tables/sessions`,
-      headers,
-    });
-    expect(TableDescription.parse(sessions.json()).ttl).toEqual({
-      enabled: true,
-      attribute: "expiresAt",
-    });
-
-    const dotted = await app.inject({
-      method: "GET",
-      url: `/api/v1/connections/${connectionId}/tables/${encodeURIComponent("my.table-v2")}`,
-      headers,
-    });
-    expect(TableDescription.parse(dotted.json()).name).toBe("my.table-v2");
-
-    const missing = await app.inject({
-      method: "GET",
-      url: `/api/v1/connections/${connectionId}/tables/not-a-real-table`,
-      headers,
-    });
-    expect(missing.statusCode).toBe(404);
-    expect(missing.json<{ error: { code: string } }>().error.code).toBe("NOT_FOUND");
-
-    const waited = await app.inject({
-      method: "POST",
-      url: `/api/v1/connections/${connectionId}/tables/orders/wait`,
-      headers,
-    });
-    expect(waited.statusCode).toBe(200);
-    expect(waited.json<{ status: string }>().status).toBe("ACTIVE");
-
-    const searched: string[] = [];
-    let searchCursor: string | undefined;
-    for (let page = 0; page < 5; page += 1) {
-      const params = new URLSearchParams({ search: "p3t-", limit: "100" });
-      if (searchCursor !== undefined) {
-        params.set("cursor", searchCursor);
-      }
-      const found = await app.inject({
+      const sessions = await app.inject({
         method: "GET",
-        url: `/api/v1/connections/${connectionId}/tables?${params.toString()}`,
+        url: `/api/v1/connections/${connectionId}/tables/sessions`,
         headers,
       });
-      const body = TableListResponse.parse(found.json());
-      searched.push(...body.tables);
-      searchCursor = body.nextCursor;
-      if (searchCursor === undefined) {
-        break;
+      expect(TableDescription.parse(sessions.json()).ttl).toEqual({
+        enabled: true,
+        attribute: "expiresAt",
+      });
+
+      const dottedPage = await app.inject({
+        method: "GET",
+        url: `/api/v1/connections/${connectionId}/tables/${encodeURIComponent(dotted)}`,
+        headers,
+      });
+      expect(TableDescription.parse(dottedPage.json()).name).toBe(dotted);
+
+      const missing = await app.inject({
+        method: "GET",
+        url: `/api/v1/connections/${connectionId}/tables/not-a-real-table`,
+        headers,
+      });
+      expect(missing.statusCode).toBe(404);
+      expect(missing.json<{ error: { code: string } }>().error.code).toBe("NOT_FOUND");
+
+      const waited = await app.inject({
+        method: "POST",
+        url: `/api/v1/connections/${connectionId}/tables/orders/wait`,
+        headers,
+      });
+      expect(waited.statusCode).toBe(200);
+      expect(waited.json<{ status: string }>().status).toBe("ACTIVE");
+
+      const searched: string[] = [];
+      let searchCursor: string | undefined;
+      for (let page = 0; page < 5; page += 1) {
+        const params = new URLSearchParams({ search: prefix, limit: "100" });
+        if (searchCursor !== undefined) {
+          params.set("cursor", searchCursor);
+        }
+        const found = await app.inject({
+          method: "GET",
+          url: `/api/v1/connections/${connectionId}/tables?${params.toString()}`,
+          headers,
+        });
+        const body = TableListResponse.parse(found.json());
+        searched.push(...body.tables);
+        searchCursor = body.nextCursor;
+        if (searchCursor === undefined) {
+          break;
+        }
       }
+      expect(searched).toHaveLength(101);
+      expect(searched.every((name) => name.startsWith(prefix))).toBe(true);
+    } finally {
+      await deleteLocalTables(created);
     }
-    expect(searched).toHaveLength(101);
-    expect(searched.every((name) => name.startsWith("p3t-"))).toBe(true);
   }, 180_000);
 });

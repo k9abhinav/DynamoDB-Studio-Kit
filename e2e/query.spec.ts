@@ -1,72 +1,78 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { deleteLocalItems, uniqueToken } from "../apps/server/src/local-cleanup.js";
 import { isSerious } from "./axe.js";
 import { connectLocal } from "./session.js";
 
 test("queries orders and runs PartiQL from the keyboard", async ({ page }) => {
   test.setTimeout(120_000);
-  await page.setViewportSize({ width: 1440, height: 900 });
-  const connectionId = await connectLocal(page);
-  await page.goto(`/c/${connectionId}/t/orders/items`);
-  await expect(page.getByText(/Showing \d+ · Scanned/)).toBeVisible();
-  await page.getByRole("button", { name: "Query" }).click();
-  await page.getByRole("textbox", { name: "userId" }).fill("user-0001");
-  await page.keyboard.press("Control+Enter");
-  await expect(page.getByRole("gridcell", { name: "user-0001" }).first()).toBeVisible();
+  const id = `p6e2e${uniqueToken()}`;
+  try {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const connectionId = await connectLocal(page);
+    await page.goto(`/c/${connectionId}/t/orders/items`);
+    await expect(page.getByText(/Showing \d+ · Scanned/)).toBeVisible();
+    await page.getByRole("button", { name: "Query" }).click();
+    await page.getByRole("textbox", { name: "userId" }).fill("user-0001");
+    await page.keyboard.press("Control+Enter");
+    await expect(page.getByRole("gridcell", { name: "user-0001" }).first()).toBeVisible();
 
-  await page.getByRole("checkbox", { name: "Sort key createdAt" }).check();
-  await page.getByRole("combobox", { name: "Operator" }).click();
-  await page.getByRole("option", { name: "between" }).click();
-  await page.getByRole("textbox", { name: "Value", exact: true }).fill("2024-01-01");
-  await page.getByRole("textbox", { name: "And value" }).fill("2025-01-01");
-  await page.getByRole("combobox", { name: "Sort order" }).click();
-  await page.getByRole("option", { name: "Descending" }).click();
-  await page.getByRole("button", { name: "Run query" }).click();
-  await expect(page.getByRole("gridcell", { name: "user-0001" }).first()).toBeVisible();
-  await page.getByRole("button", { name: "Show request" }).click();
-  await expect(page.getByText(/BETWEEN/)).toBeVisible();
-  await page.getByRole("tab", { name: "AWS CLI" }).click();
-  await expect(page.getByText(/aws dynamodb query/)).toBeVisible();
-  await expect(page.getByText(/secret|access-key/i)).toHaveCount(0);
+    await page.getByRole("checkbox", { name: "Sort key createdAt" }).check();
+    await page.getByRole("combobox", { name: "Operator" }).click();
+    await page.getByRole("option", { name: "between" }).click();
+    await page.getByRole("textbox", { name: "Value", exact: true }).fill("2024-01-01");
+    await page.getByRole("textbox", { name: "And value" }).fill("2025-01-01");
+    await page.getByRole("combobox", { name: "Sort order" }).click();
+    await page.getByRole("option", { name: "Descending" }).click();
+    await page.getByRole("button", { name: "Run query" }).click();
+    await expect(page.getByRole("gridcell", { name: "user-0001" }).first()).toBeVisible();
+    await page.getByRole("button", { name: "Show request" }).click();
+    await expect(page.getByText(/BETWEEN/)).toBeVisible();
+    await page.getByRole("tab", { name: "AWS CLI" }).click();
+    await expect(page.getByText(/aws dynamodb query/)).toBeVisible();
+    await expect(page.getByText(/secret|access-key/i)).toHaveCount(0);
 
-  await page.getByRole("combobox", { name: "Target" }).click();
-  await page.getByRole("option", { name: "status-createdAt-index" }).click();
-  await expect(page.getByRole("checkbox", { name: "Consistent read" })).toBeDisabled();
-  await page.getByRole("textbox", { name: "status" }).fill("SHIPPED");
-  await page.getByRole("checkbox", { name: "Sort key createdAt" }).check();
-  await page.getByRole("combobox", { name: "Operator" }).click();
-  await page.getByRole("option", { name: "begins_with" }).click();
-  await page.getByRole("textbox", { name: "Value", exact: true }).fill("2024");
-  await page.getByRole("button", { name: "Show request" }).click();
-  await page.getByRole("button", { name: "Run query" }).click();
-  await expect(page.getByText(/Showing 50 · Scanned 50/)).toBeVisible();
-  await expect(page.getByRole("gridcell", { name: /user-/ }).first()).toBeVisible();
+    await page.getByRole("combobox", { name: "Target" }).click();
+    await page.getByRole("option", { name: "status-createdAt-index" }).click();
+    await expect(page.getByRole("checkbox", { name: "Consistent read" })).toBeDisabled();
+    await page.getByRole("textbox", { name: "status" }).fill("SHIPPED");
+    await page.getByRole("checkbox", { name: "Sort key createdAt" }).check();
+    await page.getByRole("combobox", { name: "Operator" }).click();
+    await page.getByRole("option", { name: "begins_with" }).click();
+    await page.getByRole("textbox", { name: "Value", exact: true }).fill("2024");
+    await page.getByRole("button", { name: "Show request" }).click();
+    await page.getByRole("button", { name: "Run query" }).click();
+    await expect(page.getByText(/Showing 50 · Scanned 50/)).toBeVisible();
+    await expect(page.getByRole("gridcell", { name: /user-/ }).first()).toBeVisible();
 
-  await page.getByRole("tab", { name: "PartiQL" }).click();
-  await expect(page.getByRole("button", { name: "Run" })).toBeVisible();
-  await page.getByRole("button", { name: "Templates" }).click();
-  await page.getByRole("menuitem", { name: "Select by partition key" }).click();
-  await page.getByRole("button", { name: "Add parameter" }).click();
-  await page.getByRole("textbox", { name: "Parameter 1 (S)" }).fill("user-0001");
-  await page.getByRole("button", { name: "Run" }).click();
-  await expect(page.getByRole("gridcell", { name: "user-0001" }).first()).toBeVisible();
-  await page.getByRole("button", { name: "History" }).click();
-  await expect(page.getByRole("button", { name: /SELECT \* FROM "orders"/ })).toBeVisible();
-  await page.keyboard.press("Escape");
+    await page.getByRole("tab", { name: "PartiQL" }).click();
+    await expect(page.getByRole("button", { name: "Run" })).toBeVisible();
+    await page.getByRole("button", { name: "Templates" }).click();
+    await page.getByRole("menuitem", { name: "Select by partition key" }).click();
+    await page.getByRole("button", { name: "Add parameter" }).click();
+    await page.getByRole("textbox", { name: "Parameter 1 (S)" }).fill("user-0001");
+    await page.getByRole("button", { name: "Run" }).click();
+    await expect(page.getByRole("gridcell", { name: "user-0001" }).first()).toBeVisible();
+    await page.getByRole("button", { name: "History" }).click();
+    await expect(page.getByRole("button", { name: /SELECT \* FROM "orders"/ })).toBeVisible();
+    await page.keyboard.press("Escape");
 
-  await setStatement(
-    page,
-    "INSERT INTO \"users\" VALUE {'id': 'p6-e2e', 'email': 'p6-e2e@example.test', 'name': 'p6'}",
-  );
-  await page.getByRole("button", { name: "Run" }).click();
-  await expect(page.getByRole("dialog", { name: "INSERT statement" })).toBeVisible();
-  await page.getByRole("button", { name: "Run statement" }).click();
-  await expect(page.getByText("The statement ran.")).toBeVisible();
+    await setStatement(
+      page,
+      `INSERT INTO "users" VALUE {'id': '${id}', 'email': '${id}@example.test', 'name': 'p6'}`,
+    );
+    await page.getByRole("button", { name: "Run" }).click();
+    await expect(page.getByRole("dialog", { name: "INSERT statement" })).toBeVisible();
+    await page.getByRole("button", { name: "Run statement" }).click();
+    await expect(page.getByText("The statement ran.")).toBeVisible();
 
-  await setStatement(page, 'DELETE FROM "users" WHERE "id" = \'p6-e2e\'');
-  await page.getByRole("button", { name: "Run" }).click();
-  await page.getByRole("button", { name: "Run statement" }).click();
-  await expect(page.getByText("The statement ran.")).toBeVisible();
+    await setStatement(page, `DELETE FROM "users" WHERE "id" = '${id}'`);
+    await page.getByRole("button", { name: "Run" }).click();
+    await page.getByRole("button", { name: "Run statement" }).click();
+    await expect(page.getByText("The statement ran.")).toBeVisible();
+  } finally {
+    await deleteLocalItems("users", [id]);
+  }
 });
 
 for (const scheme of ["light", "dark"] as const) {

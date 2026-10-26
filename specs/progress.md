@@ -145,7 +145,7 @@ T5.13 ✔ `e2e/items-edit.spec.ts` (7 tests) and `scripts/check-bundle.test.ts`.
 
 T5.14 ✔ This file. EDT-7 stays in `specs/backlog.md`. The JSON drawer already creates, edits, duplicates, and deletes, and `ItemEditor.tsx` is past the size where a second attribute editor belongs in this phase.
 
-Follow-up ✔ `apps/server/src/routes/items.int.test.ts` > "round-trips every edge-cases item through plain JSON and the update route". Plain JSON keeps `1E+2` and a `$b` key. DynamoDB stores that number as `100`. Writing the stored item back leaves every edge-cases attribute unchanged, including sets, binary, the 38-digit number, and empty strings.
+Follow-up ✔ `apps/server/src/routes/items.int.test.ts` > "round-trips every edge-cases item through plain JSON and the update route". Plain JSON keeps `1E+2` and a `$b` key. DynamoDB stores that number as `100`. Each seed edge-cases item is copied onto its own id, written back, and deleted in `finally`. The copy keeps sets, binary, the 38-digit number, and empty strings. The seed rows are only read.
 
 Follow-up ✔ `e2e/items-edit.spec.ts` > "disables writes on a read-only connection". Create, the selection Delete, and the drawer Edit, Duplicate, and Delete are disabled. Each tooltip says "This connection is read-only". `PUT .../items` returns 403 READ_ONLY.
 
@@ -344,6 +344,8 @@ Not verified: `rm -rf node_modules && pnpm install --frozen-lockfile`. `pnpm dev
 The Items tab switches between Scan and Query. Query needs a partition key, builds the key condition with placeholders, and shows the result in the same grid. Show request prints the server preview and an AWS CLI command without credentials. Consistent read stays available on the base table and is disabled on a GSI. PartiQL is its own lazy tab. The server classifies the statement and ignores any client-sent kind. A mutation needs `X-DS-Confirm: mutation`, and a read-only connection is still 403. History and saved queries stay in localStorage under a hash of the endpoint and region. Clear history removes both. DynamoDB Local returns no syntax-error position, so the marker evidence is the component test. AWS was not checked. The seed has no LSI. `pnpm verify` is green (295 unit tests, 10 integration tests). `pnpm exec playwright test --workers=1` passed 33 tests. Initial JS gzip is 181399 bytes, up from 181129. PartiQL and Monaco stay out of the entry. Q-035 through Q-039 stay on the defaults used here. Do not start Phase 7 until asked.
 
 Not verified: `rm -rf node_modules && pnpm install --frozen-lockfile`. A live screen reader was not used. `actionlint` is not on PATH (`actionlint .github/workflows/ci.yml`). AWS was not checked for PartiQL error positions. The seed has no LSI, so consistent read on a local index was not exercised.
+
+Follow-up ✔ Integration and browser tests that write use a unique item or table name and delete it in `finally` (`apps/server/src/local-cleanup.ts`). The 390 KB edit uses its own item. The table list no longer expects a fixed global count. `pnpm test:int` passed twice. A reverse-file run passed with `scripts/seed.int.test.ts` first and the seed counts exact. `pnpm exec playwright test --workers=1` passed twice (33 tests). The same files then ran one at a time from `tables.spec.ts` back to `connect.spec.ts`, and the seed test still expected 1000 users, 10000 orders, and 10 edge-cases.
 
 ## Metrics log
 

@@ -1,23 +1,18 @@
 import {
   CreateTableCommand,
-  DeleteTableCommand,
   DynamoDBClient,
   ResourceInUseException,
 } from "@aws-sdk/client-dynamodb";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
+import { createLocalClient } from "../scripts/seed-data.js";
+import { deleteLocalTables, uniqueToken } from "../apps/server/src/local-cleanup.js";
 import { isSerious } from "./axe.js";
 import { connectLocal, openWorkspace } from "./session.js";
 
-const generated = Array.from({ length: 300 }, (_unused, index) => {
-  return `p3e-${String(index).padStart(3, "0")}`;
-});
-
-function localDynamo(): DynamoDBClient {
-  return new DynamoDBClient({
-    region: "us-east-1",
-    endpoint: "http://127.0.0.1:8000",
-    credentials: { accessKeyId: "local", secretAccessKey: "local" },
+function generatedNames(prefix: string): string[] {
+  return Array.from({ length: 300 }, (_unused, index) => {
+    return `${prefix}${String(index).padStart(3, "0")}`;
   });
 }
 
@@ -35,14 +30,6 @@ async function ensureTable(client: DynamoDBClient, name: string): Promise<void> 
     if (!(error instanceof ResourceInUseException)) {
       throw error;
     }
-  }
-}
-
-async function removeTable(client: DynamoDBClient, name: string): Promise<void> {
-  try {
-    await client.send(new DeleteTableCommand({ TableName: name }));
-  } catch {
-    // The table may already be gone.
   }
 }
 
@@ -68,55 +55,61 @@ test("searches seed tables and opens orders from the keyboard", async ({ page })
 });
 
 test("deep-links overview, sessions TTL, a dotted name, and a missing table", async ({ page }) => {
-  const client = localDynamo();
+  const name = `my.table-${uniqueToken()}`;
+  const client = createLocalClient();
   try {
-    await ensureTable(client, "my.table-v2");
+    await ensureTable(client, name);
     const connectionId = await connectLocal(page);
     await page.goto(`/c/${connectionId}/t/orders/overview`);
     await expect(page.getByRole("heading", { name: "Keys" })).toBeVisible();
     await expect(page.getByText("createdAt").first()).toBeVisible();
     await page.goto(`/c/${connectionId}/t/sessions/overview`);
     await expect(page.getByText("Enabled on expiresAt")).toBeVisible();
-    await page.goto(`/c/${connectionId}/t/${encodeURIComponent("my.table-v2")}/overview`);
-    await expect(page.getByRole("option", { name: "my.table-v2" })).toBeVisible();
-    await expect(page.getByText(/table\/my\.table-v2/)).toBeVisible();
+    await page.goto(`/c/${connectionId}/t/${encodeURIComponent(name)}/overview`);
+    await expect(page.getByRole("option", { name })).toBeVisible();
+    await expect(page.getByText(`table/${name}`)).toBeVisible();
     await page.goto(`/c/${connectionId}/t/missing-table/overview`);
     await expect(page.getByText("That table doesn't exist (anymore).")).toBeVisible();
     await page.getByRole("button", { name: "Back to tables" }).click();
     await expect(page.getByRole("heading", { name: "Pick a table to get started" })).toBeVisible();
   } finally {
-    await removeTable(client, "my.table-v2");
     client.destroy();
+    await deleteLocalTables([name]);
   }
 });
 
 test("scrolls, searches, and keyboard-navigates a few hundred tables", async ({ page }) => {
   test.setTimeout(180_000);
-  const client = localDynamo();
+  const prefix = `zz${uniqueToken()}-`;
+  const names = generatedNames(prefix);
+  const last = `${prefix}299`;
+  const client = createLocalClient();
   try {
-    for (const name of generated) {
+    for (const name of names) {
       await ensureTable(client, name);
     }
     await page.setViewportSize({ width: 1440, height: 900 });
     await openWorkspace(page, "");
-    await expect(page.getByText(/Tables \(3\d\d\)/)).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByRole("option", { name: "p3e-299" })).toHaveCount(0);
+    await expect(page.getByRole("option", { name: "users" })).toBeVisible();
+    const loading = page.getByLabel("Loading more tables");
+    await loading.waitFor({ state: "visible", timeout: 5_000 }).catch(() => undefined);
+    await expect(loading).toHaveCount(0, { timeout: 60_000 });
+    const search = page.getByRole("searchbox", { name: "Filter tables" });
+    await search.fill(prefix);
+    await expect(page.getByRole("option", { name: last })).toHaveCount(0);
     const scroller = page.locator("nav[aria-label='Tables'] .overflow-auto");
     await scroller.evaluate((element) => {
       element.scrollTop = element.scrollHeight;
     });
-    await expect(page.getByRole("option", { name: "p3e-299" })).toBeVisible();
-    const search = page.getByRole("searchbox", { name: "Filter tables" });
-    await search.fill("p3e-29");
+    await expect(page.getByRole("option", { name: last })).toBeVisible();
+    await search.fill(`${prefix}29`);
     await page.getByRole("listbox", { name: "Table names" }).focus();
     await page.keyboard.press("ArrowDown");
     await page.keyboard.press("Enter");
-    await expect(page).toHaveURL(/\/t\/p3e-291\/items$/);
+    await expect(page).toHaveURL(new RegExp(`/t/${prefix}291/items$`));
   } finally {
-    for (const name of generated) {
-      await removeTable(client, name);
-    }
     client.destroy();
+    await deleteLocalTables(names);
   }
 });
 

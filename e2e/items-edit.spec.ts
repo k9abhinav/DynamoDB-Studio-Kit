@@ -1,9 +1,8 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { deleteLocalItems, uniqueToken } from "../apps/server/src/local-cleanup.js";
 import { isSerious } from "./axe.js";
 import { openWorkspace } from "./session.js";
-
-const stamp = String(Date.now());
 
 test("edits an item locally and undoes it", async ({ page }) => {
   test.setTimeout(120_000);
@@ -16,111 +15,123 @@ test("edits an item locally and undoes it", async ({ page }) => {
   });
   await page.setViewportSize({ width: 1440, height: 900 });
   await openWorkspace(page, "/t/edge-cases/items");
-  const id = `p5-edit-${stamp}`;
-  await putItem(page, id, { email: { S: "before@example.com" } });
-  await showItem(page, id);
-  await page.getByRole("button", { name: "Edit", exact: true }).click();
-  await expect(page.locator(".monaco-editor")).toBeVisible();
-  expect(foreign).toEqual([]);
-  await replaceEditor(page, itemJson(id, { email: "after@example.com" }));
-  await page.getByRole("button", { name: "Save", exact: true }).click();
-  await expect(page.getByText("after@example.com").first()).toBeVisible();
-  await page.getByRole("button", { name: "Undo", exact: true }).click();
-  await expect(page.getByText("before@example.com").first()).toBeVisible();
-  const stored = await getItem(page, id);
-  expect(stored.email).toEqual({ S: "before@example.com" });
-  await deleteItem(page, id);
+  const id = `p5edit${uniqueToken()}`;
+  try {
+    await putItem(page, id, { email: { S: "before@example.com" } });
+    await showItem(page, id);
+    await page.getByRole("button", { name: "Edit", exact: true }).click();
+    await expect(page.locator(".monaco-editor")).toBeVisible();
+    expect(foreign).toEqual([]);
+    await replaceEditor(page, itemJson(id, { email: "after@example.com" }));
+    await page.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(page.getByText("after@example.com").first()).toBeVisible();
+    await page.getByRole("button", { name: "Undo", exact: true }).click();
+    await expect(page.getByText("before@example.com").first()).toBeVisible();
+    const stored = await getItem(page, id);
+    expect(stored.email).toEqual({ S: "before@example.com" });
+  } finally {
+    await deleteLocalItems("edge-cases", [id]);
+  }
 });
 
 test("saves through the textarea fallback without changing types", async ({ page }) => {
   test.setTimeout(120_000);
   await openWorkspace(page, "/t/edge-cases/items");
-  const id = `p5-text-${stamp}`;
-  await putItem(page, id, {
-    email: { S: "typed@example.com" },
-    n: { N: "1E+2" },
-    tags: { SS: ["a", "b"] },
-  });
-  await showItem(page, id);
-  await page.route("**/*", async (route) => {
-    const url = route.request().url();
-    if (url.includes("monaco") || url.includes("JsonEditor")) {
-      await route.abort();
-      return;
-    }
-    await route.continue();
-  });
-  await page.getByRole("button", { name: "Edit", exact: true }).click();
-  await expect(
-    page.getByText("The code editor could not be loaded. You can still edit the JSON here."),
-  ).toBeVisible();
-  const field = page.getByRole("textbox", { name: "Item JSON" });
-  await field.fill(
-    (await field.inputValue()).replace("typed@example.com", "typed-next@example.com"),
-  );
-  await expect(page.getByRole("button", { name: "Save", exact: true })).toBeEnabled();
-  await page.getByRole("button", { name: "Save", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Edit", exact: true })).toBeVisible();
-  const stored = await getItem(page, id);
-  expect(stored.email).toEqual({ S: "typed-next@example.com" });
-  expect(stored.tags).toEqual({ SS: ["a", "b"] });
-  expect(stored.n).toEqual({ N: "100" });
-  await deleteItem(page, id);
+  const id = `p5text${uniqueToken()}`;
+  try {
+    await putItem(page, id, {
+      email: { S: "typed@example.com" },
+      n: { N: "1E+2" },
+      tags: { SS: ["a", "b"] },
+    });
+    await showItem(page, id);
+    await page.route("**/*", async (route) => {
+      const url = route.request().url();
+      if (url.includes("monaco") || url.includes("JsonEditor")) {
+        await route.abort();
+        return;
+      }
+      await route.continue();
+    });
+    await page.getByRole("button", { name: "Edit", exact: true }).click();
+    await expect(
+      page.getByText("The code editor could not be loaded. You can still edit the JSON here."),
+    ).toBeVisible();
+    const field = page.getByRole("textbox", { name: "Item JSON" });
+    await field.fill(
+      (await field.inputValue()).replace("typed@example.com", "typed-next@example.com"),
+    );
+    await expect(page.getByRole("button", { name: "Save", exact: true })).toBeEnabled();
+    await page.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Edit", exact: true })).toBeVisible();
+    const stored = await getItem(page, id);
+    expect(stored.email).toEqual({ S: "typed-next@example.com" });
+    expect(stored.tags).toEqual({ SS: ["a", "b"] });
+    expect(stored.n).toEqual({ N: "100" });
+  } finally {
+    await deleteLocalItems("edge-cases", [id]);
+  }
 });
 
 test("shows a conflict when another session changes the item", async ({ page }) => {
   test.setTimeout(120_000);
   await openWorkspace(page, "/t/edge-cases/items");
-  const id = `p5-conflict-${stamp}`;
-  await putItem(page, id, { email: { S: "one@example.com" } });
-  await showItem(page, id);
-  await page.getByRole("button", { name: "Edit", exact: true }).click();
-  await replaceEditor(page, itemJson(id, { email: "mine@example.com" }));
-  await updateItem(page, id, { email: { S: "theirs@example.com" } });
-  await page.getByRole("button", { name: "Save", exact: true }).click();
-  await expect(
-    page.getByRole("heading", { name: "This item changed since you opened it" }),
-  ).toBeVisible();
-  await expect(page.getByText("The conflict check is best-effort.")).toBeVisible();
-  await page.getByRole("button", { name: "Reload latest" }).click();
-  await expect(page.getByText("theirs@example.com").first()).toBeVisible();
-  await page.getByRole("button", { name: "Edit", exact: true }).click();
-  await replaceEditor(page, itemJson(id, { email: "mine-again@example.com" }));
-  await updateItem(page, id, { email: { S: "third@example.com" } });
-  await page.getByRole("button", { name: "Save", exact: true }).click();
-  await expect(
-    page.getByRole("heading", { name: "This item changed since you opened it" }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Overwrite" }).click();
-  await expect(page.getByRole("button", { name: "Edit", exact: true })).toBeVisible();
-  const stored = await getItem(page, id);
-  expect(stored.email).toEqual({ S: "mine-again@example.com" });
-  await deleteItem(page, id);
+  const id = `p5conflict${uniqueToken()}`;
+  try {
+    await putItem(page, id, { email: { S: "one@example.com" } });
+    await showItem(page, id);
+    await page.getByRole("button", { name: "Edit", exact: true }).click();
+    await replaceEditor(page, itemJson(id, { email: "mine@example.com" }));
+    await updateItem(page, id, { email: { S: "theirs@example.com" } });
+    await page.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(
+      page.getByRole("heading", { name: "This item changed since you opened it" }),
+    ).toBeVisible();
+    await expect(page.getByText("The conflict check is best-effort.")).toBeVisible();
+    await page.getByRole("button", { name: "Reload latest" }).click();
+    await expect(page.getByText("theirs@example.com").first()).toBeVisible();
+    await page.getByRole("button", { name: "Edit", exact: true }).click();
+    await replaceEditor(page, itemJson(id, { email: "mine-again@example.com" }));
+    await updateItem(page, id, { email: { S: "third@example.com" } });
+    await page.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(
+      page.getByRole("heading", { name: "This item changed since you opened it" }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Overwrite" }).click();
+    await expect(page.getByRole("button", { name: "Edit", exact: true })).toBeVisible();
+    const stored = await getItem(page, id);
+    expect(stored.email).toEqual({ S: "mine-again@example.com" });
+  } finally {
+    await deleteLocalItems("edge-cases", [id]);
+  }
 });
 
 test("explains a create collision and confirms a production delete", async ({ page }) => {
   test.setTimeout(120_000);
   await openWorkspace(page, "/t/edge-cases/items");
-  const id = `p5-new-${stamp}`;
-  await putItem(page, id, { email: { S: "exists@example.com" } });
-  await expect(page.getByRole("button", { name: "Create item" })).toBeEnabled();
-  await page.getByRole("button", { name: "Create item" }).click();
-  await replaceEditor(page, itemJson(id, { email: "again@example.com" }));
-  await page.getByRole("button", { name: "Save", exact: true }).click();
-  await expect(page.getByText("An item with this key already exists.")).toBeVisible();
-  await deleteItem(page, id);
+  const id = `p5new${uniqueToken()}`;
+  const prodId = `p5prod${uniqueToken()}`;
+  try {
+    await putItem(page, id, { email: { S: "exists@example.com" } });
+    await expect(page.getByRole("button", { name: "Create item" })).toBeEnabled();
+    await page.getByRole("button", { name: "Create item" }).click();
+    await replaceEditor(page, itemJson(id, { email: "again@example.com" }));
+    await page.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(page.getByText("An item with this key already exists.")).toBeVisible();
 
-  await page.goto("/");
-  const connectionId = await connectProduction(page);
-  await page.goto(`/c/${connectionId}/t/edge-cases/items`);
-  const prodId = `p5-prod-${stamp}`;
-  await putItem(page, prodId, { email: { S: "prod@example.com" } });
-  await showItem(page, prodId);
-  await page.getByRole("button", { name: "Delete", exact: true }).click();
-  const dialog = page.getByRole("dialog", { name: "Delete this item?" });
-  await dialog.getByRole("textbox", { name: "Type edge-cases to confirm" }).fill("edge-cases");
-  await dialog.getByRole("button", { name: "Delete" }).click();
-  await expect(page.getByText("Deleted")).toBeVisible();
+    await page.goto("/");
+    const connectionId = await connectProduction(page);
+    await page.goto(`/c/${connectionId}/t/edge-cases/items`);
+    await putItem(page, prodId, { email: { S: "prod@example.com" } });
+    await showItem(page, prodId);
+    await page.getByRole("button", { name: "Delete", exact: true }).click();
+    const dialog = page.getByRole("dialog", { name: "Delete this item?" });
+    await dialog.getByRole("textbox", { name: "Type edge-cases to confirm" }).fill("edge-cases");
+    await dialog.getByRole("button", { name: "Delete" }).click();
+    await expect(page.getByText("Deleted")).toBeVisible();
+  } finally {
+    await deleteLocalItems("edge-cases", [id, prodId]);
+  }
 });
 
 test("disables writes on a read-only connection", async ({ page }) => {
@@ -139,59 +150,77 @@ test("disables writes on a read-only connection", async ({ page }) => {
   await expectReadOnly(page, dialog.getByRole("button", { name: "Edit", exact: true }));
   await expectReadOnly(page, dialog.getByRole("button", { name: "Duplicate", exact: true }));
   await expectReadOnly(page, dialog.getByRole("button", { name: "Delete", exact: true }));
-  const denied = await page.request.put(
-    `/api/v1/connections/${connectionId}/tables/edge-cases/items`,
-    {
-      headers: { "x-ds-csrf": await csrf(page) },
-      data: { item: { id: { S: "p5-ro" }, note: { S: "no" } }, ifNotExists: true },
-    },
-  );
-  expect(denied.status()).toBe(403);
-  expect(errorCode(await denied.json())).toBe("READ_ONLY");
+  const deniedId = `p5ro${uniqueToken()}`;
+  try {
+    const denied = await page.request.put(
+      `/api/v1/connections/${connectionId}/tables/edge-cases/items`,
+      {
+        headers: { "x-ds-csrf": await csrf(page) },
+        data: { item: { id: { S: deniedId }, note: { S: "no" } }, ifNotExists: true },
+      },
+    );
+    expect(denied.status()).toBe(403);
+    expect(errorCode(await denied.json())).toBe("READ_ONLY");
+  } finally {
+    await deleteLocalItems("edge-cases", [deniedId]);
+  }
 });
 
 test("deletes 120 created items from the grid", async ({ page }) => {
   test.setTimeout(180_000);
   await openWorkspace(page, "/t/edge-cases/items");
-  const prefix = `p5-bulk-${stamp}-`;
-  for (let index = 0; index < 120; index += 1) {
-    await putItem(page, `${prefix}${String(index).padStart(3, "0")}`, {
-      email: { S: "bulk@example.com" },
-    });
+  const prefix = `p5bulk${uniqueToken()}`;
+  const ids = Array.from({ length: 120 }, (_unused, index) => {
+    return `${prefix}${String(index).padStart(3, "0")}`;
+  });
+  try {
+    for (const id of ids) {
+      await putItem(page, id, {
+        email: { S: "bulk@example.com" },
+      });
+    }
+    await page.getByRole("combobox", { name: "Page size" }).click();
+    await page.getByRole("option", { name: "500", exact: true }).click();
+    await page.getByRole("button", { name: "Add filter" }).click();
+    await page.getByLabel("Attribute").fill("id");
+    await page.getByRole("combobox", { name: "Operator" }).click();
+    await page.getByRole("option", { name: "begins_with" }).click();
+    await page.getByRole("textbox", { name: "Value" }).fill(prefix);
+    await page.getByRole("button", { name: "Apply filter" }).click();
+    await expect(page.getByText(/Showing 120 ·/)).toBeVisible({ timeout: 60_000 });
+    await page.getByRole("checkbox", { name: "Select all loaded items" }).click();
+    await page.getByRole("button", { name: "Delete", exact: true }).click();
+    const dialog = page.getByRole("dialog", { name: "Delete 120 items?" });
+    await dialog.getByRole("textbox", { name: "Type DELETE to confirm" }).fill("DELETE");
+    await dialog.getByRole("button", { name: "Delete" }).click();
+    await expect(page.getByText("Deleted 120, 0 failed")).toBeVisible({ timeout: 60_000 });
+  } finally {
+    await deleteLocalItems("edge-cases", ids);
   }
-  await page.getByRole("combobox", { name: "Page size" }).click();
-  await page.getByRole("option", { name: "500", exact: true }).click();
-  await page.getByRole("button", { name: "Add filter" }).click();
-  await page.getByLabel("Attribute").fill("id");
-  await page.getByRole("combobox", { name: "Operator" }).click();
-  await page.getByRole("option", { name: "begins_with" }).click();
-  await page.getByRole("textbox", { name: "Value" }).fill(prefix);
-  await page.getByRole("button", { name: "Apply filter" }).click();
-  await expect(page.getByText(/Showing 120 ·/)).toBeVisible({ timeout: 60_000 });
-  await page.getByRole("checkbox", { name: "Select all loaded items" }).click();
-  await page.getByRole("button", { name: "Delete", exact: true }).click();
-  const dialog = page.getByRole("dialog", { name: "Delete 120 items?" });
-  await dialog.getByRole("textbox", { name: "Type DELETE to confirm" }).fill("DELETE");
-  await dialog.getByRole("button", { name: "Delete" }).click();
-  await expect(page.getByText("Deleted 120, 0 failed")).toBeVisible({ timeout: 60_000 });
 });
 
 test("saves a 390 KB item and blocks one over 400 KB", async ({ page }) => {
   test.setTimeout(120_000);
   await openWorkspace(page, "/t/edge-cases/items");
-  await showItem(page, "large");
-  await page.getByRole("button", { name: "Edit", exact: true }).click();
-  await editModel(page, (current) => current.replace("aaaaaaaa", "aaaaaaab"));
-  await page.getByRole("button", { name: "Save", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Edit", exact: true })).toBeVisible();
-  expect((await blobText(page, "large")).includes("aaaaaaab")).toBe(true);
-  await page.getByRole("button", { name: "Undo", exact: true }).click();
-  await expect.poll(async () => (await blobText(page, "large")).includes("aaaaaaab")).toBe(false);
-  await page.getByRole("button", { name: "Edit", exact: true }).click();
-  const oversized = (await readModel(page)).replace("a".repeat(100), "a".repeat(20_000));
-  await writeModel(page, oversized);
-  await expect(page.getByText("This item is over 400 KB. DynamoDB allows 400 KB.")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Save", exact: true })).toBeDisabled();
+  const id = `p5large${uniqueToken()}`;
+  try {
+    await putItem(page, id, { blob: { S: "a".repeat(390_000) } });
+    await showItem(page, id);
+    await page.getByRole("button", { name: "Edit", exact: true }).click();
+    await editModel(page, (current) => current.replace("aaaaaaaa", "aaaaaaab"));
+    await page.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Edit", exact: true })).toBeVisible();
+    expect((await blobText(page, id)).includes("aaaaaaab")).toBe(true);
+    await page.getByRole("button", { name: "Undo", exact: true }).click();
+    await expect.poll(async () => (await blobText(page, id)).includes("aaaaaaab")).toBe(false);
+    await page.getByRole("button", { name: "Edit", exact: true }).click();
+    const oversized = (await readModel(page)).replace("a".repeat(100), "a".repeat(20_000));
+    await writeModel(page, oversized);
+    await expect(page.getByText("This item is over 400 KB. DynamoDB allows 400 KB.")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Save", exact: true })).toBeDisabled();
+  } finally {
+    await deleteLocalItems("edge-cases", [id]);
+  }
 });
 
 test("opens a large item and checks the drawer for serious accessibility issues", async ({
@@ -314,13 +343,6 @@ async function getItem(
     item: Record<string, { S?: string; N?: string; SS?: string[] }>;
   };
   return body.item;
-}
-
-async function deleteItem(page: Page, id: string): Promise<void> {
-  await page.request.post(itemUrl(connectionFrom(page.url()), "/delete"), {
-    headers: { "x-ds-csrf": await csrf(page) },
-    data: { key: { id: { S: id } } },
-  });
 }
 
 async function expectReadOnly(page: Page, button: Locator): Promise<void> {
