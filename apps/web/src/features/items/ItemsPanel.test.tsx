@@ -1,3 +1,4 @@
+import { TableDescription } from "@dynamo-studio/shared";
 import { render, screen, waitFor } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -50,7 +51,7 @@ describe("ItemsPanel", () => {
     expect(screen.getByRole("dialog", { name: "Item details" })).toHaveTextContent("a@example.com");
     expect(screen.getByRole("dialog", { name: "Item details" })).not.toHaveTextContent('"S":');
     await user.click(screen.getByRole("button", { name: "Query" }));
-    expect(screen.getByText("Query builder arrives in the next step")).toBeInTheDocument();
+    expect(screen.getByText("That table doesn't exist (anymore).")).toBeInTheDocument();
   });
 
   it("keeps the selected count after another page loads", async () => {
@@ -186,6 +187,35 @@ describe("ItemsPanel", () => {
       expect(screen.queryByRole("button", { name: "email" })).not.toBeInTheDocument();
     });
   });
+
+  it("runs a query in the same grid and clears filters unless asked", async () => {
+    const user = userEvent.setup();
+    stubQueryWorkspace();
+    render(
+      <AppProviders>
+        <ItemsPanel connectionId="local" table="users" />
+      </AppProviders>,
+    );
+    expect(await screen.findByText("Showing 1 · Scanned 1 · 0 RCU")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Add filter" }));
+    await user.type(screen.getByLabelText("Attribute"), "email");
+    await user.type(screen.getByLabelText("Value"), "a");
+    await user.click(screen.getByRole("button", { name: "Apply filter" }));
+    expect(screen.getByText("email = a")).toBeInTheDocument();
+    await user.click(screen.getByLabelText("Keep filters"));
+    await user.click(screen.getByRole("button", { name: "Query" }));
+    expect(screen.getByText("email = a")).toBeInTheDocument();
+    expect(screen.getByLabelText("Page size")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Scan" }));
+    await user.click(screen.getByLabelText("Keep filters"));
+    await user.click(screen.getByRole("button", { name: "Query" }));
+    expect(screen.queryByText("email = a")).not.toBeInTheDocument();
+    await user.type(screen.getByLabelText("id"), "user-0001");
+    await user.click(screen.getByRole("button", { name: "Run query" }));
+    expect(await screen.findByText("from-query")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Show request" }));
+    expect(screen.getByText(/#n0 = :v0/)).toBeInTheDocument();
+  });
 });
 
 function stubScan(
@@ -252,6 +282,80 @@ function stubScan(
         return Promise.resolve(json({ items: [], count: 0, scannedCount: 10, hasMore: false }));
       }
       return Promise.resolve(json(page));
+    }
+    return Promise.resolve(json(errorBody("NOT_FOUND", "Missing."), 404));
+  });
+}
+
+const usersTable = TableDescription.parse({
+  name: "users",
+  status: "ACTIVE",
+  arn: "arn:aws:dynamodb:us-east-1:000000000000:table/users",
+  keySchema: [{ name: "id", type: "S", keyType: "HASH" }],
+  attributeDefinitions: [{ name: "id", type: "S" }],
+  billing: { mode: "PAY_PER_REQUEST" },
+  itemCount: 1,
+  sizeBytes: 10,
+  gsis: [],
+  lsis: [],
+  ttl: { enabled: false },
+  stream: { enabled: false },
+  deletionProtection: false,
+  createdAt: "2026-10-23T12:00:00.000Z",
+});
+
+function stubQueryWorkspace(): void {
+  vi.stubGlobal("fetch", (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+    const method = init?.method ?? "GET";
+    if (url.endsWith("/api/v1/session")) {
+      return Promise.resolve(json({ csrfToken: "csrf-test", version: "0.0.0" }));
+    }
+    if (method === "GET" && url.includes("/tables/")) {
+      return Promise.resolve(json(usersTable));
+    }
+    if (method === "GET" && url.includes("/api/v1/connections/")) {
+      return Promise.resolve(
+        json({
+          summary: {
+            name: "Local dev",
+            endpoint: "http://127.0.0.1:8000",
+            region: "us-east-1",
+            env: "local",
+            readOnly: false,
+            authType: "local",
+          },
+          latencyMs: 12,
+        }),
+      );
+    }
+    if (method === "POST" && url.includes("/query")) {
+      return Promise.resolve(
+        json({
+          items: [{ id: { S: "user-0001" }, note: { S: "from-query" } }],
+          count: 1,
+          scannedCount: 1,
+          hasMore: false,
+          request: {
+            TableName: "users",
+            KeyConditionExpression: "#n0 = :v0",
+            ExpressionAttributeNames: { "#n0": "id" },
+            ExpressionAttributeValues: { ":v0": { S: "user-0001" } },
+            ScanIndexForward: true,
+            Limit: 50,
+          },
+        }),
+      );
+    }
+    if (method === "POST" && url.includes("/scan")) {
+      return Promise.resolve(
+        json({
+          items: [{ id: { S: "user-0001" }, email: { S: "a@example.com" } }],
+          count: 1,
+          scannedCount: 1,
+          hasMore: false,
+        }),
+      );
     }
     return Promise.resolve(json(errorBody("NOT_FOUND", "Missing."), 404));
   });

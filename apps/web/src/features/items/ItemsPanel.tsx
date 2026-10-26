@@ -8,19 +8,20 @@ import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
-import type { Filter } from "@dynamo-studio/shared";
+import type { Filter, QueryRequest } from "@dynamo-studio/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { EmptyState } from "../../components/EmptyState.js";
 import { ErrorState } from "../../components/ErrorState.js";
 import { ApiError } from "../../lib/api.js";
-import { scanKeys } from "../../lib/query-keys.js";
+import { queryKeys, scanKeys } from "../../lib/query-keys.js";
 import { useUiStore } from "../../stores/ui.js";
 import { useTable } from "../tables/use-table.js";
 import { useLiveConnection } from "../workspace/use-live-connection.js";
 import { ColumnChooser } from "./ColumnChooser.js";
 import { DataGrid } from "./DataGrid.js";
 import { FilterBar } from "./FilterBar.js";
+import { QueryBuilder } from "./QueryBuilder.js";
 import {
   cappedAttributes,
   columnStorageKey,
@@ -32,6 +33,8 @@ import {
 import { CopyMenu } from "./CopyMenu.js";
 import { createTemplate } from "./editor-text.js";
 import { SelectionDelete } from "./SelectionDelete.js";
+import { buildQueryBody, emptyQueryDraft, queryTargets, type QueryDraft } from "./query-form.js";
+import { useQueryItems } from "./use-query-items.js";
 import { useScanItems, type ScanQueryInput } from "./use-scan-items.js";
 
 const PAGE_SIZES = [25, 50, 100, 500] as const;
@@ -41,10 +44,15 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
   const connection = useLiveConnection(connectionId);
   const described = useTable(connectionId, table);
   const [mode, setMode] = useState<"scan" | "query">("scan");
+  const [keepFilters, setKeepFilters] = useState(false);
   const [limit, setLimit] = useState<(typeof PAGE_SIZES)[number]>(50);
   const [filters, setFilters] = useState<Filter[]>([]);
   const [joiner, setJoiner] = useState<"and" | "or">("and");
   const [consistentRead, setConsistentRead] = useState(false);
+  const [targetIndex, setTargetIndex] = useState(0);
+  const [draft, setDraft] = useState<QueryDraft>(emptyQueryDraft());
+  const [run, setRun] = useState<Omit<QueryRequest, "cursor"> | null>(null);
+  const [formError, setFormError] = useState("");
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [prefs, setPrefs] = useState<ColumnPrefs>({ hidden: [], widths: {}, revealed: false });
   const [storageKey, setStorageKey] = useState<string | null>(null);
@@ -57,6 +65,11 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
     setJoiner("and");
     setSelected(new Set());
     setConsistentRead(false);
+    setDraft(emptyQueryDraft());
+    setTargetIndex(0);
+    setRun(null);
+    setKeepFilters(false);
+    setFormError("");
   }
   const density = useUiStore((state) => state.density);
   const setPreview = useUiStore((state) => state.setItemPreview);
@@ -64,23 +77,64 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
   const setDrawerOpen = useUiStore((state) => state.setDrawerOpen);
   const endpoint = connection.data?.summary.endpoint;
   const region = connection.data?.summary.region;
-  const query: ScanQueryInput = {
+  const scanQuery: ScanQueryInput = {
     limit,
     filters,
     filterJoiner: joiner,
     consistentRead,
   };
-  const scan = useScanItems(connectionId, table, query, mode === "scan");
-  const items = scan.data?.pages.flatMap((page) => page.items) ?? [];
-  const scanned = scan.data?.pages.reduce((sum, page) => sum + page.scannedCount, 0) ?? 0;
+  const targets = described.data === undefined ? [] : queryTargets(described.data);
+  const scan = useScanItems(connectionId, table, scanQuery, mode === "scan");
+  const queryItems = useQueryItems(connectionId, table, mode === "query" ? run : null);
+  const reading = mode === "query" ? queryItems : scan;
+  const waiting = mode === "query" && run === null;
+  const items = reading.data?.pages.flatMap((page) => page.items) ?? [];
+  const scanned = reading.data?.pages.reduce((sum, page) => sum + page.scannedCount, 0) ?? 0;
   const rcu =
-    scan.data?.pages.reduce((sum, page) => sum + (page.consumedCapacity?.rcu ?? 0), 0) ?? 0;
+    reading.data?.pages.reduce((sum, page) => sum + (page.consumedCapacity?.rcu ?? 0), 0) ?? 0;
   const keys = described.data?.keySchema ?? [];
   const names = orderedAttributes(items, keys);
   const capped = cappedAttributes(names, prefs.revealed);
   const visible = capped.visible.filter((name) => !prefs.hidden.includes(name));
   const loaded = items.length;
-  const showCost = endpoint !== undefined && !isLoopback(endpoint) && !costDismissed;
+  const showCost =
+    mode === "scan" && endpoint !== undefined && !isLoopback(endpoint) && !costDismissed;
+  const queryPages = queryItems.data?.pages;
+  const preview = queryPages === undefined ? undefined : queryPages[queryPages.length - 1]?.request;
+
+  function changeMode(next: "scan" | "query"): void {
+    if (next === mode) {
+      return;
+    }
+    if (!keepFilters) {
+      setFilters([]);
+      setJoiner("and");
+    }
+    setSelected(new Set());
+    setFormError("");
+    setMode(next);
+  }
+
+  function runQuery(): void {
+    const target = targets[targetIndex];
+    if (target === undefined) {
+      return;
+    }
+    const built = buildQueryBody({
+      target,
+      draft,
+      limit,
+      filters,
+      filterJoiner: joiner,
+    });
+    if (!built.ok) {
+      setFormError(built.message);
+      return;
+    }
+    setFormError("");
+    setSelected(new Set());
+    setRun({ ...built.body, limit });
+  }
 
   useEffect(() => {
     if (endpoint === undefined || region === undefined) {
@@ -119,24 +173,30 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
   }
 
   function refresh(): void {
+    if (mode === "query") {
+      void queryClient.resetQueries({ queryKey: queryKeys.table(connectionId, table, run) });
+      return;
+    }
     void queryClient.resetQueries({
-      queryKey: scanKeys.table(connectionId, table, query),
+      queryKey: scanKeys.table(connectionId, table, scanQuery),
     });
-  }
-
-  if (mode === "query") {
-    return (
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <Toolbar mode={mode} onMode={setMode} />
-        <p className="px-4 py-6 text-sm">Query builder arrives in the next step</p>
-      </div>
-    );
   }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <div className="flex flex-wrap items-center gap-2 border-b border-outline px-3 py-2">
-        <Toolbar mode={mode} onMode={setMode} />
+        <Toolbar mode={mode} onMode={changeMode} />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={keepFilters}
+              onChange={(event) => {
+                setKeepFilters(event.target.checked);
+              }}
+            />
+          }
+          label="Keep filters"
+        />
         {loaded > 0 ? (
           <Button
             variant="contained"
@@ -170,17 +230,19 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
             </MenuItem>
           ))}
         </TextField>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={consistentRead}
-              onChange={(event) => {
-                setConsistentRead(event.target.checked);
-              }}
-            />
-          }
-          label="Consistent read"
-        />
+        {mode === "scan" ? (
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={consistentRead}
+                onChange={(event) => {
+                  setConsistentRead(event.target.checked);
+                }}
+              />
+            }
+            label="Consistent read"
+          />
+        ) : null}
         <Button
           onClick={() => {
             refresh();
@@ -218,6 +280,53 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
           </Button>
         ) : null}
       </div>
+      {mode === "query" && described.isError ? (
+        <div className="p-4">
+          <ErrorState
+            message={
+              described.error instanceof ApiError
+                ? described.error.message
+                : "Couldn't load the table."
+            }
+            details={
+              described.error instanceof Error
+                ? described.error.message
+                : "Couldn't load the table."
+            }
+            onRetry={() => {
+              void described.refetch();
+            }}
+          />
+        </div>
+      ) : null}
+      {mode === "query" && described.data !== undefined ? (
+        <div>
+          <QueryBuilder
+            targets={targets}
+            targetIndex={targetIndex}
+            onTarget={(index) => {
+              const next = targets[index];
+              setTargetIndex(index);
+              setRun(null);
+              setDraft({
+                ...emptyQueryDraft(),
+                scanForward: draft.scanForward,
+                projection: draft.projection,
+                consistentRead: next?.kind === "gsi" ? false : draft.consistentRead,
+              });
+            }}
+            draft={draft}
+            onDraft={setDraft}
+            onRun={runQuery}
+            preview={preview}
+            region={region ?? ""}
+            endpoint={endpoint ?? ""}
+          />
+          {formError.length > 0 ? (
+            <p className="px-3 pb-2 text-sm text-error">{formError}</p>
+          ) : null}
+        </div>
+      ) : null}
       <div className="border-b border-outline px-3 py-2">
         <FilterBar
           columns={names}
@@ -231,7 +340,7 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
           }}
         />
       </div>
-      {scan.isFetching ? <LinearProgress aria-label="Refreshing items" /> : null}
+      {reading.isFetching ? <LinearProgress aria-label="Refreshing items" /> : null}
       {showCost ? (
         <Alert
           severity="info"
@@ -311,25 +420,35 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
         </div>
       ) : null}
       <div className="relative min-h-0 flex-1">
-        {scan.isError ? (
+        {reading.isError ? (
           <div className="p-4">
             <ErrorState
-              message={scan.error instanceof ApiError ? scan.error.message : "The scan failed."}
-              details={scan.error instanceof Error ? scan.error.message : "The scan failed."}
+              message={
+                reading.error instanceof ApiError
+                  ? reading.error.message
+                  : mode === "query"
+                    ? "The query failed."
+                    : "The scan failed."
+              }
+              details={reading.error instanceof Error ? reading.error.message : "The scan failed."}
               onRetry={() => {
-                void scan.refetch();
+                void reading.refetch();
               }}
             />
           </div>
-        ) : scan.isPending ? (
+        ) : waiting ? (
+          described.data === undefined ? null : (
+            <p className="px-4 py-6 text-sm">Run a query to load items.</p>
+          )
+        ) : reading.isPending ? (
           <p className="px-4 py-6 text-sm" role="status" aria-label="Loading items">
             Loading items
           </p>
-        ) : loaded === 0 && scan.hasNextPage ? (
+        ) : loaded === 0 && reading.hasNextPage ? (
           <div className="px-4 py-6">
             <Button
               onClick={() => {
-                void scan.fetchNextPage();
+                void reading.fetchNextPage();
               }}
             >
               Keep searching
@@ -386,8 +505,8 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
               setDrawerOpen(true);
             }}
             onNearEnd={() => {
-              if (scan.hasNextPage && !scan.isFetchingNextPage) {
-                void scan.fetchNextPage();
+              if (reading.hasNextPage && !reading.isFetchingNextPage) {
+                void reading.fetchNextPage();
               }
             }}
             scrollKey={`${connectionId}:${table}`}
@@ -396,10 +515,10 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
       </div>
       {loaded > 0 ? (
         <div className="flex items-center gap-3 border-t border-outline px-3 py-2">
-          {scan.hasNextPage ? (
+          {reading.hasNextPage ? (
             <Button
               onClick={() => {
-                void scan.fetchNextPage();
+                void reading.fetchNextPage();
               }}
             >
               Load more

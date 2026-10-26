@@ -88,7 +88,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T6.3 PartiQL classifier
 - [x] T6.4 PartiQL route
 - [x] T6.5 Query builder
-- [ ] T6.6 Scan/Query toggle
+- [x] T6.6 Scan/Query toggle
 - [ ] T6.7 PartiQL editor
 - [ ] T6.8 History and saved queries
 - [ ] T6.9 Mutation confirmation
@@ -96,6 +96,8 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [ ] T6.11 Progress summary
 
 T6.1 ✔ `packages/shared/src/query-request.test.ts` and `apps/server/src/dynamo/expression-builder.test.ts` > "aliases reserved words and rejects begins_with on a number". Partition-key equality and every sort-key operator use `#n` / `:v` placeholders. `status`, `name`, and `timestamp` stay in the names map. A 38-digit number and `1E+2` are unchanged. `begins_with` accepts string and binary and rejects a number. The server wrapper maps that rejection to `400 VALIDATION`.
+
+T6.6 ✔ `apps/web/src/features/items/ItemsPanel.test.tsx` > "runs a query in the same grid and clears filters unless asked". The query result uses the scan grid. Page size stays available. Filters clear on Scan/Query unless Keep filters is checked. `Cmd/Ctrl+Enter` runs the query from `QueryBuilder.test.tsx`.
 
 T6.5 ✔ `apps/web/src/features/items/query-form.test.ts` and `QueryBuilder.test.tsx`. Run stays disabled until the partition key has a value, and the hint names Scan. A number stays text, including `1E+2` and a 38-digit value. Hex `62` becomes base64 `Yg==`. `begins_with` on a number is rejected by the shared key builder. Consistent read is disabled on a GSI with the tooltip "Consistent read is not available on a global secondary index." Show request prints the server preview JSON, and the AWS CLI tab has no credentials.
 

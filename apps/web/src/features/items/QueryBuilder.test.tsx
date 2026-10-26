@@ -69,6 +69,8 @@ describe("QueryBuilder", () => {
     expect(cli.textContent).not.toMatch(/secret|access-key/iu);
     await user.click(screen.getByRole("button", { name: "Run query" }));
     expect(onRun).toHaveBeenCalledOnce();
+    await user.keyboard("{Control>}{Enter}{/Control}");
+    expect(onRun).toHaveBeenCalledTimes(2);
   });
 
   it("disables consistent read on a global secondary index", async () => {
