@@ -39,6 +39,46 @@ describe("executePartiql", () => {
     ).rejects.toMatchObject({ code: "VALIDATION" });
   });
 
+  it("rejects a cursor when only the parameters differ", async () => {
+    const statement = 'SELECT * FROM "users" WHERE "id" = ?';
+    const cursor = encodePartiqlCursor("token", {
+      statement,
+      parameters: [{ S: "user-0001" }],
+      consistentRead: false,
+    });
+    const client = caller(() => {
+      throw new Error("should not execute");
+    });
+    await expect(
+      executePartiql(client, "", {
+        statement,
+        parameters: [{ S: "user-0002" }],
+        limit: 10,
+        cursor,
+      }),
+    ).rejects.toMatchObject({ code: "VALIDATION" });
+  });
+
+  it("rejects a cursor when only consistent read differs", async () => {
+    const statement = 'SELECT * FROM "users"';
+    const cursor = encodePartiqlCursor("token", {
+      statement,
+      parameters: [],
+      consistentRead: false,
+    });
+    const client = caller(() => {
+      throw new Error("should not execute");
+    });
+    await expect(
+      executePartiql(client, "", {
+        statement,
+        limit: 10,
+        cursor,
+        consistentRead: true,
+      }),
+    ).rejects.toMatchObject({ code: "VALIDATION" });
+  });
+
   it("stops the page loop when the request is aborted", async () => {
     let calls = 0;
     const client = caller((_command, options) => {
