@@ -91,4 +91,27 @@ describe("normalizeTable", () => {
     expect(creating.status).toBe("ARCHIVED");
     expect(creating.gsis[0]?.status).toBe("CREATING");
   });
+
+  it("omits an index that is deleting after its key attribute is gone", () => {
+    const deleting = normalizeTable(
+      {
+        ...orders,
+        AttributeDefinitions: [
+          { AttributeName: "userId", AttributeType: "S" },
+          { AttributeName: "createdAt", AttributeType: "S" },
+        ],
+        GlobalSecondaryIndexes: [
+          {
+            IndexName: "status-createdAt-index",
+            IndexStatus: "DELETING",
+            KeySchema: [{ AttributeName: "status", KeyType: "HASH" }],
+            Projection: { ProjectionType: "KEYS_ONLY" },
+          },
+        ],
+      },
+      { TimeToLiveStatus: "DISABLED" },
+    );
+    expect(deleting.gsis[0]?.status).toBe("DELETING");
+    expect(deleting.gsis[0]?.keys[0]).toEqual({ name: "status", type: "S", keyType: "HASH" });
+  });
 });

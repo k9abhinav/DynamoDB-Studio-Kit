@@ -97,7 +97,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 
 ## Phase 7 tasks
 - [x] T7.1 Shared schemas
-- [ ] T7.2 Server create/update/delete
+- [x] T7.2 Server create/update/delete
 - [ ] T7.3 Streaming serializers
 - [ ] T7.4 Server export
 - [ ] T7.5 Streaming parsers
@@ -110,6 +110,8 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [ ] T7.12 Delete and clear dialogs
 - [ ] T7.13 Playwright
 - [ ] T7.14 Progress summary
+
+T7.2 ✔ `apps/server/src/routes/manage-tables.int.test.ts` and `apps/server/src/dynamo/manage-table.test.ts`. Create returns 202 with a GSI, TTL, and deletion protection. A duplicate name is "That table name is already in use." A wrong confirm does not delete. Deletion protection returns the friendly message and keeps `ValidationException` in details. Read-only create is 403. GSI delete and create run one at a time. Provisioned billing is switched on a table without a GSI: DynamoDB Local returns `InternalFailure` when a table that already has a GSI changes billing mode. A deleting index whose attribute definition has already disappeared stays visible as `DELETING` so the next index change is refused.
 
 T7.1 ✔ `packages/shared/src/api/create-table.test.ts` and `transfer.test.ts`. Invalid names, duplicate indexes, on-demand capacity, and an empty update are rejected. `buildCreateTableRequest` emits CreateTable plus UpdateTimeToLive, copies provisioned capacity onto an index that omits its own, and includes no credentials. Export defaults to plain NDJSON and rejects a view cursor. CSV import requires a mapping. Import events carry `duplicates`. `MAX_IMPORT_BYTES` is 512 MB.
 

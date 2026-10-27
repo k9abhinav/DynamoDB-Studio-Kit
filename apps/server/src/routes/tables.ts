@@ -1,12 +1,21 @@
 import type { FastifyPluginCallback, FastifyRequest } from "fastify";
 import { z } from "zod";
 import {
+  ConfirmNameBody,
+  CreateTableBody,
   QueryRequest,
   ScanRequest,
   TABLE_NAME_PATTERN,
   TableListQuery,
   TableListResponse,
+  UpdateTableBody,
 } from "@dynamo-studio/shared";
+import {
+  assertNameConfirm,
+  createConnectionTable,
+  deleteConnectionTable,
+  updateConnectionTable,
+} from "../dynamo/manage-table.js";
 import { queryTable } from "../dynamo/query.js";
 import { scanTable } from "../dynamo/scan.js";
 import {
@@ -49,6 +58,47 @@ export const tableRoutes: FastifyPluginCallback = (app, _options, done) => {
       signal: requestSignal(request),
     });
     return TableListResponse.parse(listed);
+  });
+
+  app.post("/api/v1/connections/:id/tables", async (request, reply) => {
+    const params = ConnectionParams.parse(request.params);
+    const body = CreateTableBody.parse(request.body);
+    const id = sessionId(request);
+    app.connections.assertWritable(id, params.id);
+    const open = app.connections.open(id, params.id);
+    const table = await createConnectionTable(
+      open.client,
+      open.endpoint,
+      body,
+      requestSignal(request),
+    );
+    return reply.code(202).send(table);
+  });
+
+  app.patch("/api/v1/connections/:id/tables/:table", async (request) => {
+    const params = TableParams.parse(request.params);
+    const body = UpdateTableBody.parse(request.body);
+    const id = sessionId(request);
+    app.connections.assertWritable(id, params.id);
+    const open = app.connections.open(id, params.id);
+    return updateConnectionTable(
+      open.client,
+      open.endpoint,
+      params.table,
+      body,
+      requestSignal(request),
+    );
+  });
+
+  app.delete("/api/v1/connections/:id/tables/:table", async (request, reply) => {
+    const params = TableParams.parse(request.params);
+    const body = ConfirmNameBody.parse(request.body);
+    const id = sessionId(request);
+    app.connections.assertWritable(id, params.id);
+    assertNameConfirm(body.confirm, params.table);
+    const open = app.connections.open(id, params.id);
+    await deleteConnectionTable(open.client, open.endpoint, params.table, requestSignal(request));
+    return reply.code(204).send();
   });
 
   app.get("/api/v1/connections/:id/tables/:table", async (request) => {

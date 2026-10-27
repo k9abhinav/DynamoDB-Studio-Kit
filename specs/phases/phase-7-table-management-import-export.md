@@ -32,7 +32,7 @@ Backups/PITR, global tables, S3 import/export (AWS native), auto scaling policie
 
 ## 4. Tasks
 - [x] T7.1 Shared schemas for create/update table, export/import options + tests
-- [ ] T7.2 Server create/update/delete table + `wait` + integration tests (billing modes, GSI create/delete, TTL, deletion protection, error mapping for in-use and protection)
+- [x] T7.2 Server create/update/delete table + `wait` + integration tests (billing modes, GSI create/delete, TTL, deletion protection, error mapping for in-use and protection)
 - [ ] T7.3 Streaming serializers: NDJSON/JSON/CSV (typed & plain) + tests including CSV escaping and nested flattening
 - [ ] T7.4 Server export route with backpressure + abort + integration tests (10k items)
 - [ ] T7.5 Streaming parsers (NDJSON, JSON array, CSV) + type inference + mapping + tests (include malformed, BOM, CRLF, huge fields)

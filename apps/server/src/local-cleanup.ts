@@ -3,6 +3,7 @@ import {
   DeleteTableCommand,
   DynamoDBClient,
   ResourceNotFoundException,
+  UpdateTableCommand,
 } from "@aws-sdk/client-dynamodb";
 
 export function uniqueToken(): string {
@@ -38,6 +39,13 @@ export async function deleteLocalTables(names: readonly string[]): Promise<void>
   const client = localClient();
   try {
     for (const name of names) {
+      try {
+        await client.send(
+          new UpdateTableCommand({ TableName: name, DeletionProtectionEnabled: false }),
+        );
+      } catch {
+        // DeleteTable reports a table that is still protected or already gone.
+      }
       try {
         await client.send(new DeleteTableCommand({ TableName: name }));
       } catch (error) {

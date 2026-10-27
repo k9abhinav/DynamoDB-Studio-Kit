@@ -22,6 +22,7 @@ const AWS_CODES = {
   InvalidSignatureException: "ACCESS_DENIED",
   ExpiredTokenException: "ACCESS_DENIED",
   CredentialsProviderError: "ACCESS_DENIED",
+  InternalFailure: "INTERNAL",
 } as const satisfies Record<string, ErrorCode>;
 
 const NETWORK_CODES = new Set([
@@ -115,16 +116,23 @@ export function mapDynamoError(error: unknown, endpoint?: string): MappedError {
     details.requestId !== undefined;
 
   let message = "Something went wrong.";
+  if (awsCode === "InternalFailure") {
+    message = "DynamoDB couldn't finish that change.";
+  }
   if (code === "NOT_FOUND") {
     message = "That table doesn't exist (anymore).";
   } else if (code === "CONDITION_FAILED") {
     message = "This item changed since you opened it.";
   } else if (code === "VALIDATION") {
-    message = read.message.slice(0, 500);
+    message = /deletion protection/i.test(read.message)
+      ? "Deletion protection is on. Turn it off, then delete the table."
+      : read.message.slice(0, 500);
   } else if (code === "THROTTLED") {
     message = "DynamoDB is throttling requests.";
   } else if (code === "TABLE_IN_USE") {
-    message = "Table is busy. Try again when it's ACTIVE.";
+    message = /already exists|preexisting table/i.test(read.message)
+      ? "That table name is already in use."
+      : "Table is busy. Try again when it's ACTIVE.";
   } else if (code === "LIMIT_EXCEEDED") {
     message = "DynamoDB rejected the request because a limit was exceeded.";
   } else if (code === "ACCESS_DENIED") {

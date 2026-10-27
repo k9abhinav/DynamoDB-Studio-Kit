@@ -55,6 +55,34 @@ describe("mapDynamoError", () => {
     ).toBe("AWS rejected these credentials.");
   });
 
+  it("explains a duplicate name and deletion protection", () => {
+    expect(
+      mapDynamoError(
+        Object.assign(new Error("Cannot create preexisting table"), {
+          name: "ResourceInUseException",
+        }),
+      ).message,
+    ).toBe("That table name is already in use.");
+    const protectedTable = mapDynamoError(
+      Object.assign(new Error("Resource cannot be deleted as deletion protection is enabled."), {
+        name: "ValidationException",
+        $metadata: { requestId: "req-protect" },
+      }),
+    );
+    expect(protectedTable.message).toBe(
+      "Deletion protection is on. Turn it off, then delete the table.",
+    );
+    expect(protectedTable.details?.awsCode).toBe("ValidationException");
+    expect(protectedTable.details?.requestId).toBe("req-protect");
+    expect(
+      mapDynamoError(
+        Object.assign(new Error("The request processing has failed."), {
+          name: "InternalFailure",
+        }),
+      ).message,
+    ).toBe("DynamoDB couldn't finish that change.");
+  });
+
   it("keeps unknown failures internal and retryable only when the call can be repeated", () => {
     expect(mapDynamoError(new Error("mystery")).code).toBe("INTERNAL");
     expect(

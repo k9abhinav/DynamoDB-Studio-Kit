@@ -46,29 +46,32 @@ export interface RawTtl {
   AttributeName?: string;
 }
 
-function attributeType(definitions: readonly RawAttribute[], name: string): "S" | "N" | "B" {
+function attributeType(
+  definitions: readonly RawAttribute[],
+  name: string,
+): "S" | "N" | "B" | undefined {
   const found = definitions.find((item) => item.AttributeName === name)?.AttributeType;
   if (found === "S" || found === "N" || found === "B") {
     return found;
   }
-  throw new HttpError("VALIDATION", `Attribute ${name} has no S, N, or B type.`);
+  return undefined;
 }
 
 function keys(
   schema: readonly RawKey[] | undefined,
   definitions: readonly RawAttribute[],
-): { name: string; type: "S" | "N" | "B"; keyType: "HASH" | "RANGE" }[] {
+): { name: string; type: "S" | "N" | "B"; keyType: "HASH" | "RANGE" }[] | undefined {
   const result: { name: string; type: "S" | "N" | "B"; keyType: "HASH" | "RANGE" }[] = [];
   for (const key of schema ?? []) {
     const keyType = key.KeyType;
     if (key.AttributeName === undefined || (keyType !== "HASH" && keyType !== "RANGE")) {
       continue;
     }
-    result.push({
-      name: key.AttributeName,
-      type: attributeType(definitions, key.AttributeName),
-      keyType,
-    });
+    const type = attributeType(definitions, key.AttributeName);
+    if (type === undefined) {
+      return undefined;
+    }
+    result.push({ name: key.AttributeName, type, keyType });
   }
   return result;
 }
@@ -100,14 +103,34 @@ function indexStatus(value: string | undefined): TableDescriptionBody["gsis"][nu
 function oneIndex(
   raw: RawIndex,
   definitions: readonly RawAttribute[],
-): TableDescriptionBody["gsis"][number] {
+): TableDescriptionBody["gsis"][number] | undefined {
   if (raw.IndexName === undefined) {
     throw new HttpError("VALIDATION", "DynamoDB returned an index without a name.");
+  }
+  const keyList = keys(raw.KeySchema, definitions);
+  if (keyList === undefined) {
+    if (raw.IndexStatus !== "DELETING") {
+      const missing = raw.KeySchema?.find((key) => key.AttributeName !== undefined)?.AttributeName;
+      throw new HttpError("VALIDATION", `Attribute ${missing ?? "key"} has no S, N, or B type.`);
+    }
+  }
+  // Local drops the attribute definition while an index is still DELETING.
+  // Keep the index visible so a second index change stays blocked. The stand-in type is only for that disappearing index.
+  const visibleKeys =
+    keyList ??
+    (raw.KeySchema ?? []).flatMap((key) => {
+      if (key.AttributeName === undefined || (key.KeyType !== "HASH" && key.KeyType !== "RANGE")) {
+        return [];
+      }
+      return [{ name: key.AttributeName, type: "S" as const, keyType: key.KeyType }];
+    });
+  if (visibleKeys.length === 0) {
+    throw new HttpError("VALIDATION", "DynamoDB returned an index without a key.");
   }
   const described: TableDescriptionBody["gsis"][number] = {
     name: raw.IndexName,
     status: indexStatus(raw.IndexStatus),
-    keys: keys(raw.KeySchema, definitions),
+    keys: visibleKeys,
     projection: projection(raw.Projection),
   };
   const rcu = raw.ProvisionedThroughput?.ReadCapacityUnits;
@@ -148,6 +171,10 @@ export function normalizeTable(table: RawTable, ttl: RawTtl): TableDescriptionBo
     throw new HttpError("VALIDATION", "DynamoDB returned an incomplete table description.");
   }
   const definitions = table.AttributeDefinitions ?? [];
+  const tableKeys = keys(table.KeySchema, definitions);
+  if (tableKeys === undefined) {
+    throw new HttpError("VALIDATION", "A table key has no S, N, or B type.");
+  }
   const enabled = ttl.TimeToLiveStatus === "ENABLED" || ttl.TimeToLiveStatus === "ENABLING";
   const streamOn = table.StreamSpecification?.StreamEnabled === true;
   const viewType = table.StreamSpecification?.StreamViewType;
@@ -155,7 +182,7 @@ export function normalizeTable(table: RawTable, ttl: RawTtl): TableDescriptionBo
     name,
     status: status.data,
     arn: table.TableArn,
-    keySchema: keys(table.KeySchema, definitions),
+    keySchema: tableKeys,
     attributeDefinitions: definitions.flatMap((item) => {
       if (
         item.AttributeName === undefined ||
@@ -168,8 +195,14 @@ export function normalizeTable(table: RawTable, ttl: RawTtl): TableDescriptionBo
     billing: billing(table),
     itemCount: count(table.ItemCount),
     sizeBytes: count(table.TableSizeBytes),
-    gsis: (table.GlobalSecondaryIndexes ?? []).map((index) => oneIndex(index, definitions)),
-    lsis: (table.LocalSecondaryIndexes ?? []).map((index) => oneIndex(index, definitions)),
+    gsis: (table.GlobalSecondaryIndexes ?? []).flatMap((index) => {
+      const describedIndex = oneIndex(index, definitions);
+      return describedIndex === undefined ? [] : [describedIndex];
+    }),
+    lsis: (table.LocalSecondaryIndexes ?? []).flatMap((index) => {
+      const describedIndex = oneIndex(index, definitions);
+      return describedIndex === undefined ? [] : [describedIndex];
+    }),
     ttl:
       enabled && ttl.AttributeName !== undefined
         ? { enabled: true as const, attribute: ttl.AttributeName }
