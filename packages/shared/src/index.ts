@@ -54,6 +54,7 @@ export {
   CONFIRM_HEADER,
   CSRF_HEADER,
   MAX_CONNECTIONS_PER_SESSION,
+  MAX_IMPORT_BYTES,
   SESSION_COOKIE,
   SESSION_IDLE_MS,
 } from "./limits.js";
@@ -169,6 +170,50 @@ export {
   type QueryRequest as QueryRequestBody,
   type QueryResponse as QueryResponseBody,
 } from "./api/query.js";
+export {
+  CSV_COLUMN_LIMIT,
+  ConfirmNameBody,
+  CsvColumnType,
+  CsvMapping,
+  ExportFormat,
+  ExportRequest,
+  ExportSummary,
+  IMPORT_BATCH_SIZE,
+  IMPORT_PREVIEW_ROWS,
+  ImportFormat,
+  ImportMode,
+  ImportOptions,
+  ImportPreviewResponse,
+  ImportProgressEvent,
+  MAX_EXPORT_ITEMS,
+  REPORT_ID_PATTERN,
+  SKIP_EXISTING_CONCURRENCY,
+  type ConfirmNameBody as ConfirmNameBodyInput,
+  type CsvMapping as CsvMappingBody,
+  type ExportRequest as ExportRequestBody,
+  type ExportSummary as ExportSummaryBody,
+  type ImportOptions as ImportOptionsBody,
+  type ImportPreviewResponse as ImportPreviewResponseBody,
+  type ImportProgressEvent as ImportProgressEventBody,
+} from "./api/transfer.js";
+export {
+  CreateTableBody,
+  GSI_LIMIT,
+  GsiInput,
+  IndexProjectionInput,
+  KeyField,
+  TtlUpdate,
+  UpdateTableBody,
+  type CreateTableBody as CreateTableBodyInput,
+  type GsiInput as GsiInputBody,
+  type KeyField as KeyFieldBody,
+  type UpdateTableBody as UpdateTableBodyInput,
+} from "./api/create-table.js";
+export {
+  CreateTablePreview,
+  buildCreateTableRequest,
+  type CreateTablePreview as CreateTablePreviewBody,
+} from "./api/create-table-request.js";
 export {
   PROJECTION_LIMIT,
   SCAN_PAGE_DEFAULT,

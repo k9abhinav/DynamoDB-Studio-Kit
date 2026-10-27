@@ -3,8 +3,8 @@
 > The agent updates this file at the end of every task and phase. It is the memory between sessions.
 > Format for evidence: `AC-3.2 ✔ apps/web/src/features/tables/SidebarTableList.test.tsx > "filters as you type"`
 
-**Current phase:** 6
-**Last updated:** 2026-10-26
+**Current phase:** 7
+**Last updated:** 2026-10-27
 
 ## Phase status
 | Phase | Name | Status | Verify green | Date |
@@ -94,6 +94,24 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T6.9 Mutation confirmation
 - [x] T6.10 Playwright
 - [x] T6.11 Progress summary
+
+## Phase 7 tasks
+- [x] T7.1 Shared schemas
+- [ ] T7.2 Server create/update/delete
+- [ ] T7.3 Streaming serializers
+- [ ] T7.4 Server export
+- [ ] T7.5 Streaming parsers
+- [ ] T7.6 Server import
+- [ ] T7.7 Clear table
+- [ ] T7.8 Create table wizard
+- [ ] T7.9 Indexes, TTL, billing
+- [ ] T7.10 Export dialog
+- [ ] T7.11 Import wizard
+- [ ] T7.12 Delete and clear dialogs
+- [ ] T7.13 Playwright
+- [ ] T7.14 Progress summary
+
+T7.1 ✔ `packages/shared/src/api/create-table.test.ts` and `transfer.test.ts`. Invalid names, duplicate indexes, on-demand capacity, and an empty update are rejected. `buildCreateTableRequest` emits CreateTable plus UpdateTimeToLive, copies provisioned capacity onto an index that omits its own, and includes no credentials. Export defaults to plain NDJSON and rejects a view cursor. CSV import requires a mapping. Import events carry `duplicates`. `MAX_IMPORT_BYTES` is 512 MB.
 
 T6.1 ✔ `packages/shared/src/query-request.test.ts` and `apps/server/src/dynamo/expression-builder.test.ts` > "aliases reserved words and rejects begins_with on a number". Partition-key equality and every sort-key operator use `#n` / `:v` placeholders. `status`, `name`, and `timestamp` stay in the names map. A 38-digit number and `1E+2` are unchanged. `begins_with` accepts string and binary and rejects a number. The server wrapper maps that rejection to `400 VALIDATION`.
 

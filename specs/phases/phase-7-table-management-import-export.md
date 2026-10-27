@@ -11,6 +11,12 @@
 ## 2. Out of scope
 Backups/PITR, global tables, S3 import/export (AWS native), auto scaling policies.
 
+## Approved additions (2026-10-27)
+- Skip-existing uses conditional `PutItem` with bounded concurrency. `BatchWriteItem` cannot carry a condition. `ConditionalCheckFailed` counts as skipped. Overwrite stays batches of 25. The UI says skip-existing is slower.
+- A generated import larger than 100 MB asserts that server RSS growth stays far below the file size. Record the numbers in `specs/progress.md`.
+- Error-report ids are unguessable and bound to the session and connection. Files are mode 0600 and deleted on shutdown. Another session gets 404. A multipart upload without `X-DS-CSRF` is rejected.
+- Duplicate keys in the import file are counted and shown in the summary.
+
 ## 3. Functional requirements
 - **FR-7.1** **Create table wizard:** Step 1 Keys (table name with live regex validation and uniqueness check, partition key name+type, optional sort key name+type). Step 2 Options (billing: On-demand default / Provisioned with RCU/WCU, GSIs add/remove with keys and projection (All/Keys only/Include list), TTL attribute optional, deletion protection toggle). Step 3 Review (human summary + "Show request"). **Create** then navigates to the new table's Overview showing `CREATING` progress until `ACTIVE`.
 - **FR-7.2** GSI management: add (name, keys, projection, capacity if provisioned), delete (typed confirm), status chip (`CREATING` with backfill hint). Only one GSI create/delete in flight at a time per DynamoDB rules; UI explains when disabled.
@@ -25,7 +31,7 @@ Backups/PITR, global tables, S3 import/export (AWS native), auto scaling policie
 - **FR-7.11** Memory safety: server never buffers whole files; uses streaming parsers; hard limits (`MAX_IMPORT_BYTES` default 512 MB) with friendly error. Import error reports are kept for 1 hour and deleted on shutdown.
 
 ## 4. Tasks
-- [ ] T7.1 Shared schemas for create/update table, export/import options + tests
+- [x] T7.1 Shared schemas for create/update table, export/import options + tests
 - [ ] T7.2 Server create/update/delete table + `wait` + integration tests (billing modes, GSI create/delete, TTL, deletion protection, error mapping for in-use and protection)
 - [ ] T7.3 Streaming serializers: NDJSON/JSON/CSV (typed & plain) + tests including CSV escaping and nested flattening
 - [ ] T7.4 Server export route with backpressure + abort + integration tests (10k items)
