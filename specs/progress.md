@@ -98,7 +98,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 ## Phase 7 tasks
 - [x] T7.1 Shared schemas
 - [x] T7.2 Server create/update/delete
-- [ ] T7.3 Streaming serializers
+- [x] T7.3 Streaming serializers
 - [ ] T7.4 Server export
 - [ ] T7.5 Streaming parsers
 - [ ] T7.6 Server import
@@ -110,6 +110,8 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [ ] T7.12 Delete and clear dialogs
 - [ ] T7.13 Playwright
 - [ ] T7.14 Progress summary
+
+T7.3 ✔ `apps/server/src/dynamo/export-format.test.ts`. CSV escapes quotes, commas, newlines, and unicode, writes a 38-digit number as digits, and flattens a nested map to a JSON string with a warning. A later column lands in `_extra`. Plain NDJSON ends with `{"__summary":...}`. A typed JSON array does not. An empty JSON export is `[]`.
 
 T7.2 ✔ `apps/server/src/routes/manage-tables.int.test.ts` and `apps/server/src/dynamo/manage-table.test.ts`. Create returns 202 with a GSI, TTL, and deletion protection. A duplicate name is "That table name is already in use." A wrong confirm does not delete. Deletion protection returns the friendly message and keeps `ValidationException` in details. Read-only create is 403. GSI delete and create run one at a time. Provisioned billing is switched on a table without a GSI: DynamoDB Local returns `InternalFailure` when a table that already has a GSI changes billing mode. A deleting index whose attribute definition has already disappeared stays visible as `DELETING` so the next index change is refused.
 
