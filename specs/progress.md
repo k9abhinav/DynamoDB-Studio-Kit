@@ -103,13 +103,15 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T7.5 Streaming parsers
 - [x] T7.6 Server import
 - [x] T7.7 Clear table
-- [ ] T7.8 Create table wizard
+- [x] T7.8 Create table wizard
 - [ ] T7.9 Indexes, TTL, billing
 - [ ] T7.10 Export dialog
 - [ ] T7.11 Import wizard
 - [ ] T7.12 Delete and clear dialogs
 - [ ] T7.13 Playwright
 - [ ] T7.14 Progress summary
+
+T7.8 ✔ `CreateTableWizard.test.tsx` walks Keys, Options, and Review, shows the DynamoDB request, and navigates to the new table's Overview. The sidebar Create table button opens that wizard. A read-only connection disables the button.
 
 T7.7 ✔ `clear.int.test.ts`. A wrong typed name is 400, a read-only connection is 403 before any delete, and confirming the table name removes the two items. `clear-table.test.ts` stops before the next page when the request is aborted.
 

@@ -104,13 +104,11 @@ describe("SidebarTableList", () => {
     });
   });
 
-  it("shows a coming-soon create action when the account is empty", async () => {
+  it("opens the create table wizard from an empty account", async () => {
     const user = userEvent.setup();
     renderSidebar("/c/local/t/users/items", []);
     expect(screen.getByText("No tables yet.")).toBeInTheDocument();
-    const create = screen.getByRole("button", { name: "Create table" });
-    expect(create).toBeDisabled();
-    await user.hover(create.parentElement ?? create);
-    expect(await screen.findByRole("tooltip", { name: "Coming soon" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Create table" }));
+    expect(screen.getByRole("dialog", { name: "Create table" })).toBeInTheDocument();
   });
 });

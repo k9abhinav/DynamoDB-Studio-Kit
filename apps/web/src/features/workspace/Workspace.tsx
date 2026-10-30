@@ -116,7 +116,7 @@ export function Workspace() {
         ) : null}
       </div>
       <div className="grid h-full min-h-0 grid-cols-[auto_minmax(0,1fr)] overflow-hidden">
-        <SidebarTableList />
+        <SidebarTableList readOnly={query.data?.summary.readOnly === true} />
         <div className="flex min-w-0">
           <main className="flex min-w-0 flex-1 flex-col">
             <OpenTableTabs />

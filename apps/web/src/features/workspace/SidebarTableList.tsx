@@ -7,6 +7,7 @@ import Tooltip from "@mui/material/Tooltip";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import { CreateTableWizard } from "../tables/CreateTableWizard.js";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTables } from "../tables/use-tables.js";
 import { SIDEBAR_BREAKPOINT } from "../../lib/layout.js";
@@ -16,8 +17,15 @@ import { useUiStore } from "../../stores/ui.js";
 const ROW_HEIGHT = 40;
 const VIRTUALIZE_AFTER = 200;
 
-export function SidebarTableList({ tables }: { tables?: readonly MockTable[] }) {
+export function SidebarTableList({
+  tables,
+  readOnly = false,
+}: {
+  tables?: readonly MockTable[];
+  readOnly?: boolean;
+}) {
   const [query, setQuery] = useState("");
+  const [creating, setCreating] = useState(false);
   const [active, setActive] = useState(0);
   const parentRef = useRef<HTMLDivElement>(null);
   const seen = useRef<Set<string> | null>(null);
@@ -263,17 +271,29 @@ export function SidebarTableList({ tables }: { tables?: readonly MockTable[] }) 
         </div>
       </div>
       {rail ? null : (
-        <Tooltip title="Coming soon">
-          <span className="mx-3 mt-3 mb-3 block">
-            <button
-              type="button"
-              disabled
-              className="h-10 w-full rounded-full text-sm text-text-disabled"
-            >
-              Create table
-            </button>
-          </span>
-        </Tooltip>
+        <>
+          <Tooltip title={readOnly ? "This connection is read-only" : ""}>
+            <span className="mx-3 mt-3 mb-3 block">
+              <button
+                type="button"
+                disabled={readOnly}
+                className="h-10 w-full rounded-full text-sm text-primary disabled:text-text-disabled"
+                onClick={() => {
+                  setCreating(true);
+                }}
+              >
+                Create table
+              </button>
+            </span>
+          </Tooltip>
+          <CreateTableWizard
+            open={creating}
+            connectionId={connId}
+            onClose={() => {
+              setCreating(false);
+            }}
+          />
+        </>
       )}
     </nav>
   );
