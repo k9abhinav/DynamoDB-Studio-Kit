@@ -18,6 +18,7 @@ import { healthRoutes } from "./routes/health.js";
 import { profileRoutes } from "./routes/profiles.js";
 import { createErrorReportStore } from "./dynamo/error-reports.js";
 import { itemRoutes } from "./routes/items.js";
+import { clearRoutes } from "./routes/clear.js";
 import { importRoutes } from "./routes/import.js";
 import { partiqlRoutes } from "./routes/partiql.js";
 import { tableRoutes } from "./routes/tables.js";
@@ -107,6 +108,7 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   await app.register(tableRoutes);
   await app.register(transferRoutes);
   await app.register(importRoutes);
+  await app.register(clearRoutes);
   await app.register(itemRoutes);
   await app.register(partiqlRoutes);
   if (options.enableProbe ?? process.env.NODE_ENV === "test") {

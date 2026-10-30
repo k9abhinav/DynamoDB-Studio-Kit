@@ -102,7 +102,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T7.4 Server export
 - [x] T7.5 Streaming parsers
 - [x] T7.6 Server import
-- [ ] T7.7 Clear table
+- [x] T7.7 Clear table
 - [ ] T7.8 Create table wizard
 - [ ] T7.9 Indexes, TTL, billing
 - [ ] T7.10 Export dialog
@@ -110,6 +110,8 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [ ] T7.12 Delete and clear dialogs
 - [ ] T7.13 Playwright
 - [ ] T7.14 Progress summary
+
+T7.7 ✔ `clear.int.test.ts`. A wrong typed name is 400, a read-only connection is 403 before any delete, and confirming the table name removes the two items. `clear-table.test.ts` stops before the next page when the request is aborted.
 
 T7.6 ✔ Overwrite uses `BatchWriteItem` batches of 25 with backoff. Skip-existing uses conditional `PutItem` at concurrency 4; `ConditionalCheckFailed` is a skip, and a later copy of a key this import already wrote is a plain put. `import.int.test.ts` re-imports all 10,000 orders and matches item hashes, counts a duplicate, and returns 404 for another session's error report. A multipart import without the CSRF header is 401. A generated 104,870,400-byte dry run left the live heap smaller than it started (heapUsed 30,239,080 → 28,209,560) and external memory at 5,097,376 bytes. RSS rose to a peak of 460,275,712 and stayed at 447,430,656 after garbage collection because the process did not return those pages to the OS.
 
