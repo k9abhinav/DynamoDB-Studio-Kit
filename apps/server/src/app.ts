@@ -17,6 +17,7 @@ import { profileRoutes } from "./routes/profiles.js";
 import { itemRoutes } from "./routes/items.js";
 import { partiqlRoutes } from "./routes/partiql.js";
 import { tableRoutes } from "./routes/tables.js";
+import { transferRoutes } from "./routes/transfer.js";
 import { HttpError } from "./http-error.js";
 import { createConnectionManager } from "./services/connection-manager.js";
 import { createProfileStore } from "./store/profile-store.js";
@@ -86,6 +87,7 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   await app.register(connectionRoutes);
   await app.register(profileRoutes);
   await app.register(tableRoutes);
+  await app.register(transferRoutes);
   await app.register(itemRoutes);
   await app.register(partiqlRoutes);
   if (options.enableProbe ?? process.env.NODE_ENV === "test") {

@@ -99,7 +99,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T7.1 Shared schemas
 - [x] T7.2 Server create/update/delete
 - [x] T7.3 Streaming serializers
-- [ ] T7.4 Server export
+- [x] T7.4 Server export
 - [ ] T7.5 Streaming parsers
 - [ ] T7.6 Server import
 - [ ] T7.7 Clear table
@@ -110,6 +110,8 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [ ] T7.12 Delete and clear dialogs
 - [ ] T7.13 Playwright
 - [ ] T7.14 Progress summary
+
+T7.4 ✔ `apps/server/src/routes/export.int.test.ts` > "exports all 10,000 orders as NDJSON plus a summary line". The body has 10,000 item lines and `{"__summary":{"items":10000}}`. `export-stream.test.ts` stops at `maxItems` and stops before the next page when the request is aborted.
 
 T7.3 ✔ `apps/server/src/dynamo/export-format.test.ts`. CSV escapes quotes, commas, newlines, and unicode, writes a 38-digit number as digits, and flattens a nested map to a JSON string with a warning. A later column lands in `_extra`. Plain NDJSON ends with `{"__summary":...}`. A typed JSON array does not. An empty JSON export is `[]`.
 
