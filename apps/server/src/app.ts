@@ -1,9 +1,11 @@
 import { mkdtempSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { join, sep } from "node:path";
+import multipart from "@fastify/multipart";
 import rateLimit from "@fastify/rate-limit";
 import fastifyStatic from "@fastify/static";
 import Fastify, { type FastifyInstance } from "fastify";
+import { MAX_IMPORT_BYTES } from "@dynamo-studio/shared";
 import { z } from "zod";
 import { CONNECT_RATE_LIMIT_PER_MINUTE, type Auth } from "@dynamo-studio/shared";
 import type { DestinationStream } from "pino";
@@ -14,7 +16,9 @@ import { registerSecurity, type SecurityOptions } from "./plugins/security.js";
 import { connectionRoutes } from "./routes/connections.js";
 import { healthRoutes } from "./routes/health.js";
 import { profileRoutes } from "./routes/profiles.js";
+import { createErrorReportStore } from "./dynamo/error-reports.js";
 import { itemRoutes } from "./routes/items.js";
+import { importRoutes } from "./routes/import.js";
 import { partiqlRoutes } from "./routes/partiql.js";
 import { tableRoutes } from "./routes/tables.js";
 import { transferRoutes } from "./routes/transfer.js";
@@ -83,11 +87,26 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
       },
     });
   }
+  const reports = createErrorReportStore();
+  app.decorate("errorReports", reports);
+  app.addHook("onClose", () => {
+    reports.close();
+  });
+  await app.register(multipart, {
+    limits: {
+      files: 1,
+      fileSize: MAX_IMPORT_BYTES,
+      fields: 4,
+      fieldSize: 64 * 1024,
+      parts: 6,
+    },
+  });
   await app.register(healthRoutes);
   await app.register(connectionRoutes);
   await app.register(profileRoutes);
   await app.register(tableRoutes);
   await app.register(transferRoutes);
+  await app.register(importRoutes);
   await app.register(itemRoutes);
   await app.register(partiqlRoutes);
   if (options.enableProbe ?? process.env.NODE_ENV === "test") {

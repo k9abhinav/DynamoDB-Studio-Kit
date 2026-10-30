@@ -30,6 +30,7 @@ function zodErrorOf(error: unknown): ZodError | undefined {
 
 export function registerErrors(app: FastifyInstance): void {
   app.setErrorHandler((error, request, reply) => {
+    request.raw.resume();
     reply.header("x-request-id", request.id);
     const zodError = zodErrorOf(error);
     if (zodError !== undefined) {
