@@ -100,7 +100,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T7.2 Server create/update/delete
 - [x] T7.3 Streaming serializers
 - [x] T7.4 Server export
-- [ ] T7.5 Streaming parsers
+- [x] T7.5 Streaming parsers
 - [ ] T7.6 Server import
 - [ ] T7.7 Clear table
 - [ ] T7.8 Create table wizard
@@ -110,6 +110,8 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [ ] T7.12 Delete and clear dialogs
 - [ ] T7.13 Playwright
 - [ ] T7.14 Progress summary
+
+T7.5 ✔ `import-parse.test.ts` (4). UTF-8 BOM is stripped, UTF-16 is rejected, CRLF lines split, quoted CSV keeps commas, quotes, newlines, and `007` as a string, a short row names the missing column, and a JSON array can contain `}` inside a string. Missing keys and items over 400 KB are row errors.
 
 T7.4 ✔ `apps/server/src/routes/export.int.test.ts` > "exports all 10,000 orders as NDJSON plus a summary line". The body has 10,000 item lines and `{"__summary":{"items":10000}}`. `export-stream.test.ts` stops at `maxItems` and stops before the next page when the request is aborted.
 
