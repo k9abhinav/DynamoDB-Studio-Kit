@@ -21,6 +21,27 @@ describe("api", () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
+  it("opens one session when two callers overlap", async () => {
+    let release: (() => void) | undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let sessionCalls = 0;
+    vi.stubGlobal("fetch", (url: string) => {
+      if (url === "/api/v1/session") {
+        sessionCalls += 1;
+        return gate.then(() => jsonResponse({ csrfToken: "csrf-1", version: "0.0.0" }));
+      }
+      return jsonResponse([]);
+    });
+    const both = Promise.all([ensureSession(), ensureSession()]);
+    expect(sessionCalls).toBe(1);
+    release?.();
+    await both;
+    await api("/api/v1/connections/test", { method: "POST", body: { region: "us-east-1" } });
+    expect(sessionCalls).toBe(1);
+  });
+
   it("opens a session once before reads", async () => {
     const urls: string[] = [];
     vi.stubGlobal("fetch", (url: string) => {

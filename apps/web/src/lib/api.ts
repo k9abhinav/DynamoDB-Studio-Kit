@@ -31,20 +31,31 @@ export class ApiError extends Error {
 }
 
 let csrfToken: string | undefined;
+let sessionRequest: Promise<void> | undefined;
 
 export function resetApiSession(): void {
   csrfToken = undefined;
+  sessionRequest = undefined;
 }
 
 /** GET /api/v1/profiles and other reads require the session cookie. */
 export async function ensureSession(signal?: AbortSignal): Promise<void> {
-  if (csrfToken !== undefined) {
-    return;
-  }
   await readSession(signal);
 }
 
 async function readSession(signal?: AbortSignal): Promise<void> {
+  if (csrfToken !== undefined) {
+    return;
+  }
+  if (sessionRequest === undefined) {
+    sessionRequest = loadSession(signal).finally(() => {
+      sessionRequest = undefined;
+    });
+  }
+  await sessionRequest;
+}
+
+async function loadSession(signal?: AbortSignal): Promise<void> {
   const response = await fetch("/api/v1/session", {
     credentials: "same-origin",
     ...(signal === undefined ? {} : { signal }),
