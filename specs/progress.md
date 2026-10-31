@@ -108,7 +108,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T8.10 CLI bin
 - [x] T8.11 Docs
 - [x] T8.12 Visual regression + J1–J5
-- [ ] T8.13 Release workflow
+- [x] T8.13 Release workflow
 - [ ] T8.14 Spec reconciliation
 
 T8.1 ✔ `apps/web/src/features/connection/LocalHint.test.tsx` > "shows the DynamoDB Local command until it is dismissed" and "stays hidden when a connection is already saved". `local-hint.test.ts` stores the dismissal in `ds-local-hint-dismissed`. `api.test.ts` > "opens a session once before reads" so the first visit loads profiles instead of showing "Couldn't load saved connections." The endpoint field is a pill with the placeholder, alerts default to outlined, and the route fallback is a skeleton. Screenshots: `docs/screenshots/phase-8/`. Checklist: `docs/UI-STATES.md`. `e2e/polish.spec.ts` passed in light and dark on 2026-10-31.

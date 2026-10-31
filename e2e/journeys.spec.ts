@@ -4,6 +4,7 @@ import {
   deleteLocalTables,
   uniqueToken,
 } from "../apps/server/src/local-cleanup.js";
+import { ensureDir } from "../apps/server/src/test-files.js";
 import { connectLocal } from "./session.js";
 
 for (const scheme of ["light", "dark"] as const) {
@@ -138,11 +139,12 @@ async function openWorkspace(page: Page, path: string): Promise<void> {
 }
 
 function isLinux(): boolean {
-  const platform = (globalThis as { process?: { platform?: string } }).process?.platform;
-  return platform === "linux";
+  const host = globalThis as { process?: { platform?: string } };
+  return host.process?.platform === "linux";
 }
 
 async function capture(page: Page, name: string): Promise<void> {
+  await ensureDir("docs/screenshots/phase-8");
   await page.screenshot({ path: `docs/screenshots/phase-8/${name}` });
   if (isLinux()) {
     await expect(page).toHaveScreenshot(name, { maxDiffPixelRatio: 0.01 });
