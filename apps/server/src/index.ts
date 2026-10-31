@@ -3,6 +3,9 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildApp } from "./app.js";
 import { hostBindingWarning, loadConfig } from "./config.js";
+import { nodeStartupNotice } from "./node-version.js";
+
+const nodeNotice = nodeStartupNotice(process.versions.node);
 
 const config = loadConfig(process.env);
 const allowedOrigins = config.allowedOrigins
@@ -19,9 +22,40 @@ const app = await buildApp({
     ? { staticRoot: fileURLToPath(new URL("../../web/dist", import.meta.url)) }
     : {}),
 });
+if (nodeNotice !== undefined) {
+  app.log.warn(nodeNotice);
+}
 const warning = hostBindingWarning(config.host);
 if (warning !== undefined) {
   app.log.warn(warning);
 }
+
+let stopping = false;
+async function stop(): Promise<void> {
+  if (stopping) {
+    return;
+  }
+  stopping = true;
+  const force = setTimeout(() => {
+    process.exit(0);
+  }, 4_000);
+  force.unref();
+  try {
+    if (typeof app.server.closeAllConnections === "function") {
+      app.server.closeAllConnections();
+    }
+    await app.close();
+  } finally {
+    clearTimeout(force);
+    process.exit(0);
+  }
+}
+
+process.on("SIGINT", () => {
+  void stop();
+});
+process.on("SIGTERM", () => {
+  void stop();
+});
 
 await app.listen({ host: config.host, port: config.port });

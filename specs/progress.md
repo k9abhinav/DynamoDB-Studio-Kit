@@ -103,7 +103,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T8.5 Performance pass
 - [x] T8.6 Accessibility pass
 - [x] T8.7 Security re-review
-- [ ] T8.8 Production build + static serving + graceful shutdown
+- [x] T8.8 Production build + static serving + graceful shutdown
 - [ ] T8.9 Dockerfile + compose example
 - [ ] T8.10 CLI bin
 - [ ] T8.11 Docs
@@ -124,6 +124,8 @@ T8.5 ✔ No budget missed, so no performance code change. `SidebarTableList.test
 T8.6 ✔ `e2e/polish.spec.ts` reports 0 serious or critical axe violations on the connect screen, command palette, shortcut dialog, About dialog, and the missing-page screen in light and dark. Connect and Endpoint stay visible at 1280×800 and 200% zoom. `docs/KEYBOARD.md` is the keyboard checklist. `docs/a11y-notes.md` records the palette, shortcuts, offline banner, and connect hint from the accessibility tree. Reduced motion keeps opacity-only transitions (`motion.test.ts`) and the connect screen skips its leave animation. A live VoiceOver or NVDA pass was not done.
 
 T8.7 ✔ `docs/SECURITY.md` re-ticks section 8. Import and clear now call `assertWritable`. `pnpm audit` on 2026-10-31: 3 low, 2 moderate, 1 high, 1 critical. The high and critical issues are `dompurify` through `monaco-editor` (GHSA-cg2g-xh64-v4q7, GHSA-mrv2-3pqr-j5jr), patched in 3.4.17. This repo does not import DOMPurify. That exception is written in `docs/SECURITY.md`. There is no telemetry.
+
+T8.8 ✔ `node-version.test.ts` refuses majors below 22, stays quiet on 22, and returns a warning on 26 without exiting. `.nvmrc` is 22. `engines` stays `>=22` because `engine-strict` is on. `export-lifecycle.int.test.ts` sends SIGTERM during an `orders` export, the stream ends, and the process exits 0 in under 5 seconds. The same file writes 200 items of about 390 KB to a disposable table, exports them under `--max-old-space-size=128`, and the process stays up. The table is deleted afterward. The About dialog shows the version, the commit (`unknown` when git is absent), MIT, and a documentation link. Static files are still served from the production build by `security.test.ts`.
 
 ## Phase 7 tasks
 - [x] T7.1 Shared schemas

@@ -43,7 +43,7 @@ New features. Anything not already in specs goes to `specs/backlog.md`.
 - [x] T8.5 Performance pass (bundle visualizer, lazy boundaries, grid profiling, server profiling) + record metrics
 - [x] T8.6 Accessibility pass (axe sweep, manual keyboard audit, screen-reader notes, zoom/reduced motion)
 - [x] T8.7 Security re-review + `docs/SECURITY.md` + dependency audit
-- [ ] T8.8 Production build + static serving + graceful shutdown + tests
+- [x] T8.8 Production build + static serving + graceful shutdown + tests
 - [ ] T8.9 Dockerfile + compose example + image smoke test in CI
 - [ ] T8.10 CLI bin (`npx dynamo-studio`), flags, tarball test
 - [ ] T8.11 Docs: README, USER-GUIDE, ARCHITECTURE, CONTRIBUTING, SECURITY, CHANGELOG

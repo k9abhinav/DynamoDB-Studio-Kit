@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, type Alias } from "vite";
+import { readCommitHash } from "./src/lib/commit-hash.js";
 
 const sharedSource = fileURLToPath(new URL("../../packages/shared/src/index.ts", import.meta.url));
 
@@ -77,5 +78,8 @@ export default defineConfig(({ mode }) => ({
   },
   optimizeDeps: {
     include: ["monaco-editor"],
+  },
+  define: {
+    __DS_COMMIT__: JSON.stringify(readCommitHash()),
   },
 }));
