@@ -45,7 +45,7 @@ test("searches seed tables and opens orders from the keyboard", async ({ page })
   await expect(page).toHaveURL(/\/t\/orders\/items$/);
   await page.getByRole("tab", { name: "Overview" }).click();
   await expect(page.getByText("userId")).toBeVisible();
-  await expect(page.getByText("status-createdAt-index")).toBeVisible();
+  await expect(page.getByText("status-createdAt-index", { exact: true }).first()).toBeVisible();
   await page.getByRole("button", { name: "About this count" }).hover();
   await expect(page.getByRole("tooltip")).toContainText("Approximate");
   await page.getByRole("tab", { name: "Indexes" }).click();
