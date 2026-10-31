@@ -15,25 +15,22 @@ import {
   CreateConnectionResponse,
   EnvTag,
   PatchProfileBody,
-  ProfileList,
   ProfileSummary,
   interpretEndpoint,
   type ProfileSummaryBody,
 } from "@dynamo-studio/shared";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { ConfirmDialog } from "../../components/ConfirmDialog.js";
 import { envDotClass, envLabel, type EnvName } from "../../components/EnvChip.js";
 import { api, ApiError } from "../../lib/api.js";
 import { errorCopy } from "../../lib/error-copy.js";
 import { relativeTime } from "../../lib/relative-time.js";
+import { useProfiles } from "./use-profiles.js";
 
 export function SavedConnections({ onConnected }: { onConnected: (connectionId: string) => void }) {
   const queryClient = useQueryClient();
-  const profiles = useQuery({
-    queryKey: ["profiles"],
-    queryFn: ({ signal }) => api("/api/v1/profiles", { signal, schema: ProfileList }),
-  });
+  const profiles = useProfiles();
   const [menu, setMenu] = useState<{ anchor: HTMLElement; profile: ProfileSummaryBody } | null>(
     null,
   );
@@ -281,7 +278,7 @@ function EditForm({
               }}
             />
           }
-          label="Read only"
+          label="Read-only"
         />
         {error === null ? null : <Alert severity="error">{error}</Alert>}
       </DialogContent>

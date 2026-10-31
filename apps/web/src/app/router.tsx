@@ -3,6 +3,7 @@ import { createBrowserRouter, Outlet, type RouteObject } from "react-router-dom"
 import { AboutDialog } from "../components/AboutDialog.js";
 import { CommandPalette } from "../components/CommandPalette.js";
 import { ShortcutHelpDialog } from "../components/ShortcutHelpDialog.js";
+import { Skeletons } from "../components/Skeletons.js";
 import { NotFound } from "../features/connection/NotFound.js";
 
 const ConnectScreen = lazy(() =>
@@ -19,12 +20,8 @@ const Workspace = lazy(() =>
 
 function RouteFallback() {
   return (
-    <div
-      className="flex min-h-dvh items-center justify-center text-text-secondary"
-      role="status"
-      aria-label="Loading"
-    >
-      Loading
+    <div className="min-h-dvh bg-bg" role="status" aria-label="Loading">
+      <Skeletons rows={6} />
     </div>
   );
 }

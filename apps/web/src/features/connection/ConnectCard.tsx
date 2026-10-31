@@ -1,3 +1,4 @@
+import ExpandMoreOutlined from "@mui/icons-material/ExpandMoreOutlined";
 import StorageOutlined from "@mui/icons-material/StorageOutlined";
 import Alert from "@mui/material/Alert";
 import Button from "@mui/material/Button";
@@ -163,11 +164,13 @@ export function ConnectCard({
               value={field.value}
               onBlur={field.onBlur}
               fullWidth
-              label="Endpoint"
               placeholder="http://localhost:8000"
               error={errors.endpoint !== undefined}
               helperText={errors.endpoint?.message}
-              slotProps={{ input: { className: "rounded-full" } }}
+              slotProps={{
+                input: { className: "rounded-full" },
+                htmlInput: { "aria-label": "Endpoint" },
+              }}
               inputRef={(node: HTMLInputElement | null) => {
                 field.ref(node);
                 endpointRef.current = node;
@@ -267,6 +270,7 @@ export function ConnectCard({
           <Button
             type="button"
             aria-expanded={more}
+            startIcon={<ExpandMoreOutlined className={more ? "rotate-0" : "-rotate-90"} />}
             onClick={() => {
               setMore((current) => !current);
             }}
@@ -310,7 +314,7 @@ export function ConnectCard({
                         }}
                       />
                     }
-                    label="Read only"
+                    label="Read-only"
                   />
                 )}
               />

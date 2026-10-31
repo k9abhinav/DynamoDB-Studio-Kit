@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ThemeToggle } from "../../components/ThemeToggle.js";
 import { ConnectCard } from "./ConnectCard.js";
+import { LocalHint } from "./LocalHint.js";
 import { SavedConnections } from "./SavedConnections.js";
 
 export function ConnectScreen() {
@@ -42,6 +43,7 @@ export function ConnectScreen() {
         }`}
       >
         <ConnectCard notice={notice} onConnected={go} />
+        <LocalHint />
         <SavedConnections onConnected={go} />
       </div>
     </div>

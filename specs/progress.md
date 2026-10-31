@@ -3,7 +3,7 @@
 > The agent updates this file at the end of every task and phase. It is the memory between sessions.
 > Format for evidence: `AC-3.2 ✔ apps/web/src/features/tables/SidebarTableList.test.tsx > "filters as you type"`
 
-**Current phase:** 7
+**Current phase:** 8
 **Last updated:** 2026-10-31
 
 ## Phase status
@@ -17,7 +17,7 @@
 | 5 | Item editor & CRUD | ✅ done | ✅ | 2026-10-25 |
 | 6 | Query builder & PartiQL | ✅ done | ✅ | 2026-10-26 |
 | 7 | Table management & import/export | ✅ done | ✅ | 2026-10-31 |
-| 8 | Polish, hardening, packaging | ☐ not started | ☐ | |
+| 8 | Polish, hardening, packaging | ◐ in progress | ☐ | |
 
 ## Phase 2 tasks
 - [x] T2.1 Shared schemas
@@ -94,6 +94,24 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T6.9 Mutation confirmation
 - [x] T6.10 Playwright
 - [x] T6.11 Progress summary
+
+## Phase 8 tasks
+- [x] T8.1 UX audit
+- [ ] T8.2 Command palette completion + tests
+- [ ] T8.3 Shortcut audit + help dialog completeness + tests
+- [ ] T8.4 Error boundaries, offline banner, recovery flows + tests
+- [ ] T8.5 Performance pass
+- [ ] T8.6 Accessibility pass
+- [ ] T8.7 Security re-review
+- [ ] T8.8 Production build + static serving + graceful shutdown
+- [ ] T8.9 Dockerfile + compose example
+- [ ] T8.10 CLI bin
+- [ ] T8.11 Docs
+- [ ] T8.12 Visual regression + J1–J5
+- [ ] T8.13 Release workflow
+- [ ] T8.14 Spec reconciliation
+
+T8.1 ✔ `apps/web/src/features/connection/LocalHint.test.tsx` > "shows the DynamoDB Local command until it is dismissed" and "stays hidden when a connection is already saved". `local-hint.test.ts` stores the dismissal in `ds-local-hint-dismissed`. `api.test.ts` > "opens a session once before reads" so the first visit loads profiles instead of showing "Couldn't load saved connections." The endpoint field is a pill with the placeholder, alerts default to outlined, and the route fallback is a skeleton. Screenshots: `docs/screenshots/phase-8/`. Checklist: `docs/UI-STATES.md`. `e2e/polish.spec.ts` passed in light and dark on 2026-10-31.
 
 ## Phase 7 tasks
 - [x] T7.1 Shared schemas

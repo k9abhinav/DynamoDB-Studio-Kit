@@ -36,7 +36,7 @@ New features. Anything not already in specs goes to `specs/backlog.md`.
 - **FR-8.10** `pnpm verify` and CI are green; release workflow builds artifacts (Docker image + npm tarball) on tag.
 
 ## 4. Tasks
-- [ ] T8.1 UX audit: screenshot every screen/state light+dark; list discrepancies vs design system; fix all
+- [x] T8.1 UX audit: screenshot every screen/state light+dark; list discrepancies vs design system; fix all
 - [ ] T8.2 Command palette completion + tests
 - [ ] T8.3 Shortcut audit + help dialog completeness + tests
 - [ ] T8.4 Error boundaries, offline banner, recovery flows + tests

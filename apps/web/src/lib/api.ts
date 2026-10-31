@@ -36,6 +36,14 @@ export function resetApiSession(): void {
   csrfToken = undefined;
 }
 
+/** GET /api/v1/profiles and other reads require the session cookie. */
+export async function ensureSession(signal?: AbortSignal): Promise<void> {
+  if (csrfToken !== undefined) {
+    return;
+  }
+  await readSession(signal);
+}
+
 async function readSession(signal?: AbortSignal): Promise<void> {
   const response = await fetch("/api/v1/session", {
     credentials: "same-origin",

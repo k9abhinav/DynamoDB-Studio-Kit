@@ -36,6 +36,9 @@ export const theme = createTheme({
     button: { textTransform: "none", fontWeight: 500 },
   },
   components: {
+    MuiAlert: {
+      defaultProps: { variant: "outlined" },
+    },
     MuiButton: {
       defaultProps: { disableElevation: true },
       styleOverrides: {

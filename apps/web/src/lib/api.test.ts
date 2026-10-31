@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CSRF_HEADER } from "@dynamo-studio/shared";
-import { api, ApiError, resetApiSession } from "./api.js";
+import { api, ApiError, ensureSession, resetApiSession } from "./api.js";
 
 afterEach(() => {
   resetApiSession();
@@ -19,6 +19,21 @@ describe("api", () => {
     vi.stubGlobal("fetch", fetchMock);
     await api("/api/v1/connections/test", { method: "POST", body: { region: "us-east-1" } });
     expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("opens a session once before reads", async () => {
+    const urls: string[] = [];
+    vi.stubGlobal("fetch", (url: string) => {
+      urls.push(url);
+      if (url === "/api/v1/session") {
+        return jsonResponse({ csrfToken: "csrf-1", version: "0.0.0" });
+      }
+      return jsonResponse([]);
+    });
+    await ensureSession();
+    await ensureSession();
+    await api("/api/v1/profiles");
+    expect(urls).toEqual(["/api/v1/session", "/api/v1/profiles"]);
   });
 
   it("throws a typed ApiError and passes the abort signal", async () => {
