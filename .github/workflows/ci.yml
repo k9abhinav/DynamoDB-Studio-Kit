@@ -41,7 +41,10 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm seed
-      - run: pnpm test:int
+      - name: Integration tests
+        run: pnpm exec vitest run --config vitest.integration.config.ts --exclude apps/server/src/routes/import-memory.int.test.ts
+      - name: Bounded import memory (Linux)
+        run: pnpm exec vitest run --config vitest.integration.config.ts apps/server/src/routes/import-memory.int.test.ts
 
   e2e:
     runs-on: ubuntu-latest
