@@ -13,6 +13,7 @@ export function useLiveConnection(connectionId: string) {
   const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: ["connection", connectionId],
+    enabled: connectionId.length > 0,
     queryFn: ({ signal }) =>
       api(`/api/v1/connections/${encodeURIComponent(connectionId)}`, {
         signal,

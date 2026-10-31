@@ -12,6 +12,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useTables } from "../tables/use-tables.js";
 import { SIDEBAR_BREAKPOINT } from "../../lib/layout.js";
 import { filterLabels, splitTableMatch, tableOptionId, type MockTable } from "../../lib/tables.js";
+import { useCommandStore } from "../../stores/commands.js";
 import { useUiStore } from "../../stores/ui.js";
 
 const ROW_HEIGHT = 40;
@@ -35,6 +36,20 @@ export function SidebarTableList({
   const collapsed = useUiStore((state) => state.sidebarCollapsed);
   const toggleSidebar = useUiStore((state) => state.toggleSidebar);
   const { connId = "", table: selected } = useParams();
+  const command = useCommandStore((state) => state.command);
+  const commandNonce = useCommandStore((state) => state.nonce);
+  const [openedTable, setOpenedTable] = useState(0);
+  if (command === "new-table" && commandNonce !== openedTable) {
+    setOpenedTable(commandNonce);
+    if (!readOnly) {
+      setCreating(true);
+    }
+  }
+  useEffect(() => {
+    if (useCommandStore.getState().command === "new-table") {
+      useCommandStore.getState().clear();
+    }
+  }, [openedTable]);
   const fixture = tables !== undefined;
   const live = useTables(connId, query, !fixture);
   const names = fixture

@@ -15,6 +15,7 @@ import { EmptyState } from "../../components/EmptyState.js";
 import { ErrorState } from "../../components/ErrorState.js";
 import { ApiError } from "../../lib/api.js";
 import { queryKeys, scanKeys } from "../../lib/query-keys.js";
+import { useCommandStore } from "../../stores/commands.js";
 import { useUiStore } from "../../stores/ui.js";
 import { useTable } from "../tables/use-table.js";
 import { useLiveConnection } from "../workspace/use-live-connection.js";
@@ -77,6 +78,8 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
   const setPreview = useUiStore((state) => state.setItemPreview);
   const setDraftKind = useUiStore((state) => state.setDraftKind);
   const setDrawerOpen = useUiStore((state) => state.setDrawerOpen);
+  const command = useCommandStore((state) => state.command);
+  const commandNonce = useCommandStore((state) => state.nonce);
   const endpoint = connection.data?.summary.endpoint;
   const region = connection.data?.summary.region;
   const scanQuery: ScanQueryInput = {
@@ -163,6 +166,33 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
       localStorage.setItem(storageKey, JSON.stringify(next));
     }
   }
+
+  useEffect(() => {
+    if (command !== "create-item") {
+      return;
+    }
+    if (connection.data?.summary.readOnly === true) {
+      useCommandStore.getState().clear();
+      return;
+    }
+    if (described.data === undefined) {
+      return;
+    }
+    setPreview(
+      createTemplate(described.data.keySchema.map((key) => ({ name: key.name, type: key.type }))),
+    );
+    setDraftKind("create");
+    setDrawerOpen(true);
+    useCommandStore.getState().clear();
+  }, [
+    command,
+    commandNonce,
+    connection.data?.summary.readOnly,
+    described.data,
+    setDraftKind,
+    setDrawerOpen,
+    setPreview,
+  ]);
 
   function startCreate(): void {
     if (described.data === undefined) {

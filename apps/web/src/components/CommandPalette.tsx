@@ -1,23 +1,59 @@
 import Dialog from "@mui/material/Dialog";
 import TextField from "@mui/material/TextField";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { filterLabels } from "../lib/tables.js";
+import { useColorScheme } from "@mui/material/styles";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { rankPalette } from "../lib/palette-rank.js";
+import type { ThemeMode } from "../lib/theme-mode.js";
 import { useOverlayStore } from "../stores/overlay.js";
+import { useUiStore } from "../stores/ui.js";
+import { runPaletteEntry } from "./run-palette.js";
+import { usePaletteEntries } from "./use-palette-entries.js";
+
+const RESULT_LIMIT = 50;
 
 export function CommandPalette() {
   const open = useOverlayStore((state) => state.overlay === "palette");
   const close = useOverlayStore((state) => state.closeOverlay);
   const openOverlay = useOverlayStore((state) => state.openOverlay);
+  const density = useUiStore((state) => state.density);
+  const setDensity = useUiStore((state) => state.setDensity);
+  const { mode, setMode } = useColorScheme();
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
+  const [revision, setRevision] = useState(0);
+  const [wasOpen, setWasOpen] = useState(false);
   const field = useRef<HTMLInputElement>(null);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) {
+      setQuery("");
+      setActive(0);
+    }
+  }
+  const { entries, connId, table } = usePaletteEntries(revision);
+  const results = rankPalette(entries, query).slice(0, RESULT_LIMIT);
+  const current = results[Math.min(active, Math.max(results.length - 1, 0))];
+
   useEffect(() => {
     if (open) {
       field.current?.focus();
     }
   }, [open]);
-  const labels = useMemo(() => filterLabels(["Keyboard shortcuts", "About"], query), [query]);
-  const current = labels[active] ?? labels[0];
+
+  useEffect(() => {
+    if (current === undefined) {
+      return;
+    }
+    const node = document.getElementById(`palette-opt-${String(active)}`);
+    if (node !== null && typeof node.scrollIntoView === "function") {
+      node.scrollIntoView({ block: "nearest" });
+    }
+  }, [active, current]);
+
+  const themeMode: ThemeMode =
+    mode === "light" || mode === "dark" || mode === "system" ? mode : "system";
 
   return (
     <Dialog open={open} onClose={close} aria-labelledby="palette-title" fullWidth maxWidth="sm">
@@ -29,6 +65,7 @@ export function CommandPalette() {
           inputRef={field}
           fullWidth
           label="Search"
+          placeholder="Tables, connections, or > actions"
           value={query}
           onChange={(event) => {
             setQuery(event.target.value);
@@ -37,7 +74,7 @@ export function CommandPalette() {
           onKeyDown={(event) => {
             if (event.key === "ArrowDown") {
               event.preventDefault();
-              setActive((index) => Math.min(index + 1, labels.length - 1));
+              setActive((index) => Math.min(index + 1, results.length - 1));
             }
             if (event.key === "ArrowUp") {
               event.preventDefault();
@@ -45,42 +82,76 @@ export function CommandPalette() {
             }
             if (event.key === "Enter" && current !== undefined) {
               event.preventDefault();
-              run(current);
+              choose(current.id);
             }
           }}
         />
-        <ul role="listbox" aria-label="Commands" className="mt-3 m-0 list-none p-0">
-          {labels.map((label) => (
-            <li key={label}>
+        <ul
+          role="listbox"
+          aria-label="Commands"
+          className="m-0 mt-3 max-h-80 list-none overflow-auto p-0"
+        >
+          {results.map((entry, index) => (
+            <li key={entry.id}>
               <button
+                id={`palette-opt-${String(index)}`}
                 type="button"
                 role="option"
-                aria-selected={label === current}
-                className={`h-10 w-full rounded-lg px-3 text-left ${
-                  label === current ? "bg-primary-container text-primary" : ""
+                aria-selected={entry.id === current?.id}
+                className={`flex h-10 w-full items-center gap-3 rounded-lg px-3 text-left ${
+                  entry.id === current?.id ? "bg-primary-container text-primary" : ""
                 }`}
                 onClick={() => {
-                  run(label);
+                  choose(entry.id);
                 }}
               >
-                {label}
+                <span className="min-w-0 flex-1 truncate">{entry.label}</span>
+                <span className="text-xs text-text-secondary" aria-hidden="true">
+                  {kindLabel(entry.kind)}
+                </span>
               </button>
             </li>
           ))}
         </ul>
+        {results.length === 0 ? (
+          <p className="px-3 py-6 text-center text-sm text-text-secondary">No matches</p>
+        ) : null}
       </div>
     </Dialog>
   );
 
-  function run(label: string) {
-    close();
-    setQuery("");
-    if (label === "Keyboard shortcuts") {
-      openOverlay("shortcuts");
+  function choose(id: string): void {
+    const entry = results.find((item) => item.id === id);
+    if (entry === undefined) {
       return;
     }
-    if (label === "About") {
-      openOverlay("about");
-    }
+    close();
+    setQuery("");
+    void runPaletteEntry(entry, {
+      connId,
+      table,
+      mode: themeMode,
+      setMode: (next) => {
+        setMode(next);
+      },
+      density,
+      setDensity,
+      navigate,
+      openOverlay: (overlay) => {
+        openOverlay(overlay);
+      },
+    }).finally(() => {
+      setRevision((value) => value + 1);
+    });
   }
+}
+
+function kindLabel(kind: "table" | "connection" | "action"): string {
+  if (kind === "table") {
+    return "Table";
+  }
+  if (kind === "connection") {
+    return "Connection";
+  }
+  return "Action";
 }

@@ -97,7 +97,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 
 ## Phase 8 tasks
 - [x] T8.1 UX audit
-- [ ] T8.2 Command palette completion + tests
+- [x] T8.2 Command palette completion + tests
 - [ ] T8.3 Shortcut audit + help dialog completeness + tests
 - [ ] T8.4 Error boundaries, offline banner, recovery flows + tests
 - [ ] T8.5 Performance pass
@@ -112,6 +112,8 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [ ] T8.14 Spec reconciliation
 
 T8.1 ✔ `apps/web/src/features/connection/LocalHint.test.tsx` > "shows the DynamoDB Local command until it is dismissed" and "stays hidden when a connection is already saved". `local-hint.test.ts` stores the dismissal in `ds-local-hint-dismissed`. `api.test.ts` > "opens a session once before reads" so the first visit loads profiles instead of showing "Couldn't load saved connections." The endpoint field is a pill with the placeholder, alerts default to outlined, and the route fallback is a skeleton. Screenshots: `docs/screenshots/phase-8/`. Checklist: `docs/UI-STATES.md`. `e2e/polish.spec.ts` passed in light and dark on 2026-10-31.
+
+T8.2 ✔ `palette-rank.test.ts` ranks a leading `>` as actions only, puts a recent match first, and lets tables and connections outrank an action on a tie. `palette-recent.test.ts` keeps the last 8 table names and action ids and ignores corrupt JSON. `CommandPalette.test.tsx` jumps to `users` with Enter, runs `>theme` and `>density`, opens New table, and switches to Staging. `pnpm typecheck && pnpm lint && pnpm test` on 2026-10-31: 361 tests. The live app listed only actions after `>`, jumped to the users items route, and showed the same dialog in dark mode.
 
 ## Phase 7 tasks
 - [x] T7.1 Shared schemas

@@ -6,8 +6,9 @@ import DialogTitle from "@mui/material/DialogTitle";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useCommandStore } from "../../stores/commands.js";
 import { ConfirmDialog } from "../../components/ConfirmDialog.js";
 import { api, apiStream } from "../../lib/api.js";
 import { tableKeys } from "../../lib/query-keys.js";
@@ -42,6 +43,18 @@ export function TransferMenu({
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [clearOpen, setClearOpen] = useState(false);
   const [actionError, setActionError] = useState<string | undefined>();
+  const command = useCommandStore((state) => state.command);
+  const commandNonce = useCommandStore((state) => state.nonce);
+  const [openedExport, setOpenedExport] = useState(0);
+  if (command === "export" && commandNonce !== openedExport) {
+    setOpenedExport(commandNonce);
+    setExportOpen(true);
+  }
+  useEffect(() => {
+    if (useCommandStore.getState().command === "export") {
+      useCommandStore.getState().clear();
+    }
+  }, [openedExport]);
   const endpoint = connection.data?.summary.endpoint;
   const locked = readOnly ? "This connection is read-only" : undefined;
 

@@ -2,6 +2,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
 import { resetApiSession } from "../lib/api.js";
+import { useCommandStore } from "../stores/commands.js";
 import { useOverlayStore } from "../stores/overlay.js";
 import { uiDefaults, useUiStore } from "../stores/ui.js";
 
@@ -28,6 +29,7 @@ afterEach(() => {
   localStorage.clear();
   useUiStore.setState(uiDefaults);
   useOverlayStore.setState({ overlay: null, snackbar: null, undo: null });
+  useCommandStore.setState({ command: null, nonce: 0 });
   document.documentElement.style.removeProperty("--row-height");
   document.documentElement.removeAttribute("data-color-scheme");
 });
