@@ -1,0 +1,32 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.9.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm exec tsx scripts/pack-cli.ts
+      - name: Build the image locally
+        run: docker build -t "dynamo-studio:${{ github.ref_name }}" .
+      - name: Save the image as a file
+        run: docker save "dynamo-studio:${{ github.ref_name }}" -o dynamo-studio-image.tar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dynamo-studio-${{ github.ref_name }}
+          path: |
+            dist-pack/dynamo-studio.tgz
+            dynamo-studio-image.tar

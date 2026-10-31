@@ -135,6 +135,8 @@ T8.11 ✔ README quick start, features, security, and FAQ. Screenshots stand in 
 
 T8.12 ✔ `e2e/journeys.spec.ts` passed 11 tests on 2026-10-31 with `--workers=1`: J1–J5 in light and dark, plus the connect failure that names the endpoint. Screenshots are in `docs/screenshots/phase-8/`. `toHaveScreenshot` uses `maxDiffPixelRatio: 0.01` and runs on Linux only, so this Darwin run did not write ubuntu baselines.
 
+T8.13 ✔ `scripts/set-version.ts 1.0.0-rc.1` set the root, web, server, and shared versions. The root package stays private. `.github/workflows/release.yml` builds the image and the tarball on a `v*` tag and uploads them with `actions/upload-artifact`. It does not push to a registry. The local tag is `v1.0.0-rc.1`. It was not pushed.
+
 ## Phase 7 tasks
 - [x] T7.1 Shared schemas
 - [x] T7.2 Server create/update/delete

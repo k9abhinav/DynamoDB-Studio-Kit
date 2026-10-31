@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-rc.1
+
+Release candidate. The workspace version is `1.0.0-rc.1`. The release workflow builds a Docker image and the `dynamo-studio` tarball and uploads them as artifacts. It does not publish to a registry.
+
 ## 0.0.0
 
 Work in progress before the 1.0.0 release candidate.
