@@ -99,7 +99,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T8.1 UX audit
 - [x] T8.2 Command palette completion + tests
 - [x] T8.3 Shortcut audit + help dialog completeness + tests
-- [ ] T8.4 Error boundaries, offline banner, recovery flows + tests
+- [x] T8.4 Error boundaries, offline banner, recovery flows + tests
 - [ ] T8.5 Performance pass
 - [ ] T8.6 Accessibility pass
 - [ ] T8.7 Security re-review
@@ -116,6 +116,8 @@ T8.1 ✔ `apps/web/src/features/connection/LocalHint.test.tsx` > "shows the Dyna
 T8.2 ✔ `palette-rank.test.ts` ranks a leading `>` as actions only, puts a recent match first, and lets tables and connections outrank an action on a tie. `palette-recent.test.ts` keeps the last 8 table names and action ids and ignores corrupt JSON. `CommandPalette.test.tsx` jumps to `users` with Enter, runs `>theme` and `>density`, opens New table, and switches to Staging. `pnpm typecheck && pnpm lint && pnpm test` on 2026-10-31: 361 tests. The live app listed only actions after `>`, jumped to the users items route, and showed the same dialog in dark mode.
 
 T8.3 ✔ `hotkeys.test.ts` maps shell, editor, and query chords from `SHORTCUTS`, and every grid key matches one catalog row. `ShortcutHelpDialog.test.tsx` renders each label and key string. Save, format, JSON mode, run, drawer resize, and grid keys use that catalog. The live dialog scrolls in light and dark.
+
+T8.4 ✔ `OfflineBanner.test.tsx` shows the banner when the browser goes offline and leaves the heading in place. `App.test.tsx` keeps the connect screen, and a lost workspace shows the offline banner instead of "Connection lost" while `navigator.onLine` is false. `RouteErrorReset.test.tsx` retries the screen and keeps the shell. `MutationNotice.test.tsx` calls retry for "The save failed." Nothing is queued.
 
 ## Phase 7 tasks
 - [x] T7.1 Shared schemas

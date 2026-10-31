@@ -5,6 +5,7 @@ import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import { extractKey, type Item, type ItemKeySpec } from "@dynamo-studio/shared";
 import { useEffect, useState } from "react";
 import { ConfirmDialog } from "../../components/ConfirmDialog.js";
+import { MutationNotice } from "../../components/MutationNotice.js";
 import { ApiError } from "../../lib/api.js";
 import { editorAction, readHotkey } from "../../lib/hotkeys.js";
 import { useOverlayStore } from "../../stores/overlay.js";
@@ -46,6 +47,7 @@ export function ItemEditor(props: {
   const [baseline, setBaseline] = useState(text);
   const [hash, setHash] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [retryKind, setRetryKind] = useState<"save" | "delete" | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [localConflict, setLocalConflict] = useState<EditConflict | null>(null);
   const [latest, setLatest] = useState<Item | null>(null);
@@ -176,6 +178,7 @@ export function ItemEditor(props: {
       setEditing(false);
       setDraftKind("view");
       setPreview(result.item);
+      setRetryKind(null);
       setNotice(
         result.weakConcurrency === true ? "Saved. The conflict check was best-effort." : null,
       );
@@ -216,6 +219,7 @@ export function ItemEditor(props: {
         return;
       }
       setNotice(error instanceof ApiError ? error.message : "The save failed.");
+      setRetryKind("save");
     }
   }
 
@@ -247,7 +251,15 @@ export function ItemEditor(props: {
   async function removeItem(): Promise<void> {
     setConfirming(false);
     const key = extractKey(props.item, props.keys);
-    const result = await mutations.remove.mutateAsync(key);
+    let result;
+    try {
+      result = await mutations.remove.mutateAsync(key);
+    } catch (error) {
+      setNotice(error instanceof ApiError ? error.message : "That change failed.");
+      setRetryKind("delete");
+      return;
+    }
+    setRetryKind(null);
     setPreview(null);
     useUiStore.getState().setDrawerOpen(false);
     if (!result.deleted || result.previousItem === undefined) {
@@ -272,6 +284,7 @@ export function ItemEditor(props: {
     );
     if (existing === null) {
       setNotice("That item is not there anymore.");
+      setRetryKind(null);
       return;
     }
     setDraftKind("view");
@@ -374,16 +387,23 @@ export function ItemEditor(props: {
       {warning === undefined ? null : (
         <p className="px-4 pb-2 text-sm text-warning-text">{warning.message}</p>
       )}
-      {notice === null ? null : (
-        <div className="px-4 pb-2 text-sm" role="alert">
-          {notice}
-          {notice.includes("already exists") ? (
-            <Button className="ml-2" onClick={() => void openExisting()}>
-              Open existing item
-            </Button>
-          ) : null}
-        </div>
-      )}
+      <MutationNotice
+        notice={notice}
+        onOpenExisting={() => {
+          void openExisting();
+        }}
+        onRetry={
+          retryKind === "save"
+            ? () => {
+                void save();
+              }
+            : retryKind === "delete"
+              ? () => {
+                  void removeItem();
+                }
+              : null
+        }
+      />
       {blocking ? (
         <ul className="px-6 pb-3 text-sm text-error">
           {issues

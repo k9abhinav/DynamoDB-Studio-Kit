@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Navigate, useBlocker, useNavigate, useParams } from "react-router-dom";
 import { ConfirmDialog } from "../../components/ConfirmDialog.js";
+import { useBrowserOffline } from "../../components/OfflineBanner.js";
 import { EmptyState } from "../../components/EmptyState.js";
 import { api, ApiError } from "../../lib/api.js";
 import { stopScans } from "../items/use-scan-items.js";
@@ -30,6 +31,7 @@ export function Workspace() {
   const editorDirty = useUiStore((state) => state.editorDirty);
   const setEditorDirty = useUiStore((state) => state.setEditorDirty);
   const blocker = useBlocker(editorDirty);
+  const offline = useBrowserOffline();
   const query = useLiveConnection(connId);
   const blocked =
     table !== undefined && !openTables.includes(table) && openTables.length >= MAX_OPEN_TABLES;
@@ -88,7 +90,7 @@ export function Workspace() {
           }}
           onSwitch={switchConnection}
         />
-        {lost ? (
+        {lost && !offline ? (
           <div className="border-b border-outline bg-surface px-4 py-2">
             <Alert severity="warning" variant="outlined">
               Connection lost. Retry / Disconnect

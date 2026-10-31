@@ -31,4 +31,4 @@ Fixed against `specs/03-design-system.md`:
 - The DynamoDB Local hint is an outlined info alert, shown only when that list is empty, and dismissed into `ds-local-hint-dismissed`.
 - More options uses a disclosure chevron. The read-only switch label is "Read-only".
 
-The command palette ranks recent tables and actions first, and a leading `>` lists actions only. The shortcut dialog reads the same `SHORTCUTS` list the hotkey matcher uses. Route error boundaries and the offline banner are the next tasks in this phase. They are not finished screens yet.
+The command palette ranks recent tables and actions first, and a leading `>` lists actions only. The shortcut dialog reads the same `SHORTCUTS` list the hotkey matcher uses. Each route has an error boundary with Retry, and the offline banner stays on the current screen without queueing changes.

@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { act, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
@@ -48,6 +48,35 @@ describe("App shell", () => {
     expect(await screen.findByText("Connection lost. Retry / Disconnect")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Disconnect" }));
     expect(await screen.findByRole("textbox", { name: "Endpoint" })).toBeInTheDocument();
+  });
+
+  it("keeps the current screen when the browser goes offline", async () => {
+    await renderAt("/");
+    expect(screen.getByRole("heading", { name: "DynamoDB Studio" })).toBeInTheDocument();
+    act(() => {
+      window.dispatchEvent(new Event("offline"));
+    });
+    expect(screen.getByText(/You're offline/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "DynamoDB Studio" })).toBeInTheDocument();
+    act(() => {
+      window.dispatchEvent(new Event("online"));
+    });
+    expect(screen.queryByText(/You're offline/)).not.toBeInTheDocument();
+  });
+
+  it("uses the offline banner instead of connection lost while the browser is offline", async () => {
+    Object.defineProperty(navigator, "onLine", { configurable: true, value: false });
+    try {
+      await renderAt("/c/local", { api: "lost" });
+      expect(await screen.findByText(/You're offline/)).toBeInTheDocument();
+      expect(screen.queryByText("Connection lost. Retry / Disconnect")).not.toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: "Pick a table to get started" }),
+      ).toBeInTheDocument();
+    } finally {
+      Object.defineProperty(navigator, "onLine", { configurable: true, value: true });
+      window.dispatchEvent(new Event("online"));
+    }
   });
 
   it("reads the theme bootstrap from index.html", () => {

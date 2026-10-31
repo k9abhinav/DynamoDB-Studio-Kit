@@ -1,7 +1,9 @@
 import { lazy, Suspense } from "react";
-import { createBrowserRouter, Outlet, type RouteObject } from "react-router-dom";
+import { createBrowserRouter, Outlet, useLocation, type RouteObject } from "react-router-dom";
 import { AboutDialog } from "../components/AboutDialog.js";
 import { CommandPalette } from "../components/CommandPalette.js";
+import { OfflineBanner } from "../components/OfflineBanner.js";
+import { RouteErrorReset } from "../components/RouteErrorReset.js";
 import { ShortcutHelpDialog } from "../components/ShortcutHelpDialog.js";
 import { Skeletons } from "../components/Skeletons.js";
 import { NotFound } from "../features/connection/NotFound.js";
@@ -27,10 +29,14 @@ function RouteFallback() {
 }
 
 function ShellLayout() {
+  const location = useLocation();
   return (
     <>
+      <OfflineBanner />
       <Suspense fallback={<RouteFallback />}>
-        <Outlet />
+        <RouteErrorReset key={location.pathname}>
+          <Outlet />
+        </RouteErrorReset>
       </Suspense>
       <CommandPalette />
       <ShortcutHelpDialog />
