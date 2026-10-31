@@ -109,3 +109,37 @@ jobs:
           test "$(curl -s -o /dev/null -w '%{http_code}' -H 'Host: evil.example' http://127.0.0.1:18080/api/v1/health)" = "403"
           test "$(curl -s -o /dev/null -w '%{http_code}' -H 'Origin: https://evil.example' http://127.0.0.1:18080/api/v1/health)" = "403"
           docker logs studio 2>&1 | grep -q 'not loopback'
+
+  cli:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.9.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm exec tsx scripts/pack-cli.ts
+      - name: Install the packed tarball in a clean container
+        run: |
+          set -eu
+          docker run -d --name studio-cli -p 127.0.0.1:18081:18081 \
+            -v "$PWD/dist-pack/dynamo-studio.tgz:/pkg.tgz:ro" \
+            node:22-bookworm-slim \
+            bash -lc 'npm install -g /pkg.tgz && test -f /usr/local/lib/node_modules/dynamo-studio/apps/server/dist/index.js && test -f /usr/local/lib/node_modules/dynamo-studio/apps/web/dist/index.html && test -d /usr/local/lib/node_modules/dynamo-studio/node_modules/fastify && command -v dynamo-studio && exec dynamo-studio --host 0.0.0.0 --port 18081'
+          cleanup() { docker rm -f studio-cli >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          ok=0
+          for _ in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:18081/api/v1/health >/dev/null; then
+              ok=1
+              break
+            fi
+            sleep 1
+          done
+          test "$ok" = "1"
+          curl -fsS http://127.0.0.1:18081/api/v1/health

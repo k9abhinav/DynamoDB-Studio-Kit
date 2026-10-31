@@ -45,7 +45,7 @@ New features. Anything not already in specs goes to `specs/backlog.md`.
 - [x] T8.7 Security re-review + `docs/SECURITY.md` + dependency audit
 - [x] T8.8 Production build + static serving + graceful shutdown + tests
 - [x] T8.9 Dockerfile + compose example + image smoke test in CI
-- [ ] T8.10 CLI bin (`npx dynamo-studio`), flags, tarball test
+- [x] T8.10 CLI bin (`npx dynamo-studio`), flags, tarball test
 - [ ] T8.11 Docs: README, USER-GUIDE, ARCHITECTURE, CONTRIBUTING, SECURITY, CHANGELOG
 - [ ] T8.12 Visual regression baseline + final E2E suite of journeys J1-J5 in both themes
 - [ ] T8.13 Release workflow; tag v1.0.0-rc.1
