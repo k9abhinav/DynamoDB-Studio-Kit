@@ -1,11 +1,13 @@
 import { spawn } from "node:child_process";
-import { createReadStream, mkdtempSync, rmSync, statSync } from "node:fs";
+import { createReadStream, mkdtempSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { request as httpRequest } from "node:http";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 const image = process.env.DS_IMAGE ?? "dynamo-studio:local";
+const dockerConfig = mkdtempSync(join(tmpdir(), "ds-docker-config-"));
+writeFileSync(join(dockerConfig, "config.json"), '{"auths":{}}\n');
 const name = `ds-smoke-${process.pid.toString(36)}`;
 const targetBytes = 200 * 1024 * 1024;
 
@@ -64,12 +66,16 @@ async function main(): Promise<void> {
   } finally {
     await docker(["rm", "-f", name]).catch(() => undefined);
     rmSync(dir, { recursive: true, force: true });
+    rmSync(dockerConfig, { recursive: true, force: true });
   }
 }
 
 function docker(args: string[]): Promise<string> {
   return new Promise((resolve, reject) => {
-    const child = spawn("docker", args, { stdio: ["ignore", "pipe", "pipe"] });
+    const child = spawn("docker", args, {
+      stdio: ["ignore", "pipe", "pipe"],
+      env: { ...process.env, DOCKER_CONFIG: dockerConfig },
+    });
     const out: Buffer[] = [];
     const err: Buffer[] = [];
     child.stdout.on("data", (chunk: Buffer) => {

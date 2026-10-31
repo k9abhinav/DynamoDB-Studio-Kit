@@ -18,6 +18,8 @@ RUN pnpm --filter @dynamo-studio/shared build \
   && pnpm --filter @dynamo-studio/server build \
   && pnpm --filter @dynamo-studio/web build \
   && pnpm --filter @dynamo-studio/server deploy --prod /deploy/apps/server \
+  && cp -a apps/server/dist /deploy/apps/server/dist \
+  && cp -a packages/shared/dist /deploy/apps/server/node_modules/@dynamo-studio/shared/dist \
   && mkdir -p /deploy/apps/web \
   && cp -a apps/web/dist /deploy/apps/web/dist
 
