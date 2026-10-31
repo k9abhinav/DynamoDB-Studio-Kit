@@ -66,7 +66,7 @@ describe("import memory", () => {
     const logs: Buffer[] = [];
     const server = spawn(
       process.execPath,
-      ["--expose-gc", "--import", "tsx", "apps/server/src/index.ts"],
+      ["--max-old-space-size=128", "--expose-gc", "--import", "tsx", "apps/server/src/index.ts"],
       {
         cwd: repoRoot,
         env: {
