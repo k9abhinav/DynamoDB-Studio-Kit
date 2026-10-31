@@ -11,6 +11,18 @@ const sharedSource = fileURLToPath(new URL("../../packages/shared/src/index.ts",
 
 const require = createRequire(import.meta.url);
 const webRoot = path.dirname(fileURLToPath(import.meta.url));
+
+function webPort(): number {
+  const raw = process.env.WEB_PORT;
+  if (raw === undefined || raw === "") {
+    return 5173;
+  }
+  const port = Number(raw);
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    throw new Error(`WEB_PORT must be a port number. Received ${raw}.`);
+  }
+  return port;
+}
 const monacoRoot = realpathSync(path.join(webRoot, "node_modules/monaco-editor"));
 
 /**
@@ -67,10 +79,11 @@ export default defineConfig(({ mode }) => ({
     ],
   },
   server: {
-    port: 5173,
+    port: webPort(),
+    strictPort: process.env.WEB_PORT !== undefined && process.env.WEB_PORT !== "",
     host: "127.0.0.1",
     proxy: {
-      "/api": "http://127.0.0.1:8080",
+      "/api": process.env.API_PROXY ?? "http://127.0.0.1:8080",
     },
   },
   worker: {
