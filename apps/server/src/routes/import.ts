@@ -166,7 +166,7 @@ async function readUpload(request: FastifyRequest, requireOptions: boolean): Pro
       }
       const filename = part.filename;
       return {
-        options: options ?? ImportOptions.parse({ format: formatOf(filename), mode: "put" }),
+        options: options ?? fallbackOptions(filename),
         filename,
         bytes: byteChunks(part.file),
         destroy: () => {
@@ -190,6 +190,18 @@ async function* byteChunks(source: AsyncIterable<Uint8Array>): AsyncGenerator<Ui
   for await (const chunk of source) {
     yield chunk;
   }
+}
+
+function fallbackOptions(filename: string): ImportOptions {
+  const format = formatOf(filename);
+  if (format !== "csv") {
+    return ImportOptions.parse({ format, mode: "put" });
+  }
+  return ImportOptions.parse({
+    format,
+    mode: "put",
+    mapping: { header: true, delimiter: ",", columns: [{ name: "value", type: "S" }] },
+  });
 }
 
 function formatOf(filename: string): "ndjson" | "json" | "csv" {

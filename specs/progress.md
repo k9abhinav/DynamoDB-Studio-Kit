@@ -108,8 +108,10 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T7.10 Export dialog
 - [x] T7.11 Import wizard
 - [x] T7.12 Delete and clear dialogs
-- [ ] T7.13 Playwright
+- [x] T7.13 Playwright
 - [ ] T7.14 Progress summary
+
+T7.13 ✔ `e2e/manage.spec.ts`. The keyboard opens the wizard, types the name and partition key, and creates a table with TTL `expiresAt` and index `kind-index`. A two-row CSV imports, a query for that partition key shows the value, the NDJSON download contains it, and deleting the table asks for the typed name. A read-only connection disables create, import, clear, and delete, and leaves export enabled. axe reports 0 serious or critical on the overview, create wizard, and import dialog in light and dark. Screenshots are in `docs/screenshots/phase-7/`.
 
 T7.12 ✔ `TransferMenu.test.tsx`. Delete and clear stay disabled until the table name is typed, in every environment. Delete shows the approximate item count. A protection failure shows "Deletion protection is on. Turn it off, then delete the table." Import, clear, and delete are disabled on a read-only connection with "This connection is read-only".
 

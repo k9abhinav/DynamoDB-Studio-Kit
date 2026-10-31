@@ -59,8 +59,15 @@ export const theme = createTheme({
       },
     },
     MuiDialog: {
+      defaultProps: { transitionDuration: 0 },
       styleOverrides: {
-        paper: { borderRadius: 16, boxShadow: layerShadow },
+        paper: {
+          borderRadius: 16,
+          boxShadow: layerShadow,
+          backgroundImage: "none",
+          backgroundColor: "var(--ds-surface)",
+          color: "var(--ds-text-primary)",
+        },
       },
     },
     MuiDrawer: {
@@ -69,6 +76,7 @@ export const theme = createTheme({
       },
     },
     MuiMenu: {
+      defaultProps: { transitionDuration: 0 },
       styleOverrides: {
         paper: { boxShadow: menuShadow, border: "1px solid var(--ds-outline)" },
       },

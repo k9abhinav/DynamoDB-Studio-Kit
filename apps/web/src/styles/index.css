@@ -60,6 +60,19 @@
   }
 }
 
+.MuiModal-root,
+.MuiPopover-root,
+.MuiSnackbar-root {
+  position: fixed;
+  z-index: 1300;
+}
+
+.MuiDialog-paper {
+  background-color: var(--ds-surface) !important;
+  background-image: none !important;
+  color: var(--ds-text-primary) !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -3,6 +3,7 @@ import { expect, type Page } from "@playwright/test";
 export async function connectLocal(
   page: Page,
   endpoint = "http://127.0.0.1:8000",
+  readOnly = false,
 ): Promise<string> {
   const session = await page.request.get("/api/v1/session");
   expect(session.ok()).toBeTruthy();
@@ -14,7 +15,7 @@ export async function connectLocal(
       region: "us-east-1",
       auth: { type: "local" },
       env: "local",
-      readOnly: false,
+      readOnly,
       remember: false,
     },
   });

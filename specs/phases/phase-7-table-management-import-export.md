@@ -43,7 +43,7 @@ Backups/PITR, global tables, S3 import/export (AWS native), auto scaling policie
 - [x] T7.10 Web ExportDialog + streaming download + progress/cancel + tests
 - [x] T7.11 Web ImportWizard (file, preview, mapping, dry-run, run, report) + progress toast persistence + tests
 - [x] T7.12 Delete table & Clear table dialogs + tests
-- [ ] T7.13 Playwright: create table -> import CSV -> query -> export -> delete table; read-only checks; light/dark screenshots; axe; keyboard-only
+- [x] T7.13 Playwright: create table -> import CSV -> query -> export -> delete table; read-only checks; light/dark screenshots; axe; keyboard-only
 - [ ] T7.14 Progress + phase summary
 
 ## 5. Acceptance criteria
