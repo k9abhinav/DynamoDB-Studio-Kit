@@ -104,12 +104,14 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T7.6 Server import
 - [x] T7.7 Clear table
 - [x] T7.8 Create table wizard
-- [ ] T7.9 Indexes, TTL, billing
+- [x] T7.9 Indexes, TTL, billing
 - [ ] T7.10 Export dialog
 - [ ] T7.11 Import wizard
 - [ ] T7.12 Delete and clear dialogs
 - [ ] T7.13 Playwright
 - [ ] T7.14 Progress summary
+
+T7.9 ✔ `TableControls.test.tsx`. Turning on deletion protection sends `{ deletionProtection: true }`. A `CREATING` index disables Add index and says to wait until it is ACTIVE, including the backfill note. A read-only connection disables the protection switch and Add index. Overview and Indexes both render these controls. Existing table polling already refreshes the description every 3 seconds.
 
 T7.8 ✔ `CreateTableWizard.test.tsx` walks Keys, Options, and Review, shows the DynamoDB request, and navigates to the new table's Overview. The sidebar Create table button opens that wizard. A read-only connection disables the button.
 

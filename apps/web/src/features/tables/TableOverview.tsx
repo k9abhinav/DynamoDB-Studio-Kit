@@ -5,11 +5,20 @@ import Tooltip from "@mui/material/Tooltip";
 import type { TableDescription } from "@dynamo-studio/shared";
 import type { ReactNode } from "react";
 import { CopyButton } from "./CopyButton.js";
+import { TableControls } from "./TableControls.js";
 import { IndexList } from "./IndexList.js";
 import { formatBytes, formatCreatedAt, tableStatusLabel, tableStatusTone } from "./present.js";
 import { TypeBadge } from "./TypeBadge.js";
 
-export function TableOverview({ description }: { description: TableDescription }) {
+export function TableOverview({
+  description,
+  connectionId,
+  readOnly = false,
+}: {
+  description: TableDescription;
+  connectionId?: string;
+  readOnly?: boolean;
+}) {
   const tone = tableStatusTone(description.status);
   return (
     <div className="grid gap-4 p-4 md:grid-cols-2">
@@ -67,6 +76,15 @@ export function TableOverview({ description }: { description: TableDescription }
             : "Disabled"}
         </p>
       </Card>
+      {connectionId === undefined ? null : (
+        <Card title="Settings">
+          <TableControls
+            connectionId={connectionId}
+            description={description}
+            readOnly={readOnly}
+          />
+        </Card>
+      )}
       <Card title="Indexes">
         <h3 className="text-sm font-medium">Global secondary indexes</h3>
         <IndexList indexes={description.gsis} empty="No global secondary indexes." />
