@@ -23,6 +23,11 @@ describe("import parsers", () => {
     expect(lines.push("one\r\ntwo\r\n")).toEqual(["one", "two"]);
     expect(lines.push("three")).toEqual([]);
     expect(lines.finish()).toEqual(["three"]);
+    const split = new LineDecoder();
+    expect(split.push("ab\r")).toEqual(["ab"]);
+    expect(split.push("\ncd")).toEqual([]);
+    expect(split.push("ef")).toEqual([]);
+    expect(split.finish()).toEqual(["cdef"]);
   });
 
   it("parses quoted CSV, a short row, and keeps 007 as a string", () => {

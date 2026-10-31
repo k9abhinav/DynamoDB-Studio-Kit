@@ -121,6 +121,26 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
       return reply.code(204).send();
     });
   }
+  if (process.env.DS_GC_PROBE === "1") {
+    app.get("/api/v1/__gc", (request) => {
+      const collect =
+        z.object({ collect: z.string().optional() }).parse(request.query).collect !== "0";
+      const gc = (globalThis as { gc?: () => void }).gc;
+      if (collect) {
+        if (gc === undefined) {
+          throw new HttpError("INTERNAL", "Garbage collection is not exposed.");
+        }
+        gc();
+      }
+      const usage = process.memoryUsage();
+      return {
+        rss: usage.rss,
+        heapUsed: usage.heapUsed,
+        external: usage.external,
+        arrayBuffers: usage.arrayBuffers,
+      };
+    });
+  }
   registerNotFound(app, options.staticRoot);
   return app;
 }

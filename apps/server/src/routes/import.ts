@@ -47,14 +47,23 @@ export const importRoutes: FastifyPluginCallback = (app, _options, done) => {
       app.connections.assertWritable(session, params.id);
       const open = app.connections.open(session, params.id);
       const signal = requestSignal(request);
-      const described = await describeConnectionTable(
-        open.client,
-        open.endpoint,
-        params.table,
-        signal,
-      );
+      // Read the multipart stream before any other await so the body cannot
+      // buffer for the whole file while DescribeTable is in flight.
+      request.raw.pause();
       const upload = await readUpload(request, true);
-      const keys = keySpecs(described.keySchema);
+      let keys: ItemKeySpec[];
+      try {
+        const described = await describeConnectionTable(
+          open.client,
+          open.endpoint,
+          params.table,
+          signal,
+        );
+        keys = keySpecs(described.keySchema);
+      } catch (error) {
+        upload.destroy();
+        throw error;
+      }
       reply.header("content-type", "application/x-ndjson; charset=utf-8");
       return reply.send(
         Readable.from(

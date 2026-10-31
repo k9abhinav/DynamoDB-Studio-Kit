@@ -177,7 +177,28 @@ function binaryBytes(base64: string): number {
 }
 
 function utf8Length(text: string): number {
-  return new TextEncoder().encode(text).length;
+  // Match TextEncoder without allocating a byte copy of a large attribute.
+  // That copy was big enough to force a GC while the attribute string was still live.
+  let bytes = 0;
+  for (let index = 0; index < text.length; index += 1) {
+    const code = text.charCodeAt(index);
+    if (code < 0x80) {
+      bytes += 1;
+    } else if (code < 0x800) {
+      bytes += 2;
+    } else if (code >= 0xd800 && code < 0xdc00) {
+      const next = text.charCodeAt(index + 1);
+      if (next >= 0xdc00 && next < 0xe000) {
+        bytes += 4;
+        index += 1;
+      } else {
+        bytes += 3;
+      }
+    } else {
+      bytes += 3;
+    }
+  }
+  return bytes;
 }
 
 function base64Url(bytes: Uint8Array): string {

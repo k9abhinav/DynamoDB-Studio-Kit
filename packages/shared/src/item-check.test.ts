@@ -22,6 +22,8 @@ describe("validateTypedItem", () => {
   it("accepts the 38-digit number and a 390 KB string", () => {
     const large: Item = { id: { S: "large" }, blob: { S: "a".repeat(390_000) } };
     expect(estimateItemSize(large)).toBeLessThan(ITEM_SIZE_LIMIT);
+    expect(estimateItemSize({ a: { S: "é" } })).toBe(3);
+    expect(estimateItemSize({ a: { S: "😀" } })).toBe(5);
     expect(
       validateTypedItem(large, { keys }).filter((issue) => issue.severity === "error"),
     ).toEqual([]);

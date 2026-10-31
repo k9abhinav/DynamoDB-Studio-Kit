@@ -35,6 +35,7 @@ export async function* parseImport(input: {
   let csvRow = 0;
   let jsonRow = 0;
   let ndjsonRow = 0;
+  const decoder = new TextDecoder("utf-8", { fatal: false });
 
   for await (const chunk of byteStream(input.bytes)) {
     seen += chunk.byteLength;
@@ -43,25 +44,38 @@ export async function* parseImport(input: {
     }
     const textChunk = first ? openChunk(chunk, input.warnings) : chunk;
     first = false;
-    const text = new TextDecoder("utf-8", { fatal: false }).decode(textChunk, { stream: true });
+    let text = decoder.decode(textChunk, { stream: true });
     if (input.format === "ndjson") {
-      for (const line of lines.push(text)) {
+      const ready = lines.push(text);
+      text = "";
+      for (let index = 0; index < ready.length; index += 1) {
+        let line = ready[index] ?? "";
+        ready[index] = "";
         const row = ndjsonRow + 1;
         ndjsonRow = row;
-        const parsed = ndjsonLine(line, row);
+        let parsed = ndjsonLine(line, row);
+        line = "";
         if (parsed === undefined) {
           continue;
         }
         yield parsed;
+        parsed = undefined;
         produced += 1;
         if (input.maxRows !== undefined && produced >= input.maxRows) {
           return;
         }
       }
     } else if (input.format === "json") {
-      for (const value of json.push(text)) {
+      const ready = json.push(text);
+      text = "";
+      for (let index = 0; index < ready.length; index += 1) {
+        let value = ready[index] ?? "";
+        ready[index] = "";
         jsonRow += 1;
-        yield jsonValue(value, jsonRow);
+        let parsed: ParsedImportRow | undefined = jsonValue(value, jsonRow);
+        value = "";
+        yield parsed;
+        parsed = undefined;
         produced += 1;
         if (input.maxRows !== undefined && produced >= input.maxRows) {
           return;
@@ -69,17 +83,50 @@ export async function* parseImport(input: {
       }
     } else {
       const delimiter = input.mapping?.delimiter ?? ",";
-      for (const cells of csv.push(text, delimiter)) {
+      const ready = csv.push(text, delimiter);
+      text = "";
+      for (let index = 0; index < ready.length; index += 1) {
+        const cells = ready[index] ?? [];
+        ready[index] = [];
+        csvRow += 1;
+        if (input.mapping?.header !== false && headers === undefined) {
+          headers = cells;
+          continue;
+        }
+        let parsed: ParsedImportRow | undefined = csvValue(cells, csvRow, input.mapping, headers);
+        yield parsed;
+        parsed = undefined;
+        produced += 1;
+        if (input.maxRows !== undefined && produced >= input.maxRows) {
+          return;
+        }
+      }
+    }
+  }
+  const flushed = decoder.decode();
+  if (flushed.length > 0) {
+    if (input.format === "ndjson") {
+      for (const line of lines.push(flushed)) {
+        ndjsonRow += 1;
+        const parsed = ndjsonLine(line, ndjsonRow);
+        if (parsed !== undefined) {
+          yield parsed;
+        }
+      }
+    } else if (input.format === "json") {
+      for (const value of json.push(flushed)) {
+        jsonRow += 1;
+        yield jsonValue(value, jsonRow);
+      }
+    } else {
+      const delimiter = input.mapping?.delimiter ?? ",";
+      for (const cells of csv.push(flushed, delimiter)) {
         csvRow += 1;
         if (input.mapping?.header !== false && headers === undefined) {
           headers = cells;
           continue;
         }
         yield csvValue(cells, csvRow, input.mapping, headers);
-        produced += 1;
-        if (input.maxRows !== undefined && produced >= input.maxRows) {
-          return;
-        }
       }
     }
   }

@@ -59,24 +59,32 @@ export async function* writeImport(input: {
   };
 
   try {
-    for await (const parsed of input.rows) {
+    const rows = rowIterator(input.rows);
+    let parsed = await readRow(rows);
+    while (parsed !== undefined) {
       if (input.scope.signal?.aborted === true) {
         yield snapshot(counts);
         return;
       }
       counts.processed += 1;
-      const pending = acceptRow(parsed, input.keys, seen, counts, fail);
-      if (pending === undefined || input.dryRun) {
+      if (input.dryRun) {
+        // Drop the row before the parser reads the next one, or each large
+        // line stays reachable across that await and is promoted into old space.
+        acceptRow(parsed, input.keys, seen, counts, fail);
+        parsed = undefined;
+        parsed = await readRow(rows);
         continue;
       }
-      if (input.mode === "put") {
+      const pending = acceptRow(parsed, input.keys, seen, counts, fail);
+      parsed = undefined;
+      if (pending !== undefined && input.mode === "put") {
         batch.set(pending.key, pending);
         if (batch.size >= IMPORT_BATCH_SIZE) {
           await flushBatch(input.scope, input.keys, [...batch.values()], counts, fail, sleep);
           batch.clear();
           yield snapshot(counts);
         }
-      } else {
+      } else if (pending !== undefined) {
         window.push(pending);
         if (window.length >= IMPORT_BATCH_SIZE) {
           await flushSkip(
@@ -91,6 +99,7 @@ export async function* writeImport(input: {
           yield snapshot(counts);
         }
       }
+      parsed = await readRow(rows);
     }
     if (!input.dryRun && input.mode === "put" && batch.size > 0) {
       await flushBatch(input.scope, input.keys, [...batch.values()], counts, fail, sleep);
@@ -104,6 +113,29 @@ export async function* writeImport(input: {
     }
   }
   yield snapshot(counts);
+}
+
+function rowIterator(
+  rows: AsyncIterable<ParsedImportRow> | Iterable<ParsedImportRow>,
+): AsyncIterator<ParsedImportRow> {
+  const asyncRows = rows as AsyncIterable<ParsedImportRow>;
+  if (typeof asyncRows[Symbol.asyncIterator] === "function") {
+    return asyncRows[Symbol.asyncIterator]();
+  }
+  const sync = (rows as Iterable<ParsedImportRow>)[Symbol.iterator]();
+  return {
+    next(): Promise<IteratorResult<ParsedImportRow>> {
+      return Promise.resolve(sync.next());
+    },
+  };
+}
+
+async function readRow(rows: AsyncIterator<ParsedImportRow>): Promise<ParsedImportRow | undefined> {
+  const next = await rows.next();
+  if (next.done === true) {
+    return undefined;
+  }
+  return next.value;
 }
 
 function acceptRow(

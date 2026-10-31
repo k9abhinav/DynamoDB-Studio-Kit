@@ -47,19 +47,54 @@ export function stripBom(bytes: Uint8Array): Uint8Array {
 }
 
 export class LineDecoder {
-  private pending = "";
+  private parts: string[] = [];
+  private pendingCr = false;
 
   push(text: string): string[] {
-    this.pending += text;
-    const lines = this.pending.split(/\r\n|\n|\r/);
-    this.pending = lines.pop() ?? "";
+    if (text.length === 0) {
+      return [];
+    }
+    const lines: string[] = [];
+    let slice = text;
+    if (this.pendingCr) {
+      this.pendingCr = false;
+      if (slice.startsWith("\n")) {
+        slice = slice.slice(1);
+      }
+    }
+    let cursor = 0;
+    for (let index = 0; index < slice.length; index += 1) {
+      const code = slice.charCodeAt(index);
+      if (code !== 10 && code !== 13) {
+        continue;
+      }
+      this.parts.push(slice.slice(cursor, index));
+      lines.push(this.parts.join(""));
+      this.parts = [];
+      if (code === 13) {
+        const next = index + 1;
+        if (next >= slice.length) {
+          this.pendingCr = true;
+        } else if (slice.charCodeAt(next) === 10) {
+          index = next;
+        }
+      }
+      cursor = index + 1;
+    }
+    if (cursor < slice.length) {
+      this.parts.push(slice.slice(cursor));
+    }
     return lines;
   }
 
   finish(): string[] {
-    const last = this.pending;
-    this.pending = "";
-    return last.length === 0 ? [] : [last];
+    this.pendingCr = false;
+    if (this.parts.length === 0) {
+      return [];
+    }
+    const last = this.parts.join("");
+    this.parts = [];
+    return [last];
   }
 }
 
