@@ -200,7 +200,7 @@ export function PartiqlPanel({ connectionId, table }: { connectionId: string; ta
         >
           Save query
         </Button>
-        <TransferMenu connectionId={connectionId} table={table} />
+        <TransferMenu connectionId={connectionId} table={table} readOnly={readOnly} />
         <p className="text-sm text-text-secondary">PartiQL exports the whole table.</p>
       </div>
       <Menu

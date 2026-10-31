@@ -4,19 +4,23 @@ import MenuItem from "@mui/material/MenuItem";
 import { useState } from "react";
 import { useLiveConnection } from "../workspace/use-live-connection.js";
 import { ExportDialog, type ExportView } from "./ExportDialog.js";
+import { ImportWizard } from "./ImportWizard.js";
 
 export function TransferMenu({
   connectionId,
   table,
+  readOnly = false,
   view,
 }: {
   connectionId: string;
   table: string;
+  readOnly?: boolean;
   view?: ExportView;
 }) {
   const connection = useLiveConnection(connectionId);
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const [exportOpen, setExportOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const endpoint = connection.data?.summary.endpoint;
 
   return (
@@ -43,6 +47,16 @@ export function TransferMenu({
         >
           Export
         </MenuItem>
+        <MenuItem
+          disabled={readOnly}
+          title={readOnly ? "This connection is read-only" : undefined}
+          onClick={() => {
+            setAnchor(null);
+            setImportOpen(true);
+          }}
+        >
+          Import
+        </MenuItem>
       </Menu>
       <ExportDialog
         open={exportOpen}
@@ -52,6 +66,14 @@ export function TransferMenu({
         {...(view === undefined ? {} : { view })}
         onClose={() => {
           setExportOpen(false);
+        }}
+      />
+      <ImportWizard
+        open={importOpen}
+        connectionId={connectionId}
+        table={table}
+        onClose={() => {
+          setImportOpen(false);
         }}
       />
     </>

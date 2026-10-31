@@ -106,10 +106,12 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T7.8 Create table wizard
 - [x] T7.9 Indexes, TTL, billing
 - [x] T7.10 Export dialog
-- [ ] T7.11 Import wizard
+- [x] T7.11 Import wizard
 - [ ] T7.12 Delete and clear dialogs
 - [ ] T7.13 Playwright
 - [ ] T7.14 Progress summary
+
+T7.11 ✔ `ImportWizard.test.tsx`. A CSV preview keeps columns as strings and says `007` stays a string unless mapped to N. The wizard says skip-existing is slower. Closing the tab during an import is cancelled with "Import in progress". A failed row offers the error report download. The toast stays mounted in the workspace, so it remains after the wizard closes.
 
 T7.10 ✔ `ExportDialog.test.tsx`. This view sends a scan with no cursor. A full export outside loopback stays disabled until the table name is typed and says the read can be expensive. Cancel aborts the request. The progress toast stays in the workspace and links back to the table. CSV export warns that nested values become JSON text. PartiQL offers entire-table export only.
 

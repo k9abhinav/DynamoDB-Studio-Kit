@@ -192,6 +192,7 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
         <TransferMenu
           connectionId={connectionId}
           table={table}
+          readOnly={connection.data?.summary.readOnly === true}
           {...(currentView === undefined ? {} : { view: currentView })}
         />
         <FormControlLabel
