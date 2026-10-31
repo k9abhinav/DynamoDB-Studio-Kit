@@ -107,7 +107,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T8.9 Dockerfile + compose example
 - [x] T8.10 CLI bin
 - [x] T8.11 Docs
-- [ ] T8.12 Visual regression + J1–J5
+- [x] T8.12 Visual regression + J1–J5
 - [ ] T8.13 Release workflow
 - [ ] T8.14 Spec reconciliation
 
@@ -132,6 +132,8 @@ T8.9 ✔ `docker build -t dynamo-studio:local .` on 2026-10-31 produced image `8
 T8.10 ✔ `cli.test.ts` reads `--port`, `--host`, `--home`, and `--open`, re-execs with `--max-old-space-size=128` on `process.execArgv`, and prints a port-in-use message that names the port and suggests `--port`. `npm install -g dist-pack/dynamo-studio.tgz` inside `node:22-bookworm-slim` exposed `dynamo-studio`, `apps/server/dist/index.js`, `apps/web/dist/index.html`, and `node_modules/fastify`, then health on port 18081 returned 200. The root package stays private. No registry publish. The CI `cli` job installs that tarball and curls health.
 
 T8.11 ✔ README quick start, features, security, and FAQ. Screenshots stand in for the GIF (Q-048). `docs/USER-GUIDE.md`, `docs/ARCHITECTURE.md` (an attribute added between the read and the write is not detected), `docs/CONTRIBUTING.md`, and `CHANGELOG.md`. `docs/SECURITY.md` was already in place. On 2026-10-31 the running app at http://127.0.0.1:5173 accepted `http://localhost:8000` with Local auth and showed the table list in under a minute. Docker, `pnpm install`, and `pnpm dev` were already running, so this was not a cold install.
+
+T8.12 ✔ `e2e/journeys.spec.ts` passed 11 tests on 2026-10-31 with `--workers=1`: J1–J5 in light and dark, plus the connect failure that names the endpoint. Screenshots are in `docs/screenshots/phase-8/`. `toHaveScreenshot` uses `maxDiffPixelRatio: 0.01` and runs on Linux only, so this Darwin run did not write ubuntu baselines.
 
 ## Phase 7 tasks
 - [x] T7.1 Shared schemas

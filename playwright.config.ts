@@ -4,6 +4,9 @@ export default defineConfig({
   testDir: "e2e",
   fullyParallel: false,
   retries: 0,
+  expect: {
+    toHaveScreenshot: { maxDiffPixelRatio: 0.01 },
+  },
   use: {
     baseURL: "http://127.0.0.1:5173",
     ...devices["Desktop Chrome"],
