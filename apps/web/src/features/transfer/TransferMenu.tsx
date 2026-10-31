@@ -85,6 +85,7 @@ export function TransferMenu({
         await queryClient.invalidateQueries({
           queryKey: tableKeys.detail(connectionId, table),
         });
+        await queryClient.invalidateQueries({ queryKey: ["scan", connectionId, table] });
       }
     } catch (caught) {
       if (controller.signal.aborted) {

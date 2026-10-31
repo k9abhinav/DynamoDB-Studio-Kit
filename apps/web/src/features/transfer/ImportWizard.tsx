@@ -12,8 +12,10 @@ import {
   ImportPreviewResponse,
   type ImportPreviewResponse as Preview,
 } from "@dynamo-studio/shared";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { apiStream } from "../../lib/api.js";
+import { tableKeys } from "../../lib/query-keys.js";
 import { downloadBlob, readBlob, readProgress } from "./stream.js";
 import { useTransferStore } from "./store.js";
 
@@ -31,6 +33,7 @@ export function ImportWizard({
   table: string;
   onClose: () => void;
 }) {
+  const queryClient = useQueryClient();
   const start = useTransferStore((state) => state.start);
   const update = useTransferStore((state) => state.update);
   const complete = useTransferStore((state) => state.complete);
@@ -38,6 +41,9 @@ export function ImportWizard({
   const running = useTransferStore(
     (state) =>
       state.job?.kind === "import" && state.job.status === "running" && state.job.table === table,
+  );
+  const message = useTransferStore((state) =>
+    state.job?.kind === "import" && state.job.table === table ? state.job.message : undefined,
   );
   const [file, setFile] = useState<File | undefined>();
   const [preview, setPreview] = useState<Preview | undefined>();
@@ -100,6 +106,13 @@ export function ImportWizard({
       });
       if (!controller.signal.aborted) {
         complete(dryRun ? "Dry run finished." : "Import finished.");
+        if (!dryRun) {
+          await queryClient.invalidateQueries({ queryKey: ["scan", connectionId, table] });
+          await queryClient.invalidateQueries({ queryKey: ["query", connectionId, table] });
+          await queryClient.invalidateQueries({
+            queryKey: tableKeys.detail(connectionId, table),
+          });
+        }
       }
     } catch (caught) {
       if (controller.signal.aborted) {
@@ -201,6 +214,7 @@ export function ImportWizard({
           }
           label="Dry run"
         />
+        {message === undefined ? null : <p className="text-sm">{message}</p>}
         {error === undefined ? null : <p className="text-sm text-error">{error}</p>}
         {reportPath === undefined ? null : (
           <Button
