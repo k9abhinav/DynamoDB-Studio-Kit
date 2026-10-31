@@ -40,7 +40,7 @@ describe("session security", () => {
     expect(header.toLowerCase()).toContain("samesite=strict");
     expect(response.headers["x-request-id"]).toEqual(expect.any(String));
     expect(response.headers["cache-control"]).toBe("no-store");
-    expect(response.json()).toMatchObject({ version: "0.0.0" });
+    expect(response.json()).toMatchObject({ version: "1.0.0-rc.1" });
     await app.close();
   });
 

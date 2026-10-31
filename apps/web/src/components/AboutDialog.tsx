@@ -3,7 +3,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useOverlayStore } from "../stores/overlay.js";
 
-export const APP_VERSION = "0.0.0";
+export const APP_VERSION = "1.0.0-rc.1";
 
 declare const __DS_COMMIT__: string | undefined;
 

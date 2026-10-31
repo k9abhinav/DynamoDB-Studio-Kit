@@ -18,11 +18,25 @@ if (version === undefined || !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.]+)?$/.test(version)
   ]) {
     const path = join(process.cwd(), file);
     const text = readFileSync(path, "utf8");
-    const next = text.replace(/"version": "[^"]+"/, `"version": "${version}"`);
-    if (next === text) {
+    if (!/"version": "[^"]+"/.test(text)) {
       throw new Error(`No version field in ${file}`);
     }
-    writeFileSync(path, next);
+    const next = text.replace(/"version": "[^"]+"/, `"version": "${version}"`);
+    if (next !== text) {
+      writeFileSync(path, next);
+    }
+  }
+  const about = join(process.cwd(), "apps/web/src/components/AboutDialog.tsx");
+  const aboutText = readFileSync(about, "utf8");
+  if (!/export const APP_VERSION = "[^"]+"/.test(aboutText)) {
+    throw new Error("About dialog is missing APP_VERSION");
+  }
+  const aboutNext = aboutText.replace(
+    /export const APP_VERSION = "[^"]+"/,
+    `export const APP_VERSION = "${version}"`,
+  );
+  if (aboutNext !== aboutText) {
+    writeFileSync(about, aboutNext);
   }
   process.stdout.write(`${version}\n`);
 }
