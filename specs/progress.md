@@ -4,7 +4,7 @@
 > Format for evidence: `AC-3.2 ✔ apps/web/src/features/tables/SidebarTableList.test.tsx > "filters as you type"`
 
 **Current phase:** 7
-**Last updated:** 2026-10-27
+**Last updated:** 2026-10-31
 
 ## Phase status
 | Phase | Name | Status | Verify green | Date |
@@ -16,7 +16,7 @@
 | 4 | Items browser | ✅ done | ✅ | 2026-10-24 |
 | 5 | Item editor & CRUD | ✅ done | ✅ | 2026-10-25 |
 | 6 | Query builder & PartiQL | ✅ done | ✅ | 2026-10-26 |
-| 7 | Table management & import/export | ☐ not started | ☐ | |
+| 7 | Table management & import/export | ✅ done | ✅ | 2026-10-31 |
 | 8 | Polish, hardening, packaging | ☐ not started | ☐ | |
 
 ## Phase 2 tasks
@@ -109,7 +109,20 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T7.11 Import wizard
 - [x] T7.12 Delete and clear dialogs
 - [x] T7.13 Playwright
-- [ ] T7.14 Progress summary
+- [x] T7.14 Progress summary
+
+T7.14 ✔ This file. `pnpm verify` on 2026-10-31 is green: lint, typecheck, 348 unit tests, 18 integration tests, and the production build. Initial JavaScript gzip is 181438 bytes. `pnpm exec playwright test --workers=1` passed 37 tests. axe reports 0 serious or critical on the overview, create wizard, and import dialog in light and dark. Frozen install was not run. A live screen reader was not used. `actionlint` is not on PATH.
+
+- AC-7.1 ✔ `e2e/manage.spec.ts` > "creates a table, imports a CSV, queries, exports, and deletes it" and `manage-tables.int.test.ts` > "creates a protected table with a GSI and TTL, then deletes it after the name is typed". Overview shows "Enabled on expiresAt" and `kind-index`.
+- AC-7.2 ✔ `packages/shared/src/api/create-table.test.ts` > "rejects names outside the DynamoDB table pattern". `manage-tables.int.test.ts` returns "That table name is already in use." The browser test waits for "Name is available." before Next enables.
+- AC-7.3 ✔ `export.int.test.ts` > "exports all 10,000 orders as NDJSON plus a summary line" and `import.int.test.ts` > "re-imports the orders export with the same item hashes". The browser journey imports two CSV rows and checks that the NDJSON download contains `hello`.
+- AC-7.4 ✔ `export-format.test.ts` > "escapes CSV quotes, commas, newlines, and unicode, and flattens nested values" and `import-parse.test.ts` > "parses quoted CSV, a short row, and keeps 007 as a string".
+- AC-7.5 ✔ `import-write.test.ts` > "stops a 50,000 row stream after cancel and reports the rows already handled" and `import-memory.int.test.ts` > "does not retain a generated file larger than 100 MB after the import". The generated file was 104,870,400 bytes. Live heapUsed went from 30,239,080 to 28,209,560. External memory was 5,097,376. Peak RSS was 460,275,712 and RSS after garbage collection was 447,430,656, because the process did not return those pages. `ExportDialog.test.tsx` > "cancels an export that is still reading".
+- AC-7.6 ✔ `import.int.test.ts` > "imports rows, counts duplicates, and hides the error report from another session" and `ImportWizard.test.tsx` > "offers the error report after a failed row".
+- AC-7.7 ✔ `import-write.test.ts` > "skips existing keys with a condition and overwrites keys this import already wrote". The same import integration test sends `mode: "skip-existing"`. The wizard says skip-existing is slower.
+- AC-7.8 ✔ `clear.int.test.ts` > "requires the typed name, refuses a read-only connection, and deletes the items", `TransferMenu.test.tsx` > "deletes only after the table name is typed and shows protection errors", and `e2e/manage.spec.ts` > "read-only connection disables create, import, clear, and delete".
+- AC-7.9 ✔ `ImportWizard.test.tsx` > "previews a CSV, keeps string columns, and warns before the tab closes". The toast is mounted in the workspace. `beforeunload` is cancelled with "Import in progress".
+- AC-7.10 ✔ `e2e/manage.spec.ts` keyboard path and the light and dark axe tests. Screenshots: `docs/screenshots/phase-7/`.
 
 T7.13 ✔ `e2e/manage.spec.ts`. The keyboard opens the wizard, types the name and partition key, and creates a table with TTL `expiresAt` and index `kind-index`. A two-row CSV imports, a query for that partition key shows the value, the NDJSON download contains it, and deleting the table asks for the typed name. A read-only connection disables create, import, clear, and delete, and leaves export enabled. axe reports 0 serious or critical on the overview, create wizard, and import dialog in light and dark. Screenshots are in `docs/screenshots/phase-7/`.
 
@@ -391,6 +404,16 @@ Follow-up ✔ Integration and browser tests that write use a unique item or tabl
 
 Follow-up ✔ The classifier fails closed in `packages/shared/src/partiql.test.ts`: `""` is `empty`, `SELEC * FROM t` is `typo`, and `SELECT * FROM t; SELECT * FROM t` is `two statements`, all mutations. PartiQL `NextToken` cursors hash the statement, parameters, and consistent read. A mismatch is `400 VALIDATION` in `apps/server/src/dynamo/partiql.test.ts` (statement, parameters, or consistent read) and in `partiql.int.test.ts` (a page cursor reused with a different statement). The Phase 5 follow-up remains `items.int.test.ts` > "round-trips every edge-cases item through plain JSON and the update route" and `e2e/items-edit.spec.ts` > "disables writes on a read-only connection".
 
+### Phase 7 — Table management and import/export (2026-10-31)
+
+Create table is a three-step wizard. The keyboard path sets the name, partition key, TTL `expiresAt`, and a `KEYS_ONLY` index, then Overview shows that configuration. Billing, TTL, deletion protection, and indexes can be changed from Overview and Indexes. A `CREATING` index blocks the next index change. Delete and clear ask for the table name in every environment. Deletion protection explains how to turn it off. Read-only disables create, update, delete, import, and clear on the server and in the menu. Export stays available.
+
+Export streams NDJSON, JSON, or CSV. "This view" re-runs the current scan or query from the start. PartiQL exports the whole table. A full export outside loopback asks for the typed name. Import previews the first rows, keeps CSV columns as strings unless mapped, and can overwrite or skip existing items. Skip-existing is a conditional put at concurrency 4, so the wizard says it is slower. Overwrite uses batches of 25. Duplicate keys are counted and the last copy wins. A failed row downloads an error report that another session cannot read. The progress toast stays in the workspace, and closing the tab during an import warns. Downloads use a Blob and an anchor. `showSaveFilePicker` is not called.
+
+The 10,000-order NDJSON export, the hash-matched re-import, the 50,000-row cancel, and the 100 MB memory check are server tests. The browser journey is a two-row CSV, then an NDJSON download that contains the imported value. DynamoDB Local returns `InternalFailure` when billing mode changes on a table that already has a GSI. `pnpm verify` is green (348 unit tests, 18 integration tests). `pnpm exec playwright test --workers=1` passed 37 tests. Initial JS gzip is 181438 bytes, up from 181399. Monaco stays out of the entry. Q-040 through Q-044 stay on the defaults used here. Do not start Phase 8 until asked.
+
+Not verified: `rm -rf node_modules && pnpm install --frozen-lockfile`. A live screen reader was not used. `actionlint` is not on PATH. The browser did not round-trip 10,000 CSV rows or a file larger than 100 MB. Zoom to 200% was not checked.
+
 ## Metrics log
 
 - 2026-10-23 — Phase 0 web JavaScript gzip: 100585 bytes. Budget 256000.
@@ -401,3 +424,4 @@ Follow-up ✔ The classifier fails closed in `packages/shared/src/partiql.test.t
 - 2026-10-24 — Phase 4. Initial JS gzip: 180241 bytes (`apps/web/dist/assets/index-BfifoS_0.js`), up from 180217. Early budget 235520. Phase 8 budget 256000. The grid stays in the Workspace chunk: 48688 bytes gzip (`Workspace-Dq5PvBe8.js`; Phase 3 was 27131). ConnectScreen 23313 bytes gzip (`ConnectScreen-BIoJ6yZu.js`). EnvChip 49078 bytes gzip (`EnvChip-DcB0uiD0.js`). CSS gzip 21907 bytes (`index-CZUeD1da.css`). `/__design` is absent. Scroll: 60.2 fps, Apple M5, Chromium, CPU throttle 4x, `requestAnimationFrame` scrolling the items grid by 96px for 2 seconds on the Vite dev server after 10,000 orders were loaded. `pnpm verify`: 215 unit tests, 6 integration tests. `pnpm exec playwright test --workers=1`: 22 passed.
 - 2026-10-25 — Phase 5. Initial JS gzip: 181131 bytes (scripts linked from `index.html`, including `apps/web/dist/assets/index-DgzeP6bc.js`), up from 180241. Early budget 235520. Phase 8 budget 256000. Monaco is not in that entry. Lazy chunks, not in the initial number: JsonEditor 331.68 KB gzip (`JsonEditor-B4X21hQa.js`), editor.api 706.08 KB gzip (`editor.api-BefY29eV.js`), Workspace 54.98 KB gzip (`Workspace-BkdKzpeh.js`). The Monaco package also emits json, editor, html, css, and ts worker chunks. CSS gzip 22.12 KB (`index-hJASPadC.css`). `/__design` is absent. `pnpm verify`: 244 unit tests, 7 integration tests. `pnpm exec playwright test --workers=1`: 29 passed. Frozen install was not run.
 - 2026-10-26 — Phase 6. Initial JS gzip: 181399 bytes (`index-OU-LJxqS.js` 177999 plus `jsx-runtime-Wy9s6hX0.js` 3400), up from 181129. Early budget 235520. Phase 8 budget 256000. The entry does not contain `monaco-editor` or `MonacoEnvironment`. Lazy chunks, not in the initial number: PartiqlPanel 7268 bytes (`PartiqlPanel-B48WaS4x.js`), monaco-setup 326601 bytes (`monaco-setup-Cii3twt0.js`), editor.api 698489 bytes (`editor.api-GF7w0OR3.js`), json.worker 127909 bytes (`json.worker-BfeARH1Q.js`), editor.worker 92399 bytes (`editor.worker-CX7Cj20z.js`), Workspace 56856 bytes (`Workspace-DpL4oEkp.js`), ConnectScreen 22818 bytes (`ConnectScreen-BckrGsoX.js`), EnvChip 54845 bytes (`EnvChip-uHTTWnDO.js`). Monaco CSS gzip 129310 bytes (`monaco-setup-CLfMljIC.css`). App CSS gzip 22048 bytes (`index-B67VEH8p.css`). `/__design` is absent. `pnpm verify`: 295 unit tests, 10 integration tests. `pnpm exec playwright test --workers=1`: 33 passed. Frozen install was not run. Machine: local Darwin.
+- 2026-10-31 — Phase 7. Initial JS gzip: 181438 bytes (`index-B09P_TGZ.js` 178038 plus `jsx-runtime-Wy9s6hX0.js` 3400), up from 181399. Early budget 235520. Phase 8 budget 256000. The entry does not contain `monaco-editor` or `MonacoEnvironment`. Lazy chunks, not in the initial number: PartiqlPanel 6939 bytes (`PartiqlPanel-DfIJFMSl.js`), monaco-setup 326605 bytes (`monaco-setup-DZG8pD9S.js`), editor.api 698489 bytes (`editor.api-CLOKG5iq.js`), json.worker 127909 bytes (`json.worker-BfeARH1Q.js`), editor.worker 92399 bytes (`editor.worker-CX7Cj20z.js`), Workspace 63503 bytes (`Workspace-CkITU1jB.js`; Phase 6 was 56856), ConnectScreen 21614 bytes (`ConnectScreen-ByJh8jRv.js`), EnvChip 57821 bytes (`EnvChip-DyXFX56Z.js`). Monaco CSS gzip 129310 bytes (`monaco-setup-CLfMljIC.css`). App CSS gzip 22157 bytes (`index-DINRTN3f.css`). `/__design` is absent. `pnpm verify`: 348 unit tests, 18 integration tests. `pnpm exec playwright test --workers=1`: 37 passed. Import memory: file 104870400 bytes, heapUsed 30239080 to 28209560, external 5097376, peak RSS 460275712, RSS after garbage collection 447430656. Frozen install was not run. Machine: local Darwin, Node 26.4.0.

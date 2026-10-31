@@ -17,6 +17,9 @@ Backups/PITR, global tables, S3 import/export (AWS native), auto scaling policie
 - Error-report ids are unguessable and bound to the session and connection. Files are mode 0600 and deleted on shutdown. Another session gets 404. A multipart upload without `X-DS-CSRF` is rejected.
 - Duplicate keys in the import file are counted and shown in the summary.
 
+## Recorded at close (2026-10-31)
+Exports and error reports download through a Blob and an anchor. `showSaveFilePicker` is not called. Chromium exposes that picker, and using it would replace the download the browser test checks.
+
 ## 3. Functional requirements
 - **FR-7.1** **Create table wizard:** Step 1 Keys (table name with live regex validation and uniqueness check, partition key name+type, optional sort key name+type). Step 2 Options (billing: On-demand default / Provisioned with RCU/WCU, GSIs add/remove with keys and projection (All/Keys only/Include list), TTL attribute optional, deletion protection toggle). Step 3 Review (human summary + "Show request"). **Create** then navigates to the new table's Overview showing `CREATING` progress until `ACTIVE`.
 - **FR-7.2** GSI management: add (name, keys, projection, capacity if provisioned), delete (typed confirm), status chip (`CREATING` with backfill hint). Only one GSI create/delete in flight at a time per DynamoDB rules; UI explains when disabled.
@@ -44,7 +47,7 @@ Backups/PITR, global tables, S3 import/export (AWS native), auto scaling policie
 - [x] T7.11 Web ImportWizard (file, preview, mapping, dry-run, run, report) + progress toast persistence + tests
 - [x] T7.12 Delete table & Clear table dialogs + tests
 - [x] T7.13 Playwright: create table -> import CSV -> query -> export -> delete table; read-only checks; light/dark screenshots; axe; keyboard-only
-- [ ] T7.14 Progress + phase summary
+- [x] T7.14 Progress + phase summary
 
 ## 5. Acceptance criteria
 - **AC-7.1** Wizard creates a table with a GSI and TTL; Overview shows the exact configuration after `ACTIVE` (E2E + integration).
