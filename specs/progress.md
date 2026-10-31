@@ -106,7 +106,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T8.8 Production build + static serving + graceful shutdown
 - [x] T8.9 Dockerfile + compose example
 - [x] T8.10 CLI bin
-- [ ] T8.11 Docs
+- [x] T8.11 Docs
 - [ ] T8.12 Visual regression + J1–J5
 - [ ] T8.13 Release workflow
 - [ ] T8.14 Spec reconciliation
@@ -130,6 +130,8 @@ T8.8 ✔ `node-version.test.ts` refuses majors below 22, stays quiet on 22, and 
 T8.9 ✔ `docker build -t dynamo-studio:local .` on 2026-10-31 produced image `835797b5d06d`, 90518027 bytes (86 MiB). `scripts/docker-smoke.ts` ran that image with `--memory=512m --memory-swap=512m` on a host port other than 8080. `id -u` was 1001. `GET /api/v1/health` returned 200. `Host: evil.example` and `Origin: https://evil.example` returned 403. Logs contain "not loopback". A 200 MB NDJSON dry-run import, generated on the host and posted to the container against `http://host.docker.internal:8000`, returned HTTP 200 with `"type":"done"`. `OOMKilled` was false. The CI `image` job builds the same image and checks the user and health URL. No registry push.
 
 T8.10 ✔ `cli.test.ts` reads `--port`, `--host`, `--home`, and `--open`, re-execs with `--max-old-space-size=128` on `process.execArgv`, and prints a port-in-use message that names the port and suggests `--port`. `npm install -g dist-pack/dynamo-studio.tgz` inside `node:22-bookworm-slim` exposed `dynamo-studio`, `apps/server/dist/index.js`, `apps/web/dist/index.html`, and `node_modules/fastify`, then health on port 18081 returned 200. The root package stays private. No registry publish. The CI `cli` job installs that tarball and curls health.
+
+T8.11 ✔ README quick start, features, security, and FAQ. Screenshots stand in for the GIF (Q-048). `docs/USER-GUIDE.md`, `docs/ARCHITECTURE.md` (the read-then-write check does not see an attribute added between the read and the write), `docs/CONTRIBUTING.md`, and `CHANGELOG.md`. `docs/SECURITY.md` was already in place. On 2026-10-31 the running app at http://127.0.0.1:5173 accepted `http://localhost:8000` with Local auth and showed "Pick a table to get started" in well under five minutes. Docker and `pnpm dev` were already running, so this was not a cold install.
 
 ## Phase 7 tasks
 - [x] T7.1 Shared schemas

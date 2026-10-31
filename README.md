@@ -1,123 +1,80 @@
-# DynamoDB Studio: Spec-Driven Build Kit
+# DynamoDB Studio
 
-A complete kit for building **DynamoDB Studio**, a beautiful, minimal, Google-style DynamoDB client
-(React + Material UI + Tailwind), using **Spec-Driven Development (SDD)** with Claude Code or Codex.
+A calm, minimal client for DynamoDB. Paste an endpoint, click **Connect**, and browse tables, edit items, run PartiQL, and move data in and out.
 
-You paste in a URL, click **Connect**, and get a smooth, friendly workspace to browse tables, query,
-edit items, run PartiQL, and import/export data.
+![Connect screen](docs/screenshots/phase-2/connect-light.png)
 
----
+![Items](docs/screenshots/phase-4/items-light.png)
 
-## 1. What is in this kit
+![PartiQL](docs/screenshots/phase-6/partiql-light.png)
 
-```
-dynamo-studio-kit/
-├── README.md                      <- you are here
-├── AGENTS.md                      <- canonical agent instructions (Codex reads this natively)
-├── CLAUDE.md                      <- Claude Code memory (imports AGENTS.md + Claude-specific notes)
-├── specs/
-│   ├── 00-constitution.md         <- non-negotiable principles & guardrails
-│   ├── 01-product-spec.md         <- WHAT & WHY: vision, personas, journeys, feature catalog
-│   ├── 02-architecture.md         <- HOW: stack, monorepo layout, data flow, security model
-│   ├── 03-design-system.md        <- Google-style UI tokens, layout, components, ASCII mockups
-│   ├── 04-api-contract.md         <- backend REST contract + error model
-│   ├── 05-quality-and-testing.md  <- test strategy, budgets, CI, definition of done
-│   ├── progress.md                <- live phase tracker (the agent updates this)
-│   ├── backlog.md                 <- ideas that are OUT of scope (parking lot)
-│   ├── open-questions.md          <- ambiguities the agent must park instead of guessing
-│   └── phases/
-│       ├── phase-0-foundation.md
-│       ├── phase-1-design-system-app-shell.md
-│       ├── phase-2-backend-and-connection.md
-│       ├── phase-3-table-explorer.md
-│       ├── phase-4-items-browser.md
-│       ├── phase-5-item-editor-crud.md
-│       ├── phase-6-query-builder-partiql.md
-│       ├── phase-7-table-management-import-export.md
-│       └── phase-8-polish-hardening-packaging.md
-├── .claude/
-│   ├── skills/
-│   │   ├── spec-driven-workflow/SKILL.md
-│   │   ├── dynamodb-expert/SKILL.md
-│   │   ├── google-minimal-ui/SKILL.md
-│   │   └── quality-gates/SKILL.md
-│   └── commands/
-│       ├── phase.md               <- /phase 3  -> runs the full SDD loop for phase 3
-│       └── verify.md              <- /verify   -> runs quality gates + acceptance audit
-└── prompts/
-    ├── 00-master-plan-mode-prompt.md   <- THE prompt to paste first (plan mode)
-    ├── 01-phase-execution-prompt.md    <- per-phase prompt template
-    ├── 02-codex-prompt.md              <- same flow tuned for Codex
-    └── 03-review-and-fix-prompts.md    <- audit, bugfix, polish, security prompts
+## Quick start
+
+You need Node.js 22 or newer and Docker.
+
+1. Start DynamoDB Local:
+
+```bash
+docker run --rm -p 8000:8000 amazon/dynamodb-local
 ```
 
-## 2. Quick start (Claude Code)
+2. Install, seed a few sample tables, and start the app:
 
-1. Create an empty project folder and copy the **contents** of this kit into it.
-2. `git init` and make a first commit (`chore: add spec kit`).
-3. Start Claude Code in that folder: `claude`.
-4. Enter **plan mode** (press `Shift+Tab` until "plan mode" shows, or use `/plan`).
-5. Paste the whole of `prompts/00-master-plan-mode-prompt.md`.
-6. Claude reads the specs, may ask a few clarifying questions, then returns a plan. Review it, push back, approve.
-7. Execute phase by phase. For each phase:
-   - `/clear` (fresh context keeps quality high)
-   - `/phase 0` (or paste `prompts/01-phase-execution-prompt.md` with the phase filled in)
-   - Claude re-enters plan mode for that phase, you approve, it implements, tests and ticks `specs/progress.md`
-   - `/verify` then commit then next phase
-
-## 3. Quick start (Codex)
-
-1. Copy the kit into the project folder. Codex reads `AGENTS.md` automatically.
-2. Paste `prompts/02-codex-prompt.md` for the planning run, then use the phase prompt from
-   `prompts/01-phase-execution-prompt.md` for every phase.
-3. The skills are plain Markdown. `AGENTS.md` tells Codex to read the relevant `SKILL.md` before each kind of task.
-
-## 4. The Spec-Driven loop (used in every phase)
-
-```
-CONSTITUTION -> SPECIFY -> CLARIFY -> PLAN -> TASKS -> IMPLEMENT -> VERIFY -> RECORD
- (rules)        (phase     (park      (design  (small   (TDD, small  (gates +   (progress.md,
-                 spec)      questions) the HOW) steps)   commits)     acceptance) commit)
-```
-
-The agent is never allowed to invent requirements. Anything not in the specs goes to `specs/open-questions.md`
-(blocking) or `specs/backlog.md` (non-blocking).
-
-## 5. Tips that make a big difference
-
-- **One phase per session.** Run `/clear` between phases. State lives in `specs/progress.md` and git, not chat history.
-- **Plan mode first, always.** Reading the plan is the cheapest place to fix a wrong turn.
-- **Keep DynamoDB Local running** (`docker compose up -d dynamodb-local`). It makes every phase testable offline.
-- **Commit per task**, not per phase. Small commits mean cheap rollbacks.
-- **Design review with screenshots.** From Phase 1 on, ask the agent to run Playwright and screenshot light and dark mode, then compare against `03-design-system.md`.
-- **If the output drifts** (too many shadows, too many colors, stray inline styles) run prompt `P-DESIGN` from `prompts/03-review-and-fix-prompts.md`.
-
-## 6. Stack at a glance
-
-| Layer    | Choice                                                                                                                                 |
-| -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Frontend | React 19, Vite, TypeScript (strict), MUI (latest stable), Tailwind CSS v4, TanStack Query/Table/Virtual, Zustand, React Router, Monaco |
-| Backend  | Node 22, Fastify, AWS SDK v3 (`client-dynamodb`, `lib-dynamodb`, `util-dynamodb`), Zod, Pino                                           |
-| Shared   | `packages/shared`: Zod schemas and TS types used by both sides                                                                         |
-| Tests    | Vitest, Testing Library, Playwright, axe, DynamoDB Local (Docker)                                                                      |
-| Tooling  | pnpm workspaces, ESLint (flat), Prettier, Husky + lint-staged, GitHub Actions                                                          |
-
-> Why a backend at all? Browsers can't safely hold AWS credentials, and real DynamoDB endpoints
-> aren't designed for arbitrary browser origins. A tiny local backend keeps secrets out of the browser,
-> avoids CORS pain, and enables streaming export/import. See `specs/02-architecture.md` ADR-001.
-
-## Development
-
-<!-- CI badge slot: add the GitHub Actions badge when this repository has a GitHub origin. -->
-
-Node 22 (`nvm use`) and pnpm 12.9.1. Docker is required for `pnpm dev:db`, `pnpm seed`, `pnpm test:int`, and `pnpm verify`.
-
-```
+```bash
 pnpm install
-pnpm dev:db
 pnpm seed
 pnpm dev
-pnpm verify
 ```
 
-`pnpm dev` starts the API on `http://127.0.0.1:8080` and the placeholder on `http://127.0.0.1:5173`. The page reads `GET /api/v1/health` through the Vite proxy. `pnpm dev:db` only starts DynamoDB Local (`-sharedDb -inMemory` on port 8000). The database is in memory, so run `pnpm seed` again after a container restart. If DynamoDB Local is not running, the integration tests exit with a message that points here.
+3. Open [http://127.0.0.1:5173](http://127.0.0.1:5173).
+4. Paste `http://localhost:8000` into **Endpoint**. Choose **Local** and click **Connect**.
+5. The workspace lists the sample tables (`users`, `orders`, `sessions`, `edge-cases`). Pick one to see its items.
+
+`pnpm dev` serves the UI on port 5173 and the API on port 8080. If 8080 is already taken, stop the other process or start the server with a free port.
+
+## Features
+
+- Connect to DynamoDB Local, a custom endpoint, or AWS (access key, profile, or the default credential chain).
+- Search tables, inspect keys, indexes, and TTL, and create a table with a guided form.
+- Scan and query a virtualized grid, then open an item and copy it as JSON.
+- Edit JSON with live validation, save, and undo.
+- Run PartiQL with syntax highlighting, history, and saved queries.
+- Import JSON, NDJSON, or CSV after a preview. Export JSON, NDJSON, or CSV.
+- Light and dark themes, a command palette, and keyboard shortcuts (`?` opens the list).
+
+## Security
+
+Credentials stay on the server after connect. The browser keeps an httpOnly session cookie and sends `x-ds-csrf` on writes. A foreign `Host` or `Origin` is rejected. Read-only mode is enforced on the server. Destructive actions ask for confirmation, and a production-tagged connection asks you to type the name.
+
+The API binds to loopback unless you set `HOST`. A non-loopback bind logs a warning. `ALLOWED_ORIGINS` is a comma-separated list of extra browser origins when you put the app behind a reverse proxy.
+
+Details and the dependency-audit exception are in [docs/SECURITY.md](docs/SECURITY.md).
+
+## Install from a tarball or image
+
+Build a local tarball (the root package stays private; this does not publish):
+
+```bash
+pnpm build
+pnpm exec tsx scripts/pack-cli.ts
+npm install -g ./dist-pack/dynamo-studio.tgz
+dynamo-studio --port 8080 --host 127.0.0.1
+```
+
+`dynamo-studio` accepts `--port`, `--host`, `--home`, and `--open`. If the port is in use, the message names that port and suggests `--port`.
+
+The container image is non-root, listens on 8080, and checks `/api/v1/health`. See [docker-compose.example.yml](docker-compose.example.yml). Do not publish that example while something else is already bound to host port 8080.
+
+## FAQ
+
+**The connect card says it could not reach my endpoint.** The message includes the URL you typed. For DynamoDB Local, check that `docker run -p 8000:8000 amazon/dynamodb-local` is still running and that the endpoint is `http://localhost:8000`.
+
+**Can I avoid writing data?** Turn on **Read-only** before you connect. The server rejects writes for that session.
+
+**Where are saved connections?** In the home directory under `.dynamo-studio`, or in the directory you pass with `--home` / `DYNAMO_STUDIO_HOME`. Secrets are not stored in the browser.
+
+**Does an edit detect every concurrent change?** The save checks the item you loaded, then writes with attribute equality when the item is small enough. An attribute added by someone else between the read and the write is not detected. The guide explains that limit.
+
+## Contributing
+
+See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md), [docs/USER-GUIDE.md](docs/USER-GUIDE.md), and [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). License: MIT.
