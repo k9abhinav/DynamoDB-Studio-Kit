@@ -109,3 +109,48 @@ export async function api<T>(
   }
   return init.schema.parse(json);
 }
+
+export async function apiStream(
+  path: string,
+  init: {
+    method?: string;
+    json?: unknown;
+    form?: FormData;
+    signal?: AbortSignal;
+  },
+): Promise<Response> {
+  const method = init.method ?? "POST";
+  if (isMutation(method) && csrfToken === undefined) {
+    await readSession(init.signal);
+  }
+  const headers = new Headers();
+  if (init.json !== undefined) {
+    headers.set("content-type", "application/json");
+  }
+  if (isMutation(method) && csrfToken !== undefined) {
+    headers.set(CSRF_HEADER, csrfToken);
+  }
+  const response = await fetch(path, {
+    method,
+    headers,
+    body: init.form ?? (init.json === undefined ? null : JSON.stringify(init.json)),
+    credentials: "same-origin",
+    ...(init.signal === undefined ? {} : { signal: init.signal }),
+  });
+  if (!response.ok) {
+    throw toApiError(response, await readJson(response));
+  }
+  return response;
+}
+
+async function readJson(response: Response): Promise<unknown> {
+  const text = await response.text();
+  if (text.length === 0) {
+    return null;
+  }
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return null;
+  }
+}

@@ -36,6 +36,8 @@ import { SelectionDelete } from "./SelectionDelete.js";
 import { buildQueryBody, emptyQueryDraft, queryTargets, type QueryDraft } from "./query-form.js";
 import { useQueryItems } from "./use-query-items.js";
 import { useScanItems, type ScanQueryInput } from "./use-scan-items.js";
+import { TransferMenu } from "../transfer/TransferMenu.js";
+import type { ExportView } from "../transfer/ExportDialog.js";
 
 const PAGE_SIZES = [25, 50, 100, 500] as const;
 
@@ -99,6 +101,7 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
   const loaded = items.length;
   const showCost =
     mode === "scan" && endpoint !== undefined && !isLoopback(endpoint) && !costDismissed;
+  const currentView = exportView(mode, run, joiner, filters, consistentRead);
   const queryPages = queryItems.data?.pages;
   const preview = queryPages === undefined ? undefined : queryPages[queryPages.length - 1]?.request;
 
@@ -186,6 +189,11 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <div className="flex flex-wrap items-center gap-2 border-b border-outline px-3 py-2">
         <Toolbar mode={mode} onMode={changeMode} />
+        <TransferMenu
+          connectionId={connectionId}
+          table={table}
+          {...(currentView === undefined ? {} : { view: currentView })}
+        />
         <FormControlLabel
           control={
             <Checkbox
@@ -555,6 +563,25 @@ function Toolbar({
       <ToggleButton value="query">Query</ToggleButton>
     </ToggleButtonGroup>
   );
+}
+
+function exportView(
+  mode: "scan" | "query",
+  run: Omit<QueryRequest, "cursor"> | null,
+  joiner: "and" | "or",
+  filters: Filter[],
+  consistentRead: boolean,
+): ExportView | undefined {
+  if (mode === "query") {
+    return run === null ? undefined : { query: run };
+  }
+  return {
+    scan: {
+      filterJoiner: joiner,
+      ...(filters.length === 0 ? {} : { filters }),
+      ...(consistentRead ? { consistentRead: true } : {}),
+    },
+  };
 }
 
 function isLoopback(endpoint: string): boolean {

@@ -24,6 +24,7 @@ import { useUiStore } from "../../stores/ui.js";
 import { DataGrid } from "../items/DataGrid.js";
 import { orderedAttributes } from "../items/columns.js";
 import { useTable } from "../tables/use-table.js";
+import { TransferMenu } from "../transfer/TransferMenu.js";
 import { useLiveConnection } from "../workspace/use-live-connection.js";
 import { PartiqlCodeEditor } from "./PartiqlCodeEditor.js";
 import {
@@ -199,6 +200,8 @@ export function PartiqlPanel({ connectionId, table }: { connectionId: string; ta
         >
           Save query
         </Button>
+        <TransferMenu connectionId={connectionId} table={table} />
+        <p className="text-sm text-text-secondary">PartiQL exports the whole table.</p>
       </div>
       <Menu
         anchorEl={menu}

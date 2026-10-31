@@ -19,6 +19,7 @@ import { SidebarTableList } from "./SidebarTableList.js";
 import { StudioAppBar, type AppBarConnection } from "./AppBar.js";
 import { TableTabs } from "./TableTabs.js";
 import { TabPanel } from "./TabPanel.js";
+import { ProgressToast } from "../transfer/ProgressToast.js";
 import { useLiveConnection } from "./use-live-connection.js";
 
 export function Workspace() {
@@ -145,6 +146,7 @@ export function Workspace() {
             )}
           </main>
           <ItemDrawer connectionId={connId} table={table ?? ""} />
+          <ProgressToast />
           <ConfirmDialog
             open={blocker.state === "blocked"}
             title="Discard changes?"

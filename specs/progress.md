@@ -105,11 +105,13 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T7.7 Clear table
 - [x] T7.8 Create table wizard
 - [x] T7.9 Indexes, TTL, billing
-- [ ] T7.10 Export dialog
+- [x] T7.10 Export dialog
 - [ ] T7.11 Import wizard
 - [ ] T7.12 Delete and clear dialogs
 - [ ] T7.13 Playwright
 - [ ] T7.14 Progress summary
+
+T7.10 ✔ `ExportDialog.test.tsx`. This view sends a scan with no cursor. A full export outside loopback stays disabled until the table name is typed and says the read can be expensive. Cancel aborts the request. The progress toast stays in the workspace and links back to the table. CSV export warns that nested values become JSON text. PartiQL offers entire-table export only.
 
 T7.9 ✔ `TableControls.test.tsx`. Turning on deletion protection sends `{ deletionProtection: true }`. A `CREATING` index disables Add index and says to wait until it is ACTIVE, including the backfill note. A read-only connection disables the protection switch and Add index. Overview and Indexes both render these controls. Existing table polling already refreshes the description every 3 seconds.
 
