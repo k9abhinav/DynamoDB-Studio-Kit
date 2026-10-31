@@ -10,15 +10,21 @@ A calm, minimal client for DynamoDB. Paste an endpoint, click **Connect**, and b
 
 ## Quick start
 
-You need Node.js 22 or newer and Docker.
+You need Node.js 22 or newer and Docker. `.nvmrc` pins 22, which is the supported major. A newer major still starts. The server logs `Node.js 22 is the supported major. This process is <version>.` and keeps running. Engines stay `>=22`.
 
-1. Start DynamoDB Local:
+This repository has no git remote. There is no clone URL here because none was verified. Start in a checkout of this source.
+
+The steps below expect host ports 8000, 5173, and 8080 to be free. If one is taken, use the port section. Do not stop a container or process you did not start.
+
+1. Start DynamoDB Local in the background so the next commands can run in this terminal:
 
 ```bash
-docker run --rm -p 8000:8000 amazon/dynamodb-local
+docker run -d --rm --name dynamodb-local -p 8000:8000 amazon/dynamodb-local
 ```
 
-2. Install, seed a few sample tables, and start the app:
+`docker-compose.yml` is the same image with `-sharedDb -inMemory`. `pnpm dev:db` runs `docker compose up -d dynamodb-local` and also publishes host port 8000. A different compose project name does not free that port.
+
+2. Install, seed the sample tables, and start the app:
 
 ```bash
 pnpm install
@@ -26,11 +32,34 @@ pnpm seed
 pnpm dev
 ```
 
-3. Open [http://127.0.0.1:5173](http://127.0.0.1:5173).
-4. Paste `http://localhost:8000` into **Endpoint**. Choose **Local** and click **Connect**.
-5. The workspace lists the sample tables (`users`, `orders`, `sessions`, `edge-cases`). Pick one to see its items.
+`pnpm seed` writes to `DYNAMO_ENDPOINT`, which defaults to `http://127.0.0.1:8000`.
 
-`pnpm dev` serves the UI on port 5173 and the API on port 8080. If 8080 is already taken, stop the other process or start the server with a free port.
+3. Open [http://127.0.0.1:5173](http://127.0.0.1:5173).
+4. Paste `http://localhost:8000` into **Endpoint**. Choose **Local** (a fresh screen starts on **Default credential chain**) and click **Connect**.
+5. The sidebar lists `edge-cases`, `orders`, `sessions`, and `users`. Open **orders**. Items shows `userId`, `createdAt`, `orderId`, and `status`.
+
+### When a port is taken
+
+`docker run -p 8000:8000` fails with `Bind for 0.0.0.0:8000 failed: port is already allocated` when something is already listening. Leave it running and publish a free host port:
+
+```bash
+docker run -d --rm --name dynamodb-local-alt -p 127.0.0.1:8001:8000 amazon/dynamodb-local
+DYNAMO_ENDPOINT=http://127.0.0.1:8001 pnpm seed
+```
+
+Connect to `http://localhost:8001`.
+
+`pnpm dev` serves the UI on port 5173 and the API on port 8080. If 8080 is taken, the API logs `listen EADDRINUSE: address already in use 127.0.0.1:8080` and waits for a file change. Vite may print `Port 5173 is in use, trying another one...` and still proxy `/api` to 8080. That page is not this checkout. Stop the `pnpm dev` you just started, then bind both sides to free ports. `WEB_PORT` keeps Vite on that port. `API_PROXY` is the API it forwards `/api` to. `ALLOWED_ORIGINS` has to include the UI origin. The built-in list is only ports 5173 and 8080:
+
+```bash
+PORT=8081 \
+WEB_PORT=5174 \
+API_PROXY=http://127.0.0.1:8081 \
+ALLOWED_ORIGINS=http://127.0.0.1:5174,http://localhost:5174 \
+pnpm dev
+```
+
+Open the `WEB_PORT` you chose. For the command above that is [http://127.0.0.1:5174](http://127.0.0.1:5174).
 
 ## Features
 
@@ -67,7 +96,7 @@ The container image is non-root, listens on 8080, and checks `/api/v1/health`. S
 
 ## FAQ
 
-**The connect card says it could not reach my endpoint.** The message includes the URL you typed. For DynamoDB Local, check that `docker run -p 8000:8000 amazon/dynamodb-local` is still running and that the endpoint is `http://localhost:8000`.
+**The connect card says it could not reach my endpoint.** The message includes the URL you typed. For DynamoDB Local, check that the container from the quick start is still running and that the endpoint is the host port you published, usually `http://localhost:8000`.
 
 **Can I avoid writing data?** Turn on **Read-only** before you connect. The server rejects writes for that session.
 

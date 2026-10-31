@@ -4,14 +4,7 @@ DynamoDB Studio is built from the specs in `/specs`. If the code and a spec disa
 
 ## Setup
 
-```bash
-pnpm install
-docker run --rm -p 8000:8000 amazon/dynamodb-local
-pnpm seed
-pnpm dev
-```
-
-Node.js 22 is the supported major (`.nvmrc`). Newer Node starts with a warning. Older Node refuses to start.
+Follow the README quick start. Node.js 22 is the supported major (`.nvmrc`). Newer Node starts with a warning. Older Node refuses to start. `pnpm dev` uses ports 5173 and 8080, and DynamoDB Local uses port 8000. If one of those is taken, the README says how to move this checkout onto free ports without stopping the other process.
 
 ## Checks
 
