@@ -17,6 +17,7 @@ import {
   type ReactNode,
 } from "react";
 import type { AttributeValue } from "@dynamo-studio/shared";
+import { gridMotion, resizeStep } from "../../lib/hotkeys.js";
 import { compareAttributes, presentCell } from "./cell-text.js";
 import { CellRenderer } from "./CellRenderer.js";
 import { COLUMN_VIRTUAL_AFTER, itemKey, type KeyColumn } from "./columns.js";
@@ -226,43 +227,44 @@ function VirtualFrame({
 
   function onKeyDown(event: ReactKeyboardEvent<HTMLDivElement>): void {
     const page = Math.max(1, Math.floor((parentRef.current?.clientHeight || 400) / rowPx) - 1);
-    if (event.key === "ArrowDown") {
+    const motion = gridMotion(event.key);
+    if (motion === "down") {
       event.preventDefault();
       move(focus.row + 1, focus.col);
-    } else if (event.key === "ArrowUp") {
+    } else if (motion === "up") {
       event.preventDefault();
       move(focus.row - 1, focus.col);
-    } else if (event.key === "ArrowRight") {
+    } else if (motion === "right") {
       event.preventDefault();
       move(focus.row, focus.col + 1);
-    } else if (event.key === "ArrowLeft") {
+    } else if (motion === "left") {
       event.preventDefault();
       move(focus.row, focus.col - 1);
-    } else if (event.key === "Home") {
+    } else if (motion === "home") {
       event.preventDefault();
       move(focus.row, 0);
-    } else if (event.key === "End") {
+    } else if (motion === "end") {
       event.preventDefault();
       move(focus.row, columns.length);
-    } else if (event.key === "PageDown") {
+    } else if (motion === "page-down") {
       event.preventDefault();
       move(focus.row + page, focus.col);
-    } else if (event.key === "PageUp") {
+    } else if (motion === "page-up") {
       event.preventDefault();
       move(focus.row - page, focus.col);
-    } else if (event.key === " ") {
+    } else if (motion === "select") {
       event.preventDefault();
       const id = ids[focus.row];
       if (id !== undefined) {
         toggle(id, event.shiftKey);
       }
-    } else if (event.key === "Enter") {
+    } else if (motion === "open") {
       event.preventDefault();
       const row = rows[focus.row];
       if (row !== undefined) {
         onOpen(row.original);
       }
-    } else if (event.key === "Escape") {
+    } else if (motion === "clear") {
       onSelected(new Set());
     }
   }
@@ -520,13 +522,10 @@ function HeaderCell({
         aria-label={`Resize ${name}`}
         className="absolute top-0 right-0 h-full w-1 cursor-col-resize"
         onKeyDown={(event) => {
-          if (event.key === "ArrowRight") {
+          const step = resizeStep(event.key);
+          if (step !== undefined) {
             event.preventDefault();
-            onWidth(name, width + 16);
-          }
-          if (event.key === "ArrowLeft") {
-            event.preventDefault();
-            onWidth(name, Math.max(MIN_WIDTH, width - 16));
+            onWidth(name, Math.max(MIN_WIDTH, width + step));
           }
         }}
         onPointerDown={(event) => {
@@ -581,7 +580,7 @@ function DataCell({
       onFocus={onFocus}
       onClick={onOpen}
       onKeyDown={(event) => {
-        if (event.key === "Enter") {
+        if (gridMotion(event.key) === "open") {
           event.preventDefault();
           onOpen();
         }

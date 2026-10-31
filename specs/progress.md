@@ -98,7 +98,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 ## Phase 8 tasks
 - [x] T8.1 UX audit
 - [x] T8.2 Command palette completion + tests
-- [ ] T8.3 Shortcut audit + help dialog completeness + tests
+- [x] T8.3 Shortcut audit + help dialog completeness + tests
 - [ ] T8.4 Error boundaries, offline banner, recovery flows + tests
 - [ ] T8.5 Performance pass
 - [ ] T8.6 Accessibility pass
@@ -114,6 +114,10 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 T8.1 ✔ `apps/web/src/features/connection/LocalHint.test.tsx` > "shows the DynamoDB Local command until it is dismissed" and "stays hidden when a connection is already saved". `local-hint.test.ts` stores the dismissal in `ds-local-hint-dismissed`. `api.test.ts` > "opens a session once before reads" so the first visit loads profiles instead of showing "Couldn't load saved connections." The endpoint field is a pill with the placeholder, alerts default to outlined, and the route fallback is a skeleton. Screenshots: `docs/screenshots/phase-8/`. Checklist: `docs/UI-STATES.md`. `e2e/polish.spec.ts` passed in light and dark on 2026-10-31.
 
 T8.2 ✔ `palette-rank.test.ts` ranks a leading `>` as actions only, puts a recent match first, and lets tables and connections outrank an action on a tie. `palette-recent.test.ts` keeps the last 8 table names and action ids and ignores corrupt JSON. `CommandPalette.test.tsx` jumps to `users` with Enter, runs `>theme` and `>density`, opens New table, and switches to Staging. `pnpm typecheck && pnpm lint && pnpm test` on 2026-10-31: 361 tests. The live app listed only actions after `>`, jumped to the users items route, and showed the same dialog in dark mode.
+
+T8.3 ✔ `hotkeys.test.ts` maps shell, editor, and query chords from `SHORTCUTS`, and every grid key matches one catalog row. `ShortcutHelpDialog.test.tsx` renders each label and key string. Save, format, JSON mode, run, drawer resize, and grid keys use that catalog. The live dialog scrolls in light and dark.
+
+T8.3 ✔ `SHORTCUTS` in `apps/web/src/lib/hotkeys.ts` is the only list. `hotkeys.test.ts` maps save, format, JSON mode, and run from that list, and checks each grid key matches once. `ShortcutHelpDialog.test.tsx` renders every label and key. The item editor, query builder, PartiQL run, grid, and drawer resize call `editorAction`, `queryAction`, `gridMotion`, and `resizeStep` from the same module.
 
 ## Phase 7 tasks
 - [x] T7.1 Shared schemas

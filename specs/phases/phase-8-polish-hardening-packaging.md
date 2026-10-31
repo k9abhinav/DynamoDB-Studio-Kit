@@ -38,7 +38,7 @@ New features. Anything not already in specs goes to `specs/backlog.md`.
 ## 4. Tasks
 - [x] T8.1 UX audit: screenshot every screen/state light+dark; list discrepancies vs design system; fix all
 - [x] T8.2 Command palette completion + tests
-- [ ] T8.3 Shortcut audit + help dialog completeness + tests
+- [x] T8.3 Shortcut audit + help dialog completeness + tests
 - [ ] T8.4 Error boundaries, offline banner, recovery flows + tests
 - [ ] T8.5 Performance pass (bundle visualizer, lazy boundaries, grid profiling, server profiling) + record metrics
 - [ ] T8.6 Accessibility pass (axe sweep, manual keyboard audit, screen-reader notes, zoom/reduced motion)

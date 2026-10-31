@@ -3,6 +3,7 @@ import { ConfirmDialog } from "../../components/ConfirmDialog.js";
 import IconButton from "@mui/material/IconButton";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Unstable_TrapFocus from "@mui/material/Unstable_TrapFocus";
+import { resizeStep } from "../../lib/hotkeys.js";
 import { DRAWER_BREAKPOINT, DRAWER_MAX, DRAWER_MIN } from "../../lib/layout.js";
 import { useUiStore } from "../../stores/ui.js";
 import { ItemEditor } from "../items/ItemEditor.js";
@@ -73,13 +74,10 @@ export function ItemDrawer({
           aria-label="Resize item details"
           className="absolute top-0 left-0 h-full w-2 cursor-col-resize"
           onKeyDown={(event) => {
-            if (event.key === "ArrowLeft") {
+            const step = resizeStep(event.key);
+            if (step !== undefined) {
               event.preventDefault();
-              setWidth(width - 16);
-            }
-            if (event.key === "ArrowRight") {
-              event.preventDefault();
-              setWidth(width + 16);
+              setWidth(width + step);
             }
           }}
           onPointerDown={(event) => {

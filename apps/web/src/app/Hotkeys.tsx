@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { hotkeyAction, isTypingTarget } from "../lib/hotkeys.js";
+import { hotkeyAction, isTypingTarget, readHotkey } from "../lib/hotkeys.js";
 import { useOverlayStore } from "../stores/overlay.js";
 import { useUiStore } from "../stores/ui.js";
 
@@ -10,13 +10,7 @@ export function Hotkeys() {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      const action = hotkeyAction({
-        key: event.key,
-        metaKey: event.metaKey,
-        ctrlKey: event.ctrlKey,
-        altKey: event.altKey,
-        typing: isTypingTarget(event.target),
-      });
+      const action = hotkeyAction(readHotkey(event, isTypingTarget(event.target)));
       if (action === undefined) {
         return;
       }

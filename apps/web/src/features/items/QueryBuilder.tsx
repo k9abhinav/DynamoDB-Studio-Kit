@@ -6,6 +6,7 @@ import TextField from "@mui/material/TextField";
 import Tooltip from "@mui/material/Tooltip";
 import type { QueryPreview } from "@dynamo-studio/shared";
 import { useEffect } from "react";
+import { queryAction, readHotkey } from "../../lib/hotkeys.js";
 import { ShowRequest } from "./ShowRequest.js";
 import { queryFormMessage, type QueryDraft, type QueryTarget } from "./query-form.js";
 
@@ -38,7 +39,7 @@ export function QueryBuilder({
 
   useEffect(() => {
     function onKey(event: KeyboardEvent): void {
-      if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && message === undefined) {
+      if (queryAction(readHotkey(event, true)) === "run" && message === undefined) {
         event.preventDefault();
         onRun();
       }

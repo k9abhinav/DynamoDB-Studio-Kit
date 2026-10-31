@@ -6,6 +6,7 @@ import { extractKey, type Item, type ItemKeySpec } from "@dynamo-studio/shared";
 import { useEffect, useState } from "react";
 import { ConfirmDialog } from "../../components/ConfirmDialog.js";
 import { ApiError } from "../../lib/api.js";
+import { editorAction, readHotkey } from "../../lib/hotkeys.js";
 import { useOverlayStore } from "../../stores/overlay.js";
 import { useUiStore } from "../../stores/ui.js";
 import { ConflictDialog } from "./ConflictDialog.js";
@@ -113,14 +114,14 @@ export function ItemEditor(props: {
       return undefined;
     }
     const onKeyDown = (event: KeyboardEvent) => {
-      const command = event.metaKey || event.ctrlKey;
-      if (command && event.key.toLowerCase() === "s") {
+      const action = editorAction(readHotkey(event, true));
+      if (action === "save") {
         event.preventDefault();
         void save();
-      } else if (command && event.shiftKey && event.key.toLowerCase() === "f") {
+      } else if (action === "format") {
         event.preventDefault();
         format();
-      } else if (event.altKey && event.key.toLowerCase() === "m") {
+      } else if (action === "toggle-json-mode") {
         event.preventDefault();
         toggleMode();
       }

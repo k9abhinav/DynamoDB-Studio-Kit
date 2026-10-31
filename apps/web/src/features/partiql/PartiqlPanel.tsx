@@ -18,6 +18,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { ConfirmDialog } from "../../components/ConfirmDialog.js";
 import { ApiError } from "../../lib/api.js";
+import { queryAction, readHotkey } from "../../lib/hotkeys.js";
 import { partiqlKeys } from "../../lib/query-keys.js";
 import { useOverlayStore } from "../../stores/overlay.js";
 import { useUiStore } from "../../stores/ui.js";
@@ -131,7 +132,7 @@ export function PartiqlPanel({ connectionId, table }: { connectionId: string; ta
 
   useEffect(() => {
     function onKey(event: KeyboardEvent): void {
-      if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+      if (queryAction(readHotkey(event, true)) === "run") {
         event.preventDefault();
         askRun();
       }
