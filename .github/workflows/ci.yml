@@ -82,3 +82,30 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t dynamo-studio:ci .
+      - name: Check non-root user and health
+        run: |
+          set -eu
+          docker run -d --name studio -p 127.0.0.1:18080:8080 -e HOST=0.0.0.0 dynamo-studio:ci
+          cleanup() { docker rm -f studio >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          ok=0
+          for _ in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:18080/api/v1/health >/dev/null; then
+              ok=1
+              break
+            fi
+            sleep 1
+          done
+          test "$ok" = "1"
+          curl -fsS http://127.0.0.1:18080/api/v1/health
+          test "$(docker exec studio id -u)" != "0"
+          test "$(curl -s -o /dev/null -w '%{http_code}' -H 'Host: evil.example' http://127.0.0.1:18080/api/v1/health)" = "403"
+          test "$(curl -s -o /dev/null -w '%{http_code}' -H 'Origin: https://evil.example' http://127.0.0.1:18080/api/v1/health)" = "403"
+          docker logs studio 2>&1 | grep -q 'not loopback'

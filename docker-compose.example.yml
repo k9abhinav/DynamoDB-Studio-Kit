@@ -1,0 +1,18 @@
+services:
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    ports:
+      - "127.0.0.1:8000:8000"
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-inMemory"]
+
+  studio:
+    build: .
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      HOST: 0.0.0.0
+      PORT: "8080"
+    mem_limit: 512m
+    command: ["node", "--max-old-space-size=128", "apps/server/dist/index.js"]
+    depends_on:
+      - dynamodb-local

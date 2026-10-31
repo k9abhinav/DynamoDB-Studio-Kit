@@ -104,7 +104,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T8.6 Accessibility pass
 - [x] T8.7 Security re-review
 - [x] T8.8 Production build + static serving + graceful shutdown
-- [ ] T8.9 Dockerfile + compose example
+- [x] T8.9 Dockerfile + compose example
 - [ ] T8.10 CLI bin
 - [ ] T8.11 Docs
 - [ ] T8.12 Visual regression + J1–J5
@@ -126,6 +126,8 @@ T8.6 ✔ `e2e/polish.spec.ts` reports 0 serious or critical axe violations on th
 T8.7 ✔ `docs/SECURITY.md` re-ticks section 8. Import and clear now call `assertWritable`. `pnpm audit` on 2026-10-31: 3 low, 2 moderate, 1 high, 1 critical. The high and critical issues are `dompurify` through `monaco-editor` (GHSA-cg2g-xh64-v4q7, GHSA-mrv2-3pqr-j5jr), patched in 3.4.17. This repo does not import DOMPurify. That exception is written in `docs/SECURITY.md`. There is no telemetry.
 
 T8.8 ✔ `node-version.test.ts` refuses majors below 22, stays quiet on 22, and returns a warning on 26 without exiting. `.nvmrc` is 22. `engines` stays `>=22` because `engine-strict` is on. `export-lifecycle.int.test.ts` sends SIGTERM during an `orders` export, the stream ends, and the process exits 0 in under 5 seconds. The same file writes 200 items of about 390 KB to a disposable table, exports them under `--max-old-space-size=128`, and the process stays up. The table is deleted afterward. The About dialog shows the version, the commit (`unknown` when git is absent), MIT, and a documentation link. Static files are still served from the production build by `security.test.ts`.
+
+T8.9 ✔ `docker build -t dynamo-studio:local .` on 2026-10-31 produced an image of 90686244 bytes (86 MiB). `scripts/docker-smoke.ts` ran that image with `--memory=512m --memory-swap=512m` on a host port other than 8080. `id -u` was 1001. `GET /api/v1/health` returned 200. `Host: evil.example` and `Origin: https://evil.example` returned 403. Logs contain "not loopback". A 200 MB NDJSON dry-run import, generated on the host and posted to the container against `http://host.docker.internal:8000`, returned HTTP 200 with `"type":"done"`. `OOMKilled` was false. The CI `image` job builds the same image and checks the user and health URL. No registry push.
 
 ## Phase 7 tasks
 - [x] T7.1 Shared schemas
