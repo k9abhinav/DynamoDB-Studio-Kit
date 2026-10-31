@@ -101,7 +101,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T8.3 Shortcut audit + help dialog completeness + tests
 - [x] T8.4 Error boundaries, offline banner, recovery flows + tests
 - [x] T8.5 Performance pass
-- [ ] T8.6 Accessibility pass
+- [x] T8.6 Accessibility pass
 - [ ] T8.7 Security re-review
 - [ ] T8.8 Production build + static serving + graceful shutdown
 - [ ] T8.9 Dockerfile + compose example
@@ -120,6 +120,8 @@ T8.3 ✔ `hotkeys.test.ts` maps shell, editor, and query chords from `SHORTCUTS`
 T8.4 ✔ `OfflineBanner.test.tsx` shows the banner when the browser goes offline and leaves the heading in place. `App.test.tsx` keeps the connect screen, and a lost workspace shows the offline banner instead of "Connection lost" while `navigator.onLine` is false. `RouteErrorReset.test.tsx` retries the screen and keeps the shell. `MutationNotice.test.tsx` calls retry for "The save failed." Nothing is queued.
 
 T8.5 ✔ No budget missed, so no performance code change. `SidebarTableList.test.tsx` renders 1,000 virtualized names in 78.8 ms in jsdom and asserts that stays under 100 ms. `e2e/items.spec.ts` > "scrolls 10000 loaded order rows at 4x cpu" passed on 2026-10-31; the assertion is at least 55 fps and the list reporter did not print the exact rate. Production connect-screen FCP in Chromium was 408, 400, and 392 ms. One drawer click on the Vite dev server reached "Item details" in 19.5 ms. `GET /api/v1/health` over 100 calls had p50 1.45 ms and p95 1.92 ms, with no DynamoDB call. Initial JavaScript gzip is 231125 bytes. Monaco is not in the entry. Numbers are in the metrics log.
+
+T8.6 ✔ `e2e/polish.spec.ts` reports 0 serious or critical axe violations on the connect screen, command palette, shortcut dialog, About dialog, and the missing-page screen in light and dark. Connect and Endpoint stay visible at 1280×800 and 200% zoom. `docs/KEYBOARD.md` is the keyboard checklist. `docs/a11y-notes.md` records the palette, shortcuts, offline banner, and connect hint from the accessibility tree. Reduced motion keeps opacity-only transitions (`motion.test.ts`) and the connect screen skips its leave animation. A live VoiceOver or NVDA pass was not done.
 
 ## Phase 7 tasks
 - [x] T7.1 Shared schemas

@@ -1,5 +1,7 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { ensureDir } from "../apps/server/src/test-files.js";
+import { isSerious } from "./axe.js";
 import { connectLocal } from "./session.js";
 
 for (const scheme of ["light", "dark"] as const) {
@@ -15,6 +17,7 @@ for (const scheme of ["light", "dark"] as const) {
     await page.goto("/");
     await expect(page.getByRole("heading", { name: "DynamoDB Studio" })).toBeVisible();
     await expect(page.getByText("docker run -p 8000:8000 amazon/dynamodb-local")).toBeVisible();
+    await expectNoSerious(page);
     await shot(page, `connect-${scheme}`);
 
     await page.getByRole("textbox", { name: "Endpoint" }).fill("http://127.0.0.1:9");
@@ -61,18 +64,21 @@ for (const scheme of ["light", "dark"] as const) {
 
     await page.getByRole("button", { name: /Search tables/ }).click();
     await expect(page.getByRole("dialog", { name: "Search" })).toBeVisible();
+    await expectNoSerious(page);
     await shot(page, `palette-${scheme}`);
     await page.keyboard.press("Escape");
 
     await page.getByRole("button", { name: "More actions" }).click();
     await page.getByRole("menuitem", { name: "Shortcuts" }).click();
     await expect(page.getByRole("dialog", { name: "Keyboard shortcuts" })).toBeVisible();
+    await expectNoSerious(page);
     await shot(page, `shortcuts-${scheme}`);
     await page.keyboard.press("Escape");
 
     await page.getByRole("button", { name: "More actions" }).click();
     await page.getByRole("menuitem", { name: "About" }).click();
     await expect(page.getByRole("dialog", { name: "About" })).toBeVisible();
+    await expectNoSerious(page);
     await shot(page, `about-${scheme}`);
     await page.keyboard.press("Escape");
 
@@ -90,8 +96,24 @@ for (const scheme of ["light", "dark"] as const) {
 
     await page.goto("/no-such-page");
     await expect(page.getByRole("heading", { name: "That page doesn't exist" })).toBeVisible();
+    await expectNoSerious(page);
     await shot(page, `not-found-${scheme}`);
   });
+}
+
+test("connect stays usable at 200% zoom", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/");
+  await page.evaluate(() => {
+    document.documentElement.style.zoom = "2";
+  });
+  await expect(page.getByRole("button", { name: "Connect" })).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "Endpoint" })).toBeVisible();
+});
+
+async function expectNoSerious(page: Page): Promise<void> {
+  const result = await new AxeBuilder({ page }).analyze();
+  expect(result.violations.filter((violation) => isSerious(violation.impact))).toEqual([]);
 }
 
 async function shot(page: Page, name: string): Promise<void> {

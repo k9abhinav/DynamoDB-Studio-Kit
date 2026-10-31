@@ -17,7 +17,11 @@ export function ShortcutHelpDialog() {
       <DialogTitle id="shortcuts-title" className="shrink-0">
         Keyboard shortcuts
       </DialogTitle>
-      <DialogContent className="min-h-0 overflow-y-auto">
+      <DialogContent
+        tabIndex={0}
+        aria-label="Shortcut list"
+        className="min-h-0 overflow-y-auto outline-none focus-visible:outline-2 focus-visible:outline-primary"
+      >
         {shortcutGroups().map((section) => (
           <section key={section.group} className="mt-4 first:mt-0">
             <h3 className="m-0 text-xs text-text-secondary">{section.group}</h3>

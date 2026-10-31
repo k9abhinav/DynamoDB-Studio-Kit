@@ -1,10 +1,12 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup } from "@testing-library/react";
+import { cleanup, configure } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
 import { resetApiSession } from "../lib/api.js";
 import { useCommandStore } from "../stores/commands.js";
 import { useOverlayStore } from "../stores/overlay.js";
 import { uiDefaults, useUiStore } from "../stores/ui.js";
+
+configure({ asyncUtilTimeout: 3000 });
 
 if (typeof window.matchMedia !== "function") {
   Object.defineProperty(window, "matchMedia", {

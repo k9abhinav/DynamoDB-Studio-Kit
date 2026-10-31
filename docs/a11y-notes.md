@@ -37,3 +37,29 @@ Checked with the accessibility tree in Playwright (roles and names), not a live 
 - A mutation opens a dialog titled with the verb, such as "UPDATE statement". The confirm button is "Run statement". A production connection asks for the quoted table name.
 - The results use the same Items grid. An empty run says "Run a statement to see items."
 - axe reported no serious or critical violations on the PartiQL view in light and dark. This was the accessibility tree, not a live screen reader.
+
+## Command palette
+
+- The dialog is named "Search". The field is named "Search". The results are a listbox named "Commands".
+- Each option's accessible name is the label. The kind (Table, Connection, Action) is hidden from the name.
+- Arrow keys move the active option. Enter runs it. Escape closes the dialog and returns focus to Search tables.
+- A leading `>` leaves only actions in the list.
+
+## Keyboard shortcuts
+
+- The dialog is named "Keyboard shortcuts". Groups are headings: Anywhere, Item editor, Query, Items grid.
+- The same `SHORTCUTS` list drives this dialog and the key handlers. The checklist is `docs/KEYBOARD.md`.
+
+## Offline
+
+- The banner is a status, not a dialog. The text is "You're offline. This screen stays put, and changes are not queued."
+- The current screen stays. A failed save or delete shows Retry. Nothing is written to a queue.
+
+## Connect hint
+
+- When no connection is saved, an info alert includes `docker run -p 8000:8000 amazon/dynamodb-local` and a Close button.
+- Close stores the dismissal. The alert does not come back on the next visit.
+
+When `prefers-reduced-motion: reduce` is set, transitions keep opacity only and the connect screen skips its leave animation. Skeletons stop the wave animation. `motion.test.ts` covers the transition helper.
+
+These notes are from the accessibility tree in the running app and in Playwright. A live VoiceOver or NVDA pass was not done.

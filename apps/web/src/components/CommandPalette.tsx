@@ -86,33 +86,34 @@ export function CommandPalette() {
             }
           }}
         />
-        <ul
-          role="listbox"
-          aria-label="Commands"
-          className="m-0 mt-3 max-h-80 list-none overflow-auto p-0"
-        >
-          {results.map((entry, index) => (
-            <li key={entry.id}>
+        <div role="listbox" aria-label="Commands" className="mt-3 max-h-80 overflow-auto">
+          {results.map((entry, index) => {
+            const selected = entry.id === current?.id;
+            return (
               <button
+                key={entry.id}
                 id={`palette-opt-${String(index)}`}
                 type="button"
                 role="option"
-                aria-selected={entry.id === current?.id}
+                aria-selected={selected}
                 className={`flex h-10 w-full items-center gap-3 rounded-lg px-3 text-left ${
-                  entry.id === current?.id ? "bg-primary-container text-primary" : ""
+                  selected ? "bg-primary-container text-primary" : ""
                 }`}
                 onClick={() => {
                   choose(entry.id);
                 }}
               >
                 <span className="min-w-0 flex-1 truncate">{entry.label}</span>
-                <span className="text-xs text-text-secondary" aria-hidden="true">
+                <span
+                  className={`text-xs ${selected ? "text-primary" : "text-text-secondary"}`}
+                  aria-hidden="true"
+                >
                   {kindLabel(entry.kind)}
                 </span>
               </button>
-            </li>
-          ))}
-        </ul>
+            );
+          })}
+        </div>
         {results.length === 0 ? (
           <p className="px-3 py-6 text-center text-sm text-text-secondary">No matches</p>
         ) : null}
