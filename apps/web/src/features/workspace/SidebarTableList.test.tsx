@@ -66,7 +66,10 @@ describe("SidebarTableList", () => {
       name: `generated-${String(index).padStart(4, "0")}`,
       items: 1,
     }));
+    const started = performance.now();
     renderSidebar("/c/local/t/generated-0000/items", generated);
+    const rendered = performance.now() - started;
+    expect(rendered).toBeLessThan(100);
     expect(screen.getByText("Tables (1000)")).toBeInTheDocument();
     expect(screen.getByRole("option", { name: "generated-0000" })).toBeInTheDocument();
     expect(screen.queryByRole("option", { name: "generated-0999" })).not.toBeInTheDocument();
