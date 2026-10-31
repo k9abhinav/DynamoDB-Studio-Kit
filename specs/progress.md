@@ -102,7 +102,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T8.4 Error boundaries, offline banner, recovery flows + tests
 - [x] T8.5 Performance pass
 - [x] T8.6 Accessibility pass
-- [ ] T8.7 Security re-review
+- [x] T8.7 Security re-review
 - [ ] T8.8 Production build + static serving + graceful shutdown
 - [ ] T8.9 Dockerfile + compose example
 - [ ] T8.10 CLI bin
@@ -122,6 +122,8 @@ T8.4 ✔ `OfflineBanner.test.tsx` shows the banner when the browser goes offline
 T8.5 ✔ No budget missed, so no performance code change. `SidebarTableList.test.tsx` renders 1,000 virtualized names in 78.8 ms in jsdom and asserts that stays under 100 ms. `e2e/items.spec.ts` > "scrolls 10000 loaded order rows at 4x cpu" passed on 2026-10-31; the assertion is at least 55 fps and the list reporter did not print the exact rate. Production connect-screen FCP in Chromium was 408, 400, and 392 ms. One drawer click on the Vite dev server reached "Item details" in 19.5 ms. `GET /api/v1/health` over 100 calls had p50 1.45 ms and p95 1.92 ms, with no DynamoDB call. Initial JavaScript gzip is 231125 bytes. Monaco is not in the entry. Numbers are in the metrics log.
 
 T8.6 ✔ `e2e/polish.spec.ts` reports 0 serious or critical axe violations on the connect screen, command palette, shortcut dialog, About dialog, and the missing-page screen in light and dark. Connect and Endpoint stay visible at 1280×800 and 200% zoom. `docs/KEYBOARD.md` is the keyboard checklist. `docs/a11y-notes.md` records the palette, shortcuts, offline banner, and connect hint from the accessibility tree. Reduced motion keeps opacity-only transitions (`motion.test.ts`) and the connect screen skips its leave animation. A live VoiceOver or NVDA pass was not done.
+
+T8.7 ✔ `docs/SECURITY.md` re-ticks section 8. Import and clear now call `assertWritable`. `pnpm audit` on 2026-10-31: 3 low, 2 moderate, 1 high, 1 critical. The high and critical issues are `dompurify` through `monaco-editor` (GHSA-cg2g-xh64-v4q7, GHSA-mrv2-3pqr-j5jr), patched in 3.4.17. This repo does not import DOMPurify. That exception is written in `docs/SECURITY.md`. There is no telemetry.
 
 ## Phase 7 tasks
 - [x] T7.1 Shared schemas
@@ -326,6 +328,18 @@ The first production load threw `Illegal value for token color: #fff` because th
 - [x] SSRF: the endpoint is user-chosen on a local server. Only `http:` and `https:` are accepted. `hostBindingWarning` logs when the bind host is not loopback.
 - [x] Profile file and key file are mode `0600`, directory `0700`. The key stays on disk. Threat model: one local user. Encryption stops a casual copy of `profiles.json` from revealing secrets; someone who can read both the key and the file can decrypt.
 - [x] `pnpm audit` result is recorded in the Phase 2 summary. The lockfile is committed.
+
+## Security checklist (05 section 8, Phase 8)
+
+- [x] Secrets stay out of responses, logs, URLs, localStorage, and error messages. `logger.test.ts` redacts `secretAccessKey`, `sessionToken`, and `Authorization`. `security.test.ts` does not echo a secret from a validation error.
+- [x] Cookie `ds_session` is httpOnly and SameSite=Strict. Mutations require `x-ds-csrf`. `security.test.ts`.
+- [x] Origin and Host checks reject a foreign origin and a rebinding Host. Default bind is `127.0.0.1`. `ALLOWED_ORIGINS` adds extra origins. `docs/SECURITY.md`.
+- [x] `assertWritable` covers item writes, table management, PartiQL, import, and clear. A read-only PartiQL `UPDATE` is `403 READ_ONLY`.
+- [x] Bodies are Zod strict objects. JSON limit is 2 MB. Connect routes allow 30 per minute. `connections.test.ts` expects 429.
+- [x] Expressions use placeholders. PartiQL values are parameters. The server classifies the statement.
+- [x] The endpoint is user-chosen. Only `http:` and `https:` are accepted (`endpoint.test.ts`). `hostBindingWarning` logs when the bind host is not loopback.
+- [x] Profile file and key are mode `0600`, directory `0700`. The key stays on disk. Threat model is in `docs/SECURITY.md`.
+- [x] `pnpm audit` on 2026-10-31 is recorded in `docs/SECURITY.md`. High and critical are the documented `dompurify` exception through Monaco. The lockfile is committed.
 
 ## Pinned versions (registry check 2026-10-23, before install)
 
