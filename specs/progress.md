@@ -117,8 +117,6 @@ T8.2 ✔ `palette-rank.test.ts` ranks a leading `>` as actions only, puts a rece
 
 T8.3 ✔ `hotkeys.test.ts` maps shell, editor, and query chords from `SHORTCUTS`, and every grid key matches one catalog row. `ShortcutHelpDialog.test.tsx` renders each label and key string. Save, format, JSON mode, run, drawer resize, and grid keys use that catalog. The live dialog scrolls in light and dark.
 
-T8.3 ✔ `SHORTCUTS` in `apps/web/src/lib/hotkeys.ts` is the only list. `hotkeys.test.ts` maps save, format, JSON mode, and run from that list, and checks each grid key matches once. `ShortcutHelpDialog.test.tsx` renders every label and key. The item editor, query builder, PartiQL run, grid, and drawer resize call `editorAction`, `queryAction`, `gridMotion`, and `resizeStep` from the same module.
-
 ## Phase 7 tasks
 - [x] T7.1 Shared schemas
 - [x] T7.2 Server create/update/delete
