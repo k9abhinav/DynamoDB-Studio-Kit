@@ -68,9 +68,9 @@
 }
 
 .MuiDialog-paper {
-  background-color: var(--ds-surface) !important;
-  background-image: none !important;
-  color: var(--ds-text-primary) !important;
+  background-color: var(--ds-surface);
+  background-image: none;
+  color: var(--ds-text-primary);
 }
 
 @media (prefers-reduced-motion: reduce) {

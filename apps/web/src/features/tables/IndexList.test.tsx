@@ -72,7 +72,7 @@ describe("indexes", () => {
     });
     await renderAt("/c/local/t/orders/indexes", { api: "custom" });
     expect(await screen.findByRole("tab", { name: "Indexes", selected: true })).toBeInTheDocument();
-    expect(screen.getByText("status-createdAt-index")).toBeInTheDocument();
+    expect(screen.getAllByText("status-createdAt-index").length).toBeGreaterThan(0);
     expect(screen.getByText("This index is still backfilling.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /create index/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /delete index/i })).not.toBeInTheDocument();

@@ -1,6 +1,8 @@
 import { TableDescription } from "@dynamo-studio/shared";
 import { render, screen, waitFor } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
+import type { ReactElement } from "react";
+import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AppProviders } from "../../app/providers.js";
 import { resetApiSession } from "../../lib/api.js";
@@ -9,6 +11,10 @@ import { ItemDrawer } from "../workspace/ItemDrawer.js";
 import { ItemsPanel } from "./ItemsPanel.js";
 
 const digits = "12345678901234567890123456789012345678";
+
+function renderPanel(ui: ReactElement) {
+  return render(<MemoryRouter>{ui}</MemoryRouter>);
+}
 
 beforeEach(() => {
   localStorage.clear();
@@ -34,7 +40,7 @@ describe("ItemsPanel", () => {
       hasMore: false,
       consumedCapacity: { rcu: 1.5 },
     });
-    render(
+    renderPanel(
       <AppProviders>
         <ItemsPanel connectionId="local" table="users" />
         <ItemDrawer connectionId="local" table="users" />
@@ -68,7 +74,7 @@ describe("ItemsPanel", () => {
       "http://127.0.0.1:8000",
       { items: [{ id: { S: "b" } }], count: 1, scannedCount: 1, hasMore: false },
     );
-    render(
+    renderPanel(
       <AppProviders>
         <ItemsPanel connectionId="local" table="users" />
       </AppProviders>,
@@ -83,7 +89,7 @@ describe("ItemsPanel", () => {
   it("offers create, keep searching, and a retry", async () => {
     const user = userEvent.setup();
     stubScan({ items: [], count: 0, scannedCount: 0, hasMore: false });
-    const empty = render(
+    const empty = renderPanel(
       <AppProviders>
         <ItemsPanel connectionId="local" table="users" />
       </AppProviders>,
@@ -95,7 +101,7 @@ describe("ItemsPanel", () => {
     empty.unmount();
 
     stubScan({ items: [], count: 0, scannedCount: 20, hasMore: true, nextCursor: "more" });
-    const searching = render(
+    const searching = renderPanel(
       <AppProviders>
         <ItemsPanel connectionId="local" table="orders" />
       </AppProviders>,
@@ -104,7 +110,7 @@ describe("ItemsPanel", () => {
     searching.unmount();
 
     stubScan(null);
-    render(
+    renderPanel(
       <AppProviders>
         <ItemsPanel connectionId="local" table="edge-cases" />
       </AppProviders>,
@@ -132,7 +138,7 @@ describe("ItemsPanel", () => {
       bodies,
       "https://dynamodb.us-east-1.amazonaws.com",
     );
-    render(
+    renderPanel(
       <AppProviders>
         <div className="flex h-[640px] flex-col">
           <ItemsPanel connectionId="local" table="edge-cases" />
@@ -164,7 +170,7 @@ describe("ItemsPanel", () => {
       scannedCount: 1,
       hasMore: false,
     });
-    const first = render(
+    const first = renderPanel(
       <AppProviders>
         <ItemsPanel connectionId="local" table="users" />
       </AppProviders>,
@@ -177,7 +183,7 @@ describe("ItemsPanel", () => {
     expect(stored).toBeDefined();
     expect(stored).not.toContain("8000");
     first.unmount();
-    render(
+    renderPanel(
       <AppProviders>
         <ItemsPanel connectionId="local" table="users" />
       </AppProviders>,
@@ -191,7 +197,7 @@ describe("ItemsPanel", () => {
   it("runs a query in the same grid and clears filters unless asked", async () => {
     const user = userEvent.setup();
     stubQueryWorkspace();
-    render(
+    renderPanel(
       <AppProviders>
         <ItemsPanel connectionId="local" table="users" />
       </AppProviders>,

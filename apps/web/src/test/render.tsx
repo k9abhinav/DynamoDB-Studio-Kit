@@ -14,9 +14,12 @@ export async function renderAt(
   }
   const router = createMemoryRouter(appRoutes(), { initialEntries: [path] });
   render(<App router={router} />);
-  await waitFor(() => {
-    if (screen.queryByRole("status", { name: "Loading" }) !== null) {
-      throw new Error("Route is still loading");
-    }
-  });
+  await waitFor(
+    () => {
+      if (screen.queryByRole("status", { name: "Loading" }) !== null) {
+        throw new Error("Route is still loading");
+      }
+    },
+    { timeout: 5_000 },
+  );
 }

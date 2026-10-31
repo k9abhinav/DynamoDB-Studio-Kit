@@ -1,5 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
+import type { ReactElement } from "react";
+import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AppProviders } from "../../app/providers.js";
 import { resetApiSession } from "../../lib/api.js";
@@ -23,6 +25,10 @@ vi.mock("./PartiqlCodeEditor.js", () => ({
     />
   ),
 }));
+
+function renderPanel(ui: ReactElement) {
+  return render(<MemoryRouter>{ui}</MemoryRouter>);
+}
 
 beforeEach(() => {
   localStorage.clear();
@@ -73,7 +79,7 @@ describe("PartiqlPanel", () => {
         ),
       );
     });
-    render(
+    renderPanel(
       <AppProviders>
         <PartiqlPanel connectionId="local" table="users" />
       </AppProviders>,
@@ -165,7 +171,7 @@ describe("PartiqlPanel", () => {
         ),
       );
     });
-    render(
+    renderPanel(
       <AppProviders>
         <PartiqlPanel connectionId="local" table="users" />
       </AppProviders>,
