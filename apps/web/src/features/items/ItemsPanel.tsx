@@ -193,6 +193,9 @@ export function ItemsPanel({ connectionId, table }: { connectionId: string; tabl
           connectionId={connectionId}
           table={table}
           readOnly={connection.data?.summary.readOnly === true}
+          {...(described.data?.itemCount === undefined
+            ? {}
+            : { itemCount: described.data.itemCount })}
           {...(currentView === undefined ? {} : { view: currentView })}
         />
         <FormControlLabel

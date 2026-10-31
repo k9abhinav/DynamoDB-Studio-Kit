@@ -5,6 +5,7 @@ import Tooltip from "@mui/material/Tooltip";
 import type { TableDescription } from "@dynamo-studio/shared";
 import type { ReactNode } from "react";
 import { CopyButton } from "./CopyButton.js";
+import { TransferMenu } from "../transfer/TransferMenu.js";
 import { TableControls } from "./TableControls.js";
 import { IndexList } from "./IndexList.js";
 import { formatBytes, formatCreatedAt, tableStatusLabel, tableStatusTone } from "./present.js";
@@ -78,6 +79,12 @@ export function TableOverview({
       </Card>
       {connectionId === undefined ? null : (
         <Card title="Settings">
+          <TransferMenu
+            connectionId={connectionId}
+            table={description.name}
+            readOnly={readOnly}
+            itemCount={description.itemCount}
+          />
           <TableControls
             connectionId={connectionId}
             description={description}

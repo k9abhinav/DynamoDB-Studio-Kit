@@ -107,9 +107,11 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T7.9 Indexes, TTL, billing
 - [x] T7.10 Export dialog
 - [x] T7.11 Import wizard
-- [ ] T7.12 Delete and clear dialogs
+- [x] T7.12 Delete and clear dialogs
 - [ ] T7.13 Playwright
 - [ ] T7.14 Progress summary
+
+T7.12 ✔ `TransferMenu.test.tsx`. Delete and clear stay disabled until the table name is typed, in every environment. Delete shows the approximate item count. A protection failure shows "Deletion protection is on. Turn it off, then delete the table." Import, clear, and delete are disabled on a read-only connection with "This connection is read-only".
 
 T7.11 ✔ `ImportWizard.test.tsx`. A CSV preview keeps columns as strings and says `007` stays a string unless mapped to N. The wizard says skip-existing is slower. Closing the tab during an import is cancelled with "Import in progress". A failed row offers the error report download. The toast stays mounted in the workspace, so it remains after the wizard closes.
 
