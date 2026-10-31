@@ -58,78 +58,70 @@ interface ImportSample {
   processed: number;
 }
 
+const SIZES_MB = [50, 100, 200, 400] as const;
+
 describe("import memory", () => {
-  it("keeps server RSS bounded for 100 MB and 200 MB imports", async () => {
-    const home = mkdtempSync(join(tmpdir(), "ds-rss-home-"));
-    const dir = mkdtempSync(join(tmpdir(), "ds-rss-file-"));
-    const port = await freePort();
-    const logs: Buffer[] = [];
-    const server = spawn(
-      process.execPath,
-      ["--max-old-space-size=128", "--expose-gc", "--import", "tsx", "apps/server/src/index.ts"],
-      {
-        cwd: repoRoot,
-        env: {
-          ...process.env,
-          PORT: String(port),
-          HOST: "127.0.0.1",
-          LOG_LEVEL: "silent",
-          NODE_ENV: "test",
-          DS_GC_PROBE: "1",
-          DYNAMO_STUDIO_HOME: home,
-        },
-        stdio: ["ignore", "pipe", "pipe"],
-      },
-    );
-    server.stdout.on("data", (chunk: Buffer) => {
-      logs.push(chunk);
-    });
-    server.stderr.on("data", (chunk: Buffer) => {
-      logs.push(chunk);
-    });
-    try {
-      await waitForHealth(port, server, logs);
-      const open = await session(port);
-      const connectionId = await connect(port, open);
-      const hundred = await measure(
-        port,
-        open,
-        connectionId,
-        server.pid,
-        join(dir, "100.ndjson"),
-        100,
-      );
-      const twoHundred = await measure(
-        port,
-        open,
-        connectionId,
-        server.pid,
-        join(dir, "200.ndjson"),
-        200,
-      );
-      const growth100 = hundred.peakRss - hundred.beforeRss;
-      const growth200 = twoHundred.peakRss - twoHundred.beforeRss;
-      const report = JSON.stringify({ hundred, twoHundred, growth100, growth200 });
-      writeFileSync(join(tmpdir(), "ds-import-rss.json"), report);
-      const heap100 = hundred.afterHeap - hundred.beforeHeap;
-      const heap200 = twoHundred.afterHeap - twoHundred.beforeHeap;
-      const rssStep = twoHundred.afterRss - hundred.afterRss;
-      expect(hundred.samples, report).toBeGreaterThan(0);
-      expect(twoHundred.samples, report).toBeGreaterThan(0);
-      expect(hundred.processed, report).toBeGreaterThan(100);
-      expect(twoHundred.processed, report).toBeGreaterThan(hundred.processed);
-      expect(heap100, report).toBeLessThan(16 * 1024 * 1024);
-      expect(heap200, report).toBeLessThan(16 * 1024 * 1024);
-      expect(rssStep, report).toBeLessThan(64 * 1024 * 1024);
-      expect(twoHundred.peakRss - hundred.afterRss, report).toBeLessThan(64 * 1024 * 1024);
-    } finally {
-      server.kill("SIGTERM");
-      await once(server, "exit").catch(() => undefined);
-      rmSync(dir, { recursive: true, force: true });
-      rmSync(home, { recursive: true, force: true });
+  it("keeps a fresh server's RSS flat from 50 MB through 400 MB", async () => {
+    const runs: ImportSample[] = [];
+    for (const megabytes of SIZES_MB) {
+      runs.push(await importOnFreshServer(megabytes));
     }
-  }, 180_000);
+    const report = JSON.stringify({ runs });
+    writeFileSync(join(tmpdir(), "ds-import-rss.json"), report);
+    const peaks = runs.map((run) => run.peakRss);
+    const after = runs.map((run) => run.afterRss);
+    const peakSpread = Math.max(...peaks) - Math.min(...peaks);
+    const afterSpread = Math.max(...after) - Math.min(...after);
+    for (const run of runs) {
+      expect(run.samples, report).toBeGreaterThan(0);
+      expect(run.processed, report).toBeGreaterThan(run.fileBytes / (256 * 1024) - 2);
+      expect(Math.abs(run.afterHeap - run.beforeHeap), report).toBeLessThan(16 * 1024 * 1024);
+    }
+    expect(peakSpread, report).toBeLessThan(64 * 1024 * 1024);
+    expect(afterSpread, report).toBeLessThan(64 * 1024 * 1024);
+  }, 300_000);
 });
+
+async function importOnFreshServer(megabytes: number): Promise<ImportSample> {
+  const home = mkdtempSync(join(tmpdir(), "ds-rss-home-"));
+  const dir = mkdtempSync(join(tmpdir(), "ds-rss-file-"));
+  const port = await freePort();
+  const logs: Buffer[] = [];
+  const server = spawn(
+    process.execPath,
+    ["--max-old-space-size=128", "--expose-gc", "--import", "tsx", "apps/server/src/index.ts"],
+    {
+      cwd: repoRoot,
+      env: {
+        ...process.env,
+        PORT: String(port),
+        HOST: "127.0.0.1",
+        LOG_LEVEL: "silent",
+        NODE_ENV: "test",
+        DS_GC_PROBE: "1",
+        DYNAMO_STUDIO_HOME: home,
+      },
+      stdio: ["ignore", "pipe", "pipe"],
+    },
+  );
+  server.stdout.on("data", (chunk: Buffer) => {
+    logs.push(chunk);
+  });
+  server.stderr.on("data", (chunk: Buffer) => {
+    logs.push(chunk);
+  });
+  try {
+    await waitForHealth(port, server, logs);
+    const open = await session(port);
+    const connectionId = await connect(port, open, "http://127.0.0.1:8000");
+    return await measure(port, open, connectionId, server.pid, join(dir, "file.ndjson"), megabytes);
+  } finally {
+    server.kill("SIGTERM");
+    await once(server, "exit").catch(() => undefined);
+    rmSync(dir, { recursive: true, force: true });
+    rmSync(home, { recursive: true, force: true });
+  }
+}
 
 async function measure(
   port: number,
@@ -286,7 +278,11 @@ async function session(port: number): Promise<{ cookie: string; csrf: string }> 
   return { cookie: line.split(";")[0] ?? line, csrf: body.csrfToken };
 }
 
-async function connect(port: number, open: { cookie: string; csrf: string }): Promise<string> {
+async function connect(
+  port: number,
+  open: { cookie: string; csrf: string },
+  endpoint: string,
+): Promise<string> {
   const response = await fetch(`http://127.0.0.1:${String(port)}/api/v1/connections`, {
     method: "POST",
     headers: {
@@ -295,7 +291,7 @@ async function connect(port: number, open: { cookie: string; csrf: string }): Pr
       "content-type": "application/json",
     },
     body: JSON.stringify({
-      endpoint: "http://127.0.0.1:8000",
+      endpoint,
       region: "us-east-1",
       auth: { type: "local" },
       env: "local",
