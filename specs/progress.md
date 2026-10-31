@@ -17,7 +17,7 @@
 | 5 | Item editor & CRUD | ✅ done | ✅ | 2026-10-25 |
 | 6 | Query builder & PartiQL | ✅ done | ✅ | 2026-10-26 |
 | 7 | Table management & import/export | ✅ done | ✅ | 2026-10-31 |
-| 8 | Polish, hardening, packaging | ◐ in progress | ☐ | |
+| 8 | Polish, hardening, packaging | ✅ done | ✅ | 2026-10-31 |
 
 ## Phase 2 tasks
 - [x] T2.1 Shared schemas
@@ -109,7 +109,7 @@ T4.1 ✔ `apps/server/src/dynamo/expression-builder.test.ts`. Branch coverage 10
 - [x] T8.11 Docs
 - [x] T8.12 Visual regression + J1–J5
 - [x] T8.13 Release workflow
-- [ ] T8.14 Spec reconciliation
+- [x] T8.14 Spec reconciliation
 
 T8.1 ✔ `apps/web/src/features/connection/LocalHint.test.tsx` > "shows the DynamoDB Local command until it is dismissed" and "stays hidden when a connection is already saved". `local-hint.test.ts` stores the dismissal in `ds-local-hint-dismissed`. `api.test.ts` > "opens a session once before reads" so the first visit loads profiles instead of showing "Couldn't load saved connections." The endpoint field is a pill with the placeholder, alerts default to outlined, and the route fallback is a skeleton. Screenshots: `docs/screenshots/phase-8/`. Checklist: `docs/UI-STATES.md`. `e2e/polish.spec.ts` passed in light and dark on 2026-10-31.
 
@@ -135,7 +135,20 @@ T8.11 ✔ README quick start, features, security, and FAQ. Screenshots stand in 
 
 T8.12 ✔ `e2e/journeys.spec.ts` passed 11 tests on 2026-10-31 with `--workers=1`: J1–J5 in light and dark, plus the connect failure that names the endpoint. Screenshots are in `docs/screenshots/phase-8/`. `toHaveScreenshot` uses `maxDiffPixelRatio: 0.01` and runs on Linux only, so this Darwin run did not write ubuntu baselines.
 
-T8.13 ✔ `scripts/set-version.ts 1.0.0-rc.1` set the root, web, server, and shared versions. The root package stays private. `.github/workflows/release.yml` builds the image and the tarball on a `v*` tag and uploads them with `actions/upload-artifact`. It does not push to a registry. The local tag is `v1.0.0-rc.1`. It was not pushed.
+T8.13 ✔ `scripts/set-version.ts 1.0.0-rc.1` set the root, web, server, and shared versions. The root package stays private. `.github/workflows/release.yml` builds the image and the tarball on a `v*` tag and uploads them with `actions/upload-artifact`. It does not push to a registry. The local tag is `v1.0.0-rc.1` at `081cb82`. It was not pushed.
+
+T8.14 ✔ This file. `pnpm verify` on 2026-10-31 is green: lint, typecheck, 384 unit tests, 20 integration tests, and the production build. Initial JavaScript gzip is 231235 bytes (budget 235520, ceiling 256000). `PLAYWRIGHT_BROWSERS_PATH=$HOME/Library/Caches/ms-playwright pnpm exec playwright test --workers=1` passed 51 tests. Searches for `TODO`, `FIXME`, and `console.log` / `debug` / `info` / `warn` in `apps`, `packages`, and `scripts` found only fixture strings in `security.test.ts` and `check-design-bundle.test.ts`. `specs/open-questions.md` has no BLOCKING items. The backlog was reviewed and nothing was added. There is no git remote, so GitHub CI is not green. Do not start Phase 9 until asked.
+
+- AC-8.1 ✔ `e2e/journeys.spec.ts` J1–J5 in light and dark, plus the connect failure that names `http://127.0.0.1:9`. Those 11 tests passed inside the 51-test run on 2026-10-31.
+- AC-8.2 ✔ `e2e/polish.spec.ts` reports 0 serious or critical axe violations on the connect screen, command palette, shortcut dialog, About dialog, and the missing-page screen in light and dark. `docs/KEYBOARD.md` is the checklist. A live VoiceOver or NVDA pass was not done.
+- AC-8.3 ✔ Initial JS gzip 231235 bytes. FCP 408, 400, and 392 ms. Drawer 19.5 ms. Health p50 1.45 ms, p95 1.92 ms. 1,000 sidebar names 78.8 ms. The 10,000-row scroll passed the 55 fps assertion; the exact rate was not printed.
+- AC-8.4 ✔ `docs/SECURITY.md` ticks the checklist. `pnpm audit` on 2026-10-31: 3 low, 2 moderate, 1 high, 1 critical. The high and critical issues are `dompurify` through `monaco-editor`. This repo does not import DOMPurify. That exception is in `docs/SECURITY.md`.
+- AC-8.5 ✔ Image `dynamo-studio:local` `835797b5d06d`, 90518027 bytes. User 1001. Health 200. Foreign Host and Origin 403. Log contains "not loopback". 200 MB dry-run import HTTP 200 with `"type":"done"`. OOMKilled false. Host port was not 8080. Memory and memory-swap were 512m.
+- AC-8.6 ✔ `npm install -g` of `dist-pack/dynamo-studio.tgz` in `node:22-bookworm-slim` found the bin, `apps/server/dist`, `apps/web/dist/index.html`, and fastify, then health returned 200. The GitHub `cli` job was not run: there is no remote. No npm publish.
+- AC-8.7 ✔ The README connect steps on the already-running app at http://127.0.0.1:5173 reached the table list in under a minute. Docker, `pnpm install`, and `pnpm dev` were not repeated. Screenshots stand in for the GIF (Q-048).
+- AC-8.8 ✔ No product `TODO`, `FIXME`, or console calls remain. Open questions have no BLOCKING mark.
+- AC-8.9 ✔ The 51-test Playwright run passed. `toHaveScreenshot` runs on Linux only, so this Darwin machine did not compare ubuntu baselines. Local screenshot updates are Darwin captures, not product bugs. Phase 8 captures were refreshed; earlier phases were left unstaged.
+- AC-8.10 ✔ `export-lifecycle.int.test.ts` sends SIGTERM during an orders export, the stream ends, and the process exits 0 in under 5 seconds. That test passed in the verify run.
 
 ## Phase 7 tasks
 - [x] T7.1 Shared schemas
@@ -468,6 +481,18 @@ The 10,000-order NDJSON export, the hash-matched re-import, the 50,000-row cance
 
 Not verified: `rm -rf node_modules && pnpm install --frozen-lockfile`. A live screen reader was not used. `actionlint` is not on PATH. The browser did not round-trip 10,000 CSV rows or a file larger than 100 MB. Zoom to 200% was not checked.
 
+### Phase 8 — Polish, hardening, and packaging (2026-10-31)
+
+The command palette ranks recent tables and actions, and a leading `>` shows actions only. Shortcuts are catalogued. The offline banner does not queue writes. Error boundaries retry the current screen. The production server serves the web build, and SIGTERM during an export exits 0 in under 5 seconds. Node majors below 22 are refused. Node 22 is quiet. A newer major warns and continues. `.nvmrc` is 22.
+
+The image `dynamo-studio:local` is 90518027 bytes and runs as uid 1001 with a 128 MB old-space cap. A 200 MB dry-run import against DynamoDB Local returned done without an OOM kill. The `dynamo-studio` command re-execs with that cap. `npm install -g` of the packed tarball in `node:22-bookworm-slim` serves health. The root package stays private. The release workflow uploads the image archive and the tarball as artifacts. It does not publish. The local tag `v1.0.0-rc.1` points at `081cb82` and was not pushed.
+
+Optimistic concurrency still has a residual race: the write checks attribute equality from the read, and an attribute added between the read and the write is not detected. An item too large for that check uses a weaker compare. README screenshots stand in for a GIF. Following the connect steps on the already-running dev server reached the table list in under a minute.
+
+`pnpm verify` is green (384 unit tests, 20 integration tests). Initial JS gzip is 231235 bytes. `pnpm exec playwright test --workers=1` passed 51 tests. J1–J5 passed in light and dark. Screenshot comparisons are ubuntu-only, so this Darwin run did not generate those baselines. Q-045 through Q-049 stay on the defaults used here. There is no git remote, so GitHub CI is not green. Do not start Phase 9 until asked.
+
+Not verified: a cold README timing that includes Docker, `pnpm install`, and `pnpm dev`. A live screen reader. `actionlint`. Frozen install. GitHub Actions. The exact 10k-row fps number.
+
 ## Metrics log
 
 - 2026-10-23 — Phase 0 web JavaScript gzip: 100585 bytes. Budget 256000.
@@ -479,4 +504,5 @@ Not verified: `rm -rf node_modules && pnpm install --frozen-lockfile`. A live sc
 - 2026-10-25 — Phase 5. Initial JS gzip: 181131 bytes (scripts linked from `index.html`, including `apps/web/dist/assets/index-DgzeP6bc.js`), up from 180241. Early budget 235520. Phase 8 budget 256000. Monaco is not in that entry. Lazy chunks, not in the initial number: JsonEditor 331.68 KB gzip (`JsonEditor-B4X21hQa.js`), editor.api 706.08 KB gzip (`editor.api-BefY29eV.js`), Workspace 54.98 KB gzip (`Workspace-BkdKzpeh.js`). The Monaco package also emits json, editor, html, css, and ts worker chunks. CSS gzip 22.12 KB (`index-hJASPadC.css`). `/__design` is absent. `pnpm verify`: 244 unit tests, 7 integration tests. `pnpm exec playwright test --workers=1`: 29 passed. Frozen install was not run.
 - 2026-10-26 — Phase 6. Initial JS gzip: 181399 bytes (`index-OU-LJxqS.js` 177999 plus `jsx-runtime-Wy9s6hX0.js` 3400), up from 181129. Early budget 235520. Phase 8 budget 256000. The entry does not contain `monaco-editor` or `MonacoEnvironment`. Lazy chunks, not in the initial number: PartiqlPanel 7268 bytes (`PartiqlPanel-B48WaS4x.js`), monaco-setup 326601 bytes (`monaco-setup-Cii3twt0.js`), editor.api 698489 bytes (`editor.api-GF7w0OR3.js`), json.worker 127909 bytes (`json.worker-BfeARH1Q.js`), editor.worker 92399 bytes (`editor.worker-CX7Cj20z.js`), Workspace 56856 bytes (`Workspace-DpL4oEkp.js`), ConnectScreen 22818 bytes (`ConnectScreen-BckrGsoX.js`), EnvChip 54845 bytes (`EnvChip-uHTTWnDO.js`). Monaco CSS gzip 129310 bytes (`monaco-setup-CLfMljIC.css`). App CSS gzip 22048 bytes (`index-B67VEH8p.css`). `/__design` is absent. `pnpm verify`: 295 unit tests, 10 integration tests. `pnpm exec playwright test --workers=1`: 33 passed. Frozen install was not run. Machine: local Darwin.
 - 2026-10-31 — Phase 8, after T8.5. Initial JS gzip: 231125 bytes (`index-BDjsV_O4.js` 86544, `jsx-runtime-Wy9s6hX0.js` 3400, `Alert-DiELzDBq.js` 141181). Budget in `scripts/check-bundle.ts` is 235520 bytes (230 KiB). Spec ceiling is 250 KB. The entry does not contain `monaco-editor` or `MonacoEnvironment`. The Alert chunk is modulepreloaded from `index.html`, so it counts. No chunk was removed because the total is under the budget. Production connect screen, Chromium, 1440×900, `vite preview` on port 4173: first contentful paint 408 ms, 400 ms, and 392 ms. One earlier navigation reported first-paint at 32 ms before a contentful-paint entry existed. The IDE browser reported about 1.1 s on the same build; that paint waited on the tool, so it is not the budget number. Drawer: one click on the Vite dev server at 1440×900 reached the "Item details" dialog in 19.5 ms, before Monaco finished. 1,000 sidebar names rendered in 78.8 ms in jsdom; the test asserts under 100 ms and the last name stays unmounted. 10,000-row scroll: `e2e/items.spec.ts` passed the 55 fps assertion at 4× CPU on 2026-10-31 in 5.1 s. The exact fps annotation was not printed. `GET /api/v1/health` × 100 against the running server on port 8080: p50 1.45 ms, p95 1.92 ms, max 17.82 ms. That route does not call DynamoDB. Machine: local Darwin.
+- 2026-10-31 — Phase 8 close. `pnpm verify` is green: 384 unit tests, 20 integration tests. Initial JS gzip: 231235 bytes (`index-Dal03mFb.js`, `jsx-runtime-Wy9s6hX0.js`, `Alert-DiELzDBq.js`). Budget 235520. Ceiling 256000. `/__design` is absent. `pnpm exec playwright test --workers=1`: 51 passed, including J1–J5 in light and dark. Machine: local Darwin, Node 26.4.0. No git remote.
 - 2026-10-31 — Phase 7. Initial JS gzip: 181438 bytes (`index-B09P_TGZ.js` 178038 plus `jsx-runtime-Wy9s6hX0.js` 3400), up from 181399. Early budget 235520. Phase 8 budget 256000. The entry does not contain `monaco-editor` or `MonacoEnvironment`. Lazy chunks, not in the initial number: PartiqlPanel 6939 bytes (`PartiqlPanel-DfIJFMSl.js`), monaco-setup 326605 bytes (`monaco-setup-DZG8pD9S.js`), editor.api 698489 bytes (`editor.api-CLOKG5iq.js`), json.worker 127909 bytes (`json.worker-BfeARH1Q.js`), editor.worker 92399 bytes (`editor.worker-CX7Cj20z.js`), Workspace 63503 bytes (`Workspace-CkITU1jB.js`; Phase 6 was 56856), ConnectScreen 21614 bytes (`ConnectScreen-ByJh8jRv.js`), EnvChip 57821 bytes (`EnvChip-DyXFX56Z.js`). Monaco CSS gzip 129310 bytes (`monaco-setup-CLfMljIC.css`). App CSS gzip 22157 bytes (`index-DINRTN3f.css`). `/__design` is absent. `pnpm verify`: 348 unit tests, 18 integration tests. `pnpm exec playwright test --workers=1`: 37 passed. Import memory, fresh server per size, `--max-old-space-size=128`, RSS every 500 ms. 52435200 bytes peak RSS 226066432 post-GC RSS 210878464 heapUsed 25886584; 104870400 peak 231047168 post-GC 216039424 heapUsed 25965640; 209740800 peak 234274816 post-GC 221216768 heapUsed 26018760; 419481600 peak 233897984 post-GC 222494720 heapUsed 26078168. Linux Docker `--memory=512m --memory-swap=512m`, node:22-bookworm-slim, server only, 209740800 bytes: HTTP 200, OOMKilled false, peak RSS 125165568, post-GC RSS 123904000, heapUsed 20475544, cgroup memory.peak 92377088. Frozen install was not run. Machine: local Darwin, Node 26.4.0.

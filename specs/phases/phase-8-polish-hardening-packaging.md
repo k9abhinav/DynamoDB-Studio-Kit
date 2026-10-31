@@ -49,7 +49,7 @@ New features. Anything not already in specs goes to `specs/backlog.md`.
 - [x] T8.11 Docs: README, USER-GUIDE, ARCHITECTURE, CONTRIBUTING, SECURITY, CHANGELOG
 - [x] T8.12 Visual regression baseline + final E2E suite of journeys J1-J5 in both themes
 - [x] T8.13 Release workflow; tag v1.0.0-rc.1
-- [ ] T8.14 Final spec reconciliation + progress summary + backlog review
+- [x] T8.14 Final spec reconciliation + progress summary + backlog review
 
 ## 5. Acceptance criteria
 - **AC-8.1** All journeys J1-J5 pass E2E in light and dark.
